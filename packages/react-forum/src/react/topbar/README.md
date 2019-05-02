@@ -1,0 +1,1 @@
+This folder contains files from the Microsoft Visual Studio 2015 Image Library.
