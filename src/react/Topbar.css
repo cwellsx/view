@@ -1,0 +1,49 @@
+.topbar {
+  position: fixed;
+  height: 50px;
+  top: 0;
+  background-color: rgb(36, 39, 41);
+  width: 100%;
+  z-index: 100;
+}
+
+.topbar .container {
+  max-width: 1264px;
+}
+
+.topbar .icons {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  float: right;
+}
+
+.topbar .icons li {
+  display: flex;
+  height: 50px
+}
+
+.topbar .icons a {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.topbar .icons a:hover {
+  background-color: rgba(159, 166, 173, 0.5);
+}
+
+#root {
+  padding-top: 50px;
+}
+
+/* color the SVGs by overriding their internal stylesheets */
+
+.icon-vs-bg {
+  fill:rgb(36, 39, 41) !important;
+}
+
+.icon-vs-fg, .icon-vs-out {
+  fill:rgb(159, 166, 173) !important;
+}
