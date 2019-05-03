@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { BrowserRouter, Switch, Route, RouteComponentProps } from 'react-router-dom';
-import { Location } from "history";
 import { Topbar } from './Topbar';
+import { renderContentOne, Content } from './Column';
 import './App.css';
 
 const App: React.FC = () => {
@@ -29,13 +29,30 @@ const AppRoutes: React.FC = () => {
 }
 
 export const SiteMap: FunctionComponent = () => {
-  return (
-    <React.Fragment>
-      <h1>Site Map</h1>
-      <p>This will display the site map.</p>
-    </React.Fragment>
+
+  /*
+    visitors can see:
+    - image document[s]
+    - (featured) articles
+    - (text) sources
+
+    and cannot see:
+    - users
+    - discussions
+    - feaure reports
+    - notable omissions
+  */
+  // 
+
+  const contents: Content[]=[];
+  contents.push(
+    {
+      element: <p>This will display the site map.</p>,
+      key: "foo"
+    }
+    
   );
-  return <h1>Site Map</h1>;
+  return renderContentOne({ title: "Site Map", contents });
 }
 
 export const Discussions: FunctionComponent = () => {
@@ -45,7 +62,6 @@ export const Discussions: FunctionComponent = () => {
       <p>This will display a list of discussions.</p>
     </React.Fragment>
   );
-  return <h1>Discussions</h1>;
 }
 
 export const Users: FunctionComponent = () => {
@@ -57,9 +73,8 @@ export const Users: FunctionComponent = () => {
   );
 }
 
-export const NoMatch: React.ComponentType<RouteComponentProps<any>> = ({ location: Location }) => {
-  //eslint-disable-next-line
-  const pathname = location.pathname;
+export const NoMatch: React.ComponentType<RouteComponentProps<any>> = (props: RouteComponentProps<any>) => {
+  const pathname = props.location.pathname;
   return (
     <div>
       <h3>
