@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { BrowserRouter, Switch, Route, RouteComponentProps } from 'react-router-dom';
 import { Location } from "history";
 import { Topbar } from './Topbar';
+import './App.css';
 
 const App: React.FC = () => {
   // https://reacttraining.com/react-router/web/api/BrowserRouter
