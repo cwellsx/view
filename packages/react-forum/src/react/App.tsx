@@ -1,10 +1,13 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { BrowserRouter, Switch, Route, RouteComponentProps } from 'react-router-dom';
 import { Topbar } from './Topbar';
 import { renderContentOne, Content } from './Column';
 import './App.css';
+import * as I from "../data";
+import * as IO from "../io";
+import * as Summaries from "./Summaries";
 
-const App: React.FC = () => {
+const App: FunctionComponent = () => {
   // https://reacttraining.com/react-router/web/api/BrowserRouter
   return (
     <BrowserRouter>
@@ -13,7 +16,7 @@ const App: React.FC = () => {
   );
 }
 
-const AppRoutes: React.FC = () => {
+const AppRoutes: FunctionComponent = () => {
   // https://reacttraining.com/react-router/web/api/Switch
   return (
     <React.Fragment>
@@ -42,16 +45,32 @@ export const SiteMap: FunctionComponent = () => {
     - feaure reports
     - notable omissions
   */
-  // 
 
-  const contents: Content[]=[];
-  contents.push(
-    {
-      element: <p>This will display the site map.</p>,
-      key: "foo"
-    }
-    
-  );
+  // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
+  // also https://www.carlrippon.com/typed-usestate-with-typescript/
+
+  const [data, setData] = useState<I.SiteMap | undefined>(undefined);
+
+  // dependencies are constant i.e. don't re-run this effect
+  // const deps = [];
+  useEffect(() => {
+    IO.getSiteMap()
+      .then((siteMap) => setData(siteMap));
+  }, []);
+
+  const contents: Content[] = [];
+
+  if (data) {
+    // render the images
+    const images = data.images.forEach(x => contents.push(Summaries.getImageSummary(x)));
+  }
+
+  // contents.push(
+  //   {
+  //     element: <p>This will display the site map.</p>,
+  //     key: "foo"
+  //   }
+
   return renderContentOne({ title: "Site Map", contents });
 }
 
