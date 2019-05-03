@@ -1,9 +1,9 @@
 import React from 'react';
 import './Topbar.css';
-import { ReactComponent as Mail } from "./topbar/Mail_16x.svg";
-import { ReactComponent as Message } from "./topbar/Message_16x.svg";
-import { ReactComponent as Search } from "./topbar/Search_16x.svg";
-import { ReactComponent as UserProfile } from "./topbar/UserProfile_16x.svg";
+import { ReactComponent as Mail } from "./icons/topbar/Mail_16x.svg";
+import { ReactComponent as Message } from "./icons/topbar/Message_16x.svg";
+import { ReactComponent as Search } from "./icons/topbar/Search_16x.svg";
+import { ReactComponent as UserProfile } from "./icons/topbar/UserProfile_16x.svg";
 import { NavLink } from 'react-router-dom';
 
 export function Topbar() {
