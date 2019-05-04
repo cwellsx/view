@@ -7,7 +7,7 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Summaries from "./Summaries";
-import { route } from "../io/pageId";
+import { route, PageId, getPageId } from "../io/pageId";
 import { AppContext } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
@@ -17,6 +17,8 @@ const App: React.FunctionComponent = () => {
   // https://reactjs.org/docs/context.html#updating-context-from-a-nested-component
   const autologin = config.autologin ? loginUser : undefined;
   const [me, setMe] = React.useState<I.UserSummary | undefined>(autologin);
+
+  document.title = `${config.appname}`;
 
   // plus https://reacttraining.com/react-router/web/api/BrowserRouter
   return (
@@ -39,11 +41,13 @@ const AppRoutes: React.FunctionComponent = () => {
         <ReactRouter.Route exact path={route.siteMap} component={SiteMap} />
         <ReactRouter.Route exact path={route.discussions} component={Discussions} />
         <ReactRouter.Route exact path={route.users} component={Users} />
+        <ReactRouter.Route path={route.users} component={User} />
         <ReactRouter.Route component={NoMatch} />
       </ReactRouter.Switch>
     </React.Fragment>
   );
 }
+type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
 
 export const SiteMap: React.FunctionComponent = () => {
 
@@ -102,16 +106,33 @@ export const Users: React.FunctionComponent = () => {
   );
 }
 
-type NoMatchProps = ReactRouter.RouteComponentProps<any>;
-export const NoMatch: React.ComponentType<NoMatchProps> = (props: NoMatchProps) => {
+export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+  const pathname = props.location.pathname;
+  const pageId: PageId | undefined = getPageId(pathname);
+  if (!pageId) {
+    return NoMatch(props);
+  }
+  if (!pageId.id) {
+    return NoMatch(props);
+  }
+  if (Array.isArray(pageId.id)) {
+    return NoMatch(props);
+  }
+  const userId: number = pageId.id.id;
+  return (
+    <React.Fragment>
+      <h1>Users</h1>
+      <p>This will display one user -- the profile for user number {userId}.</p>
+    </React.Fragment>
+  );
+}
+
+export const NoMatch: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const pathname = props.location.pathname;
   return (
     <div>
       <h3>Not Found</h3>
       <p>No page found for <code>{pathname}</code></p>
-      <p>{route.siteMap}</p>
-      <p>{route.discussions}</p>
-      <p>{route.users}</p>
     </div>
   );
 }
