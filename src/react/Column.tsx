@@ -14,16 +14,18 @@ export interface Content {
   key: string;
 }
 
+export type Contents = ReadonlyArray<Content> | React.ReactElement;
+
 interface Column {
   title: string;
-  contents: ReadonlyArray<Content> | React.ReactElement;
+  contents: Contents;
 }
 
 function setTitle(title: string): void {
   document.title = `${title} - ${config.appname}`;
 }
 
-export const renderContentOne: React.FunctionComponent<Column> = (column: Column) => {
+export const renderContentOne = (column: Column): React.ReactElement => {
   setTitle(column.title);
   const content = (Array.isArray(column.contents))
     ?
