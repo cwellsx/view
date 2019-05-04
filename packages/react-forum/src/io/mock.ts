@@ -12,3 +12,9 @@ so you can see this text can be formatted -- it's actually created in one of the
     }
   ]
 };
+
+export const loginUser: I.UserSummary = {
+  idName: { id:1, name:"JohnS"},
+  gravatarHash: "75bfdecf63c3495489123fe9c0b833e1",
+  location: "London"
+}

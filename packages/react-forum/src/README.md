@@ -38,8 +38,11 @@ This `src` directory includes the following subdirectories.
       <li>Data is requested and consumed by React scripts</li>
       <li>These interfaces declare the format of the data</li>
       <li>These interfaces are shared with (i.e. they're also imported and used by) modules in the
-      <a href="../server"><code>/server</code></a>directory</li>
+      <a href="../server"><code>/server</code></a> directory</li>
     </ul>
+    <p>The server also imports interfaces declared in the
+    <a href="./io/post.ts"><code>./io/post</code></a> and
+    <a href="./io/push.ts"><code>./io/push</code></a> modules.</p>
   </td>
 </tr>
 
