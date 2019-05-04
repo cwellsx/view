@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
 import { BrowserRouter, Switch, Route, RouteComponentProps } from 'react-router-dom';
-import { Topbar } from './Topbar';
 import { renderContentOne, Content } from './Column';
+import { Topbar } from './Topbar';
+import { Login } from './Login';
 import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
@@ -22,6 +23,7 @@ const AppRoutes: FunctionComponent = () => {
     <React.Fragment>
       <Topbar />
       <Switch>
+        <Route exact path="/login" component={Login} />
         <Route exact path="/index" component={SiteMap} />
         <Route exact path="/discussions" component={Discussions} />
         <Route exact path="/users" component={Users} />
@@ -58,18 +60,14 @@ export const SiteMap: FunctionComponent = () => {
       .then((siteMap) => setData(siteMap));
   }, []);
 
+  // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
+
   const contents: Content[] = [];
 
   if (data) {
     // render the images
-    const images = data.images.forEach(x => contents.push(Summaries.getImageSummary(x)));
+    data.images.forEach(x => contents.push(Summaries.getImageSummary(x)));
   }
-
-  // contents.push(
-  //   {
-  //     element: <p>This will display the site map.</p>,
-  //     key: "foo"
-  //   }
 
   return renderContentOne({ title: "Site Map", contents });
 }

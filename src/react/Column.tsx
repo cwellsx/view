@@ -15,16 +15,26 @@ export interface Content {
 
 interface Column {
   title: string;
-  // content: FunctionComponent;
-  contents: ReadonlyArray<Content>;
+  contents: ReadonlyArray<Content> | ReactElement;
+}
+
+function setTitle(title: string): void {
+  document.title = `${title} - Prototype`;
 }
 
 export const renderContentOne: FunctionComponent<Column> = (column: Column) => {
-  const content = column.contents.map((x) =>
-    <div className="element" key={x.key}>
-      {x.element}
-    </div>
-  );
+  setTitle(column.title);
+  const content = (Array.isArray(column.contents))
+    ?
+    column.contents.map((x) =>
+      <div className="element" key={x.key}>
+        {x.element}
+      </div>
+    )
+    :
+    <div className="element">
+      {column.contents}
+    </div>;
   return (
     <div className="column">
       <div className="header">

@@ -11,10 +11,11 @@ export function Topbar() {
     <div className="topbar" >
       <div className="container">
         <ul className="icons">
-          <li><NavLink to="/index" title="Site Map"><Search viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
-          <li><NavLink to="/discussions" title="Discussions"><Message viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
-          <li><NavLink to="/users" title="Users"><UserProfile viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
-          <li><NavLink to="/index" title="Notifications"><Mail viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+          <li className="icon"><NavLink to="/index" title="Site Map"><Search viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+          <li className="icon"><NavLink to="/discussions" title="Discussions"><Message viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+          <li className="icon"><NavLink to="/users" title="Users"><UserProfile viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+          <li className="icon"><NavLink to="/index" title="Notifications"><Mail viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+          <li className="text"><NavLink to="/login" className="login">Join this community</NavLink></li>
         </ul>
       </div>
     </div>
