@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement } from 'react';
+import React from 'react';
 import "./Column.css"
 
 /*
@@ -9,20 +9,20 @@ import "./Column.css"
 */
 
 export interface Content {
-  element: ReactElement;
+  element: React.ReactElement;
   key: string;
 }
 
 interface Column {
   title: string;
-  contents: ReadonlyArray<Content> | ReactElement;
+  contents: ReadonlyArray<Content> | React.ReactElement;
 }
 
 function setTitle(title: string): void {
   document.title = `${title} - Prototype`;
 }
 
-export const renderContentOne: FunctionComponent<Column> = (column: Column) => {
+export const renderContentOne: React.FunctionComponent<Column> = (column: Column) => {
   setTitle(column.title);
   const content = (Array.isArray(column.contents))
     ?
