@@ -1,11 +1,12 @@
 import React from 'react';
 import * as ReactRouter from 'react-router-dom';
-import { renderContentOne, Content } from './Column';
+import { renderContentOne, Content, Contents } from './Column';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
 import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
+import * as Page from "./Pages";
 import * as Summaries from "./Summaries";
 import { route, PageId, getPageId } from "../io/pageId";
 import { AppContext } from './AppContext';
@@ -49,43 +50,46 @@ const AppRoutes: React.FunctionComponent = () => {
 }
 type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
 
-export const SiteMap: React.FunctionComponent = () => {
+/*
+  This is a "high-order component", which separates "getting data" from "presenting data".
 
-  /*
-    visitors can see:
-    - image document[s]
-    - (featured) articles
-    - (text) sources
+  https://reactjs.org/docs/higher-order-components.html
+  https://reactjs.org/docs/hooks-custom.html
+*/
 
-    and cannot see:
-    - users
-    - discussions
-    - feaure reports
-    - notable omissions
-  */
+interface UseGetDataPropsT<T> {
+  title: string,
+  getData: () => Promise<T>,
+  showData: (data: T) => Contents
+}
+function useGetDataT<T>(props: UseGetDataPropsT<T>): React.ReactElement {
 
   // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
   // also https://www.carlrippon.com/typed-usestate-with-typescript/
 
-  const [data, setData] = React.useState<I.SiteMap | undefined>(undefined);
+  const [data, setData] = React.useState<T | undefined>(undefined);
 
-  // dependencies are constant i.e. don't re-run this effect
-  // const deps = [];
   React.useEffect(() => {
-    IO.getSiteMap()
-      .then((siteMap) => setData(siteMap));
-  }, []);
+    props.getData()
+      .then((fetched) => setData(fetched));
+  }, []); // [] implies the dependencies are constant i.e. don't re-run this effect
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
-  const contents: Content[] = [];
-
-  if (data) {
-    // render the images
-    data.images.forEach(x => contents.push(Summaries.getImageSummary(x)));
-  }
+  const contents: Contents = (data)
+    ? props.showData(data) // render the data
+    : []; // else no data yet to render
 
   return renderContentOne({ title: "Site Map", contents });
+}
+
+export const SiteMap: React.FunctionComponent = () => {
+
+  return useGetDataT<I.SiteMap>({
+    title: "Site Map",
+    getData: () => IO.getSiteMap(),
+    showData: Page.SiteMap
+  });
 }
 
 export const Discussions: React.FunctionComponent = () => {
