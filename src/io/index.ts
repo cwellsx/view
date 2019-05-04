@@ -1,10 +1,8 @@
 import * as I from "../data";
 import * as Post from "./post";
 import * as Mock from "./mock";
-import {PageId, getPageUrl} from "./pageId";
-
-const serverless = true;
-const loginfails = false;
+import { PageId, getPageUrl } from "./pageId";
+import { config } from "../config"
 
 // this declares a subset of the fields we use from the DOM Response interface
 interface SimpleResponse {
@@ -27,7 +25,7 @@ function mock(pageId: PageId): Promise<SimpleResponse> {
   return new Promise<SimpleResponse>((resolve, reject) => {
     const delay = 25;
     setTimeout(() => {
-      if (loginfails) {
+      if (config.loginfails) {
         // simulate login failure
         const failPromise: Promise<any> = new Promise<any>((resolve, reject) => {
           // no possible need to call reject because we already have the data
@@ -62,7 +60,7 @@ function mock(pageId: PageId): Promise<SimpleResponse> {
 }
 
 function get(pageId: PageId, body?: object): Promise<SimpleResponse> {
-  if (!serverless) {
+  if (!config.serverless) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
     const init: RequestInit = {
 
@@ -95,9 +93,9 @@ function getT<T>(pageId: PageId, body?: object): Promise<T> {
 }
 
 export async function getSiteMap(): Promise<I.SiteMap> {
-  return getT<I.SiteMap>({pageType: "SiteMap"});
+  return getT<I.SiteMap>({ pageType: "SiteMap" });
 }
 
 export async function login(data: Post.Login): Promise<I.UserSummary> {
-  return getT<I.UserSummary>({pageType: "Login"}, data);
+  return getT<I.UserSummary>({ pageType: "Login" }, data);
 }

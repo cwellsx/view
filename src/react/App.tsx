@@ -8,13 +8,23 @@ import * as I from "../data";
 import * as IO from "../io";
 import * as Summaries from "./Summaries";
 import { route } from "../io/pageId";
+import { AppContext } from './AppContext';
+import { config } from "../config"
+import { loginUser } from "../io/mock";
 
 const App: React.FunctionComponent = () => {
-  // https://reacttraining.com/react-router/web/api/BrowserRouter
+  // https://fettblog.eu/typescript-react/context/ and
+  // https://reactjs.org/docs/context.html#updating-context-from-a-nested-component
+  const autologin = config.autologin ? loginUser : undefined;
+  const [me, setMe] = React.useState<I.UserSummary | undefined>(autologin);
+
+  // plus https://reacttraining.com/react-router/web/api/BrowserRouter
   return (
-    <ReactRouter.BrowserRouter>
-      <AppRoutes />
-    </ReactRouter.BrowserRouter>
+    <AppContext.Provider value={{ me, setMe }}>
+      <ReactRouter.BrowserRouter>
+        <AppRoutes />
+      </ReactRouter.BrowserRouter>
+    </AppContext.Provider>
   );
 }
 

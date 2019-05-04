@@ -17,7 +17,7 @@ This `src` directory includes the following subdirectories.
 
 <tr>
   <td><code>./</code></td>
-  <td>index.tsx</td>
+  <td><code>index.tsx</code></td>
 </tr>
 
 <tr>

@@ -3,10 +3,12 @@ import { renderContentOne } from './Column';
 import * as I from "../data";
 import * as IO from "../io";
 import { ErrorMessage } from "./ErrorMessage";
+import { AppContext, AppContextProps } from './AppContext';
 
 export const Login: React.FunctionComponent = () => {
 
   const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
+  const appContext: AppContextProps = React.useContext(AppContext);
 
   const inputUserName = React.createRef<HTMLInputElement>();
   const inputPassword = React.createRef<HTMLInputElement>();
@@ -15,7 +17,7 @@ export const Login: React.FunctionComponent = () => {
     const userName = inputUserName.current!.value;
     const password = inputPassword.current!.value;
     IO.login({ userName, password })
-      .then((userSummary: I.UserSummary) => { })
+      .then((userSummary: I.UserSummary) => appContext.setMe(userSummary))
       .catch((error: Error) => setErrorMessage(error.message));
     event.preventDefault();
   };
