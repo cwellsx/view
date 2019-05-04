@@ -1,5 +1,6 @@
 export const config = {
   serverless: true,
   loginfails: false,
-  autologin: true
+  autologin: true,
+  appname: "Prototype"
 };

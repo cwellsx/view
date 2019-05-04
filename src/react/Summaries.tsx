@@ -22,6 +22,7 @@ export function getUserName(idName: I.IdName): React.ReactElement {
 
 export function getUserSmallGravatar(summary: I.UserSummary, title: boolean = true): React.ReactElement {
   const href = getPageUrl({ pageType: "User", id: summary.idName });
+  // https://en.gravatar.com/site/implement/images/
   const src = `https://www.gravatar.com/avatar/${summary.gravatarHash}?s=48&d=identicon&r=PG`;
   return <NavLink to={href} title={title ? summary.idName.name : undefined}><img src={src} className="gravatar-small" alt={summary.idName.name} width="24" height="24" /></NavLink>;
 }

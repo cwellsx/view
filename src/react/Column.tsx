@@ -1,5 +1,6 @@
 import React from 'react';
 import "./Column.css"
+import { config } from "../config"
 
 /*
   This passes content as ReactElement instances
@@ -19,7 +20,7 @@ interface Column {
 }
 
 function setTitle(title: string): void {
-  document.title = `${title} - Prototype`;
+  document.title = `${title} - ${config.appname}`;
 }
 
 export const renderContentOne: React.FunctionComponent<Column> = (column: Column) => {
