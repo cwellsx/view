@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import * as I from "../data";
 
@@ -10,7 +10,7 @@ function makeHref(root: string, idName: I.IdName): string {
   return `${root}/${idName.id}/${slug}`;
 }
 
-export function image(id: I.IdName): ReactElement {
+export function image(id: I.IdName): React.ReactElement {
   const href = makeHref("/images", id);
   return <NavLink to={href}>{id.name}</NavLink>;
 }

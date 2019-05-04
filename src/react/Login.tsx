@@ -1,21 +1,21 @@
-import React, { FunctionComponent, FormEvent, useState, useEffect } from 'react';
+import React from 'react';
 import { renderContentOne } from './Column';
 import * as I from "../data";
 import * as IO from "../io";
-import {ErrorMessage} from "./ErrorMessage";
+import { ErrorMessage } from "./ErrorMessage";
 
-export const Login: FunctionComponent = () => {
+export const Login: React.FunctionComponent = () => {
 
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+  const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
 
   const inputUserName = React.createRef<HTMLInputElement>();
   const inputPassword = React.createRef<HTMLInputElement>();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     const userName = inputUserName.current!.value;
     const password = inputPassword.current!.value;
-    IO.login({userName, password})
-      .then((userSummary: I.UserSummary) => {})
+    IO.login({ userName, password })
+      .then((userSummary: I.UserSummary) => { })
       .catch((error: Error) => setErrorMessage(error.message));
     event.preventDefault();
   };
@@ -30,10 +30,14 @@ export const Login: FunctionComponent = () => {
         <p><input type="submit" value="Submit" /></p>
         <ErrorMessage errorMessage={errorMessage} />
       </form>
+      <h3>Only in this prototype</h3>
       <p>The UI details for creating a new account are not defined yet.</p>
-      <p>
-        Also, only in this prototype, if you refresh the page then this application is reloaded and the login is reset.
-      </p>
+      <p>If you refresh the page, then this application is reloaded and:</p>
+      <ul>
+        <li>The login is reset</li>
+        <li>Any other data you entered is reset</li>
+      </ul>
+      <p>This is a prototype of the UI, without a server: so any data you enter isn't permanently stored anywhere.</p>
     </React.Fragment>
   );
   return renderContentOne({ title: "Login", contents });

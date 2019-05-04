@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
-import { BrowserRouter, Switch, Route, RouteComponentProps } from 'react-router-dom';
+import React from 'react';
+import * as ReactRouter from 'react-router-dom';
 import { renderContentOne, Content } from './Column';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
@@ -7,33 +7,35 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Summaries from "./Summaries";
+import { route } from "../io/pageId";
 
-const App: FunctionComponent = () => {
+const App: React.FunctionComponent = () => {
   // https://reacttraining.com/react-router/web/api/BrowserRouter
   return (
-    <BrowserRouter>
+    <ReactRouter.BrowserRouter>
       <AppRoutes />
-    </BrowserRouter>
+    </ReactRouter.BrowserRouter>
   );
 }
 
-const AppRoutes: FunctionComponent = () => {
+const AppRoutes: React.FunctionComponent = () => {
   // https://reacttraining.com/react-router/web/api/Switch
   return (
     <React.Fragment>
       <Topbar />
-      <Switch>
-        <Route exact path="/login" component={Login} />
-        <Route exact path="/index" component={SiteMap} />
-        <Route exact path="/discussions" component={Discussions} />
-        <Route exact path="/users" component={Users} />
-        <Route component={NoMatch} />
-      </Switch>
+      <ReactRouter.Switch>
+        <ReactRouter.Route exact path="/index" component={SiteMap} />
+        <ReactRouter.Route exact path={route.login} component={Login} />
+        <ReactRouter.Route exact path={route.siteMap} component={SiteMap} />
+        <ReactRouter.Route exact path={route.discussions} component={Discussions} />
+        <ReactRouter.Route exact path={route.users} component={Users} />
+        <ReactRouter.Route component={NoMatch} />
+      </ReactRouter.Switch>
     </React.Fragment>
   );
 }
 
-export const SiteMap: FunctionComponent = () => {
+export const SiteMap: React.FunctionComponent = () => {
 
   /*
     visitors can see:
@@ -51,11 +53,11 @@ export const SiteMap: FunctionComponent = () => {
   // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
   // also https://www.carlrippon.com/typed-usestate-with-typescript/
 
-  const [data, setData] = useState<I.SiteMap | undefined>(undefined);
+  const [data, setData] = React.useState<I.SiteMap | undefined>(undefined);
 
   // dependencies are constant i.e. don't re-run this effect
   // const deps = [];
-  useEffect(() => {
+  React.useEffect(() => {
     IO.getSiteMap()
       .then((siteMap) => setData(siteMap));
   }, []);
@@ -72,7 +74,7 @@ export const SiteMap: FunctionComponent = () => {
   return renderContentOne({ title: "Site Map", contents });
 }
 
-export const Discussions: FunctionComponent = () => {
+export const Discussions: React.FunctionComponent = () => {
   return (
     <React.Fragment>
       <h1>Discussions</h1>
@@ -81,7 +83,7 @@ export const Discussions: FunctionComponent = () => {
   );
 }
 
-export const Users: FunctionComponent = () => {
+export const Users: React.FunctionComponent = () => {
   return (
     <React.Fragment>
       <h1>Users</h1>
@@ -90,13 +92,16 @@ export const Users: FunctionComponent = () => {
   );
 }
 
-export const NoMatch: React.ComponentType<RouteComponentProps<any>> = (props: RouteComponentProps<any>) => {
+type NoMatchProps = ReactRouter.RouteComponentProps<any>;
+export const NoMatch: React.ComponentType<NoMatchProps> = (props: NoMatchProps) => {
   const pathname = props.location.pathname;
   return (
     <div>
-      <h3>
-        No page found for <code>{pathname}</code>
-      </h3>
+      <h3>Not Found</h3>
+      <p>No page found for <code>{pathname}</code></p>
+      <p>{route.siteMap}</p>
+      <p>{route.discussions}</p>
+      <p>{route.users}</p>
     </div>
   );
 }
