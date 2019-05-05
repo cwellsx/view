@@ -36,6 +36,33 @@ export function getPageUrl(pageId: PageId): string {
   return url;
 }
 
+export function splitPath(pathname: string, pageType: PageType): Array<string | number> {
+  const start = getPageUrl({pageType}) + "/";
+  if (!pathname.startsWith(start)) {
+    throw new Error(`Path '${pathname}' was expected to start with '${start}'`);
+
+  }
+  const split: string[] = pathname.substring(start.length).split("/");
+  if (!split.length) {
+    throw new Error(`No subpath: ${pathname}`);
+  }
+  if (split.some((s) => !s.length)) {
+    throw new Error(`Malformed subpath: ${pathname}`);
+  }
+  const rc: Array<string | number> = [];
+  split.forEach((s) => {
+    // https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
+    const n: number = +s;
+    rc.push(isNaN(n) ? s : n);
+  });
+  return rc;
+}
+
+export function isNumber(subpath: string | number): subpath is number {
+  return (typeof subpath === "number");
+}
+
+/*
 export function getPageId(pathname: string): PageId | undefined {
   const found = pageTypeUrls.find((pair) => pathname.startsWith(`/${pair[1]}`));
   if (!found) {
@@ -63,6 +90,7 @@ export function getPageId(pathname: string): PageId | undefined {
     return { pageType, other: split };
   }
 }
+*/
 
 export const route = {
   login: getPageUrl({ pageType: "Login" }),

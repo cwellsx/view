@@ -1,17 +1,21 @@
 import React from 'react';
 import * as ReactRouter from 'react-router-dom';
-import { renderContentOne, Content, Contents } from './Column';
+import { renderColumn, Contents, loadingContents } from './Column';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
 import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import * as Summaries from "./Summaries";
-import { route, PageId, getPageId } from "../io/pageId";
+import { route, splitPath, isNumber } from "../io/pageId";
 import { AppContext } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
+
+/*
+  This defines the App's routes
+  and the context (like global data) which is available to any chld elements which it creates.
+*/
 
 const App: React.FunctionComponent = () => {
   // https://fettblog.eu/typescript-react/context/ and
@@ -62,7 +66,7 @@ interface UseGetDataPropsT<T> {
   getData: () => Promise<T>,
   showData: (data: T) => Contents
 }
-function useGetDataT<T>(props: UseGetDataPropsT<T>): React.ReactElement {
+function useGetSetData<T>(props: UseGetDataPropsT<T>): React.ReactElement {
 
   // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
   // also https://www.carlrippon.com/typed-usestate-with-typescript/
@@ -78,14 +82,26 @@ function useGetDataT<T>(props: UseGetDataPropsT<T>): React.ReactElement {
 
   const contents: Contents = (data)
     ? props.showData(data) // render the data
-    : []; // else no data yet to render
+    : loadingContents; // else no data yet to render
 
-  return renderContentOne({ title: "Site Map", contents });
+  return renderColumn({ title: props.title, contents });
 }
+
+/*
+  These are page definitions, which have a similar basic structure:
+
+  - Invoked as a route from AppRoutes
+  - Delegate to useGetSetData
+  - Customize using a function defined in Page
+
+  To support different kinds of rendering, e.g. Image which requires a tray on the right,
+  it's convenient to make a hard-coded call to renderColumn in useGetSetData.
+  but for Contents to be flexible/expressive to lat the Page defined complex content to be rendered.
+*/
 
 export const SiteMap: React.FunctionComponent = () => {
 
-  return useGetDataT<I.SiteMap>({
+  return useGetSetData<I.SiteMap>({
     title: "Site Map",
     getData: () => IO.getSiteMap(),
     showData: Page.SiteMap
@@ -112,17 +128,12 @@ export const Users: React.FunctionComponent = () => {
 
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const pathname = props.location.pathname;
-  const pageId: PageId | undefined = getPageId(pathname);
-  if (!pageId) {
+  const split = splitPath(pathname, "User");
+  const first = split[0];
+  if (!isNumber(first)) {
     return NoMatch(props);
   }
-  if (!pageId.id) {
-    return NoMatch(props);
-  }
-  if (Array.isArray(pageId.id)) {
-    return NoMatch(props);
-  }
-  const userId: number = pageId.id.id;
+  const userId: number = first;
   return (
     <React.Fragment>
       <h1>Users</h1>

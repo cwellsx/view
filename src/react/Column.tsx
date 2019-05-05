@@ -14,7 +14,13 @@ export interface Content {
   key: string;
 }
 
-export type Contents = ReadonlyArray<Content> | React.ReactElement;
+type MainContent = ReadonlyArray<Content> | React.ReactElement | string;
+
+export interface Contents {
+  main: MainContent
+};
+
+export const loadingContents = { main: "Loading..." };
 
 interface Column {
   title: string;
@@ -25,19 +31,23 @@ function setTitle(title: string): void {
   document.title = `${title} - ${config.appname}`;
 }
 
-export const renderContentOne = (column: Column): React.ReactElement => {
-  setTitle(column.title);
-  const content = (Array.isArray(column.contents))
+function renderMain(main: MainContent) {
+  return (Array.isArray(main))
     ?
-    column.contents.map((x) =>
+    main.map((x) =>
       <div className="element" key={x.key}>
         {x.element}
       </div>
     )
     :
     <div className="element">
-      {column.contents}
+      {main}
     </div>;
+}
+
+export const renderColumn = (column: Column): React.ReactElement => {
+  setTitle(column.title);
+  const content = renderMain(column.contents.main);
   return (
     <div className="column">
       <div className="header">
