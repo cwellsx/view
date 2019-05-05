@@ -26,7 +26,6 @@ function mockData(pageId: PageId): object | undefined {
 
 function mock(pageId: PageId): Promise<SimpleResponse> {
   return new Promise<SimpleResponse>((resolve, reject) => {
-    const delay = 25;
     setTimeout(() => {
       if (config.loginfails) {
         // simulate login failure
@@ -58,7 +57,7 @@ function mock(pageId: PageId): Promise<SimpleResponse> {
         json: () => jsonPromise
       };
       resolve(response);
-    }, delay);
+    }, config.mockdelay);
   });
 }
 

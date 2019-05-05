@@ -24,6 +24,7 @@ const imageLayers: I.ImageLayers = require("../mock-data/layers.json");
 
 export const image: I.Image = {
   summary: imageSummary,
-  src: imageSrc,
-  layers: imageLayers
+  image: { src: imageSrc, height: 5355, width: 4606 },
+  layers: imageLayers,
+  layersWidth: "14em"
 }

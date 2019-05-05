@@ -2,5 +2,6 @@ export const config = {
   serverless: true,
   loginfails: false,
   autologin: true,
-  appname: "Prototype"
+  appname: "Prototype",
+  mockdelay: 25
 };

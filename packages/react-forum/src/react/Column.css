@@ -1,39 +1,66 @@
-.column {
+/* all columns are contained in this parent */
+
+.all-columns {
+  display: flex;
+  position: relative;
+}
+
+/* text columns are narrow, have separate header and content, and content may be a list of elements */
+
+.column-text {
   max-width: 751px;
   margin: 0 auto;
   border-left: 1px solid rgb(214, 217, 220);
 }
 
-.column .header {
+.column-text .header {
   padding: 1.5rem 0 0 1.5rem;
   margin-bottom: 1rem;
 }
 
-.column .header > * {
+.column-text .header > * {
   margin-top: 0;
 }
 
-.column .content {
+.column-text .content {
   border-top: 1px solid rgb(214, 217, 220);
 }
 
-.column .content .element {
+.column-text .content .element {
   border-bottom: 1px solid rgb(239, 240, 241);
   padding: 0.75rem 0.5rem
 }
 
 /* wide columns e.g. Images */
 
-.column.wide {
-  max-width: 1000px;
+.column-wide {
+  max-width: 100%;
+  position: relative;
 }
 
-.column.wide .header {
-  padding: 0.5rem 0 0 0.5rem;
-  margin-bottom: 0.5rem;
+/* right column */
+
+.column-right {
+  padding: 2em 0.5em 0.5em 0.5em;
+  flex: none;
+  position: relative;
 }
 
-.column.wide .header h1 {
-  font-size: 1.25rem;
-  font-weight: bold;
+.column-right-button,
+.column-close-button {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+}
+
+.column-close-button {
+  line-height: 1em;
+  border: none;
+  background-color: transparent;
+  padding: 0.5em;
+}
+
+.column-close-button:hover {
+  background-color: rgba(159, 166, 173, 0.5);
+  border: 1px solid rgb(159, 166, 173);
 }

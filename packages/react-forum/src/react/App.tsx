@@ -71,12 +71,12 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
   https://reactjs.org/docs/hooks-custom.html
 */
 
-interface UseGetDataPropsT<T> {
+interface UseGetSetDataProps<T> {
   title: string,
   getData: () => Promise<T>,
   showData: (data: T) => Contents
 }
-function useGetSetData<T>(props: UseGetDataPropsT<T>): React.ReactElement {
+function useGetSetData<T>(props: UseGetSetDataProps<T>): React.ReactElement {
 
   // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
   // also https://www.carlrippon.com/typed-usestate-with-typescript/
@@ -126,6 +126,9 @@ export const Image: React.FunctionComponent<RouteComponentProps> = (props: Route
   }
   return ImageId(imageId);
 }
+
+// TODO
+// https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
 
 export const ImageId: React.FunctionComponent<number> = (imageId: number) => {
 
