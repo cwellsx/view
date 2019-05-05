@@ -1,0 +1,23 @@
+ul.image-layers, ul.image-layers ul {
+  list-style-type: none;
+  padding-left: 1.5em;
+}
+
+ul.image-layers {
+  padding-left: 0;
+  margin: 0;
+}
+
+ul.image-layers > li,
+ul.image-layers li.parent,
+ul.image-layers li.parent > ul > li:first-child {
+  margin-top: 0.5em;
+}
+
+ul.image-layers li.parent > label {
+  font-weight: bold;
+}
+
+ul.image-layers > li:first-child {
+  margin-top: 0;
+}

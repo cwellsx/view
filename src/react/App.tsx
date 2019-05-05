@@ -7,7 +7,7 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import { route, splitPath, isNumber } from "../io/pageId";
+import { route, splitPath, isNumber, PageType } from "../io/pageId";
 import { AppContext } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
@@ -47,12 +47,22 @@ const AppRoutes: React.FunctionComponent = () => {
         <ReactRouter.Route exact path={route.discussions} component={Discussions} />
         <ReactRouter.Route exact path={route.users} component={Users} />
         <ReactRouter.Route path={route.users} component={User} />
+        <ReactRouter.Route path={route.images} component={Image} />
         <ReactRouter.Route component={NoMatch} />
       </ReactRouter.Switch>
     </React.Fragment>
   );
 }
+
+
 type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
+
+function getId(props: RouteComponentProps, pageType: PageType): number | undefined {
+  const pathname = props.location.pathname;
+  const split = splitPath(pathname, pageType);
+  const first = split[0];
+  return (!isNumber(first)) ? undefined : first;
+}
 
 /*
   This is a "high-order component", which separates "getting data" from "presenting data".
@@ -108,6 +118,24 @@ export const SiteMap: React.FunctionComponent = () => {
   });
 }
 
+export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+
+  const imageId: number | undefined = getId(props, "Image");
+  if (!imageId) {
+    return NoMatch(props);
+  }
+  return ImageId(imageId);
+}
+
+export const ImageId: React.FunctionComponent<number> = (imageId: number) => {
+
+  return useGetSetData<I.Image>({
+    title: "Image",
+    getData: () => IO.getImage(imageId),
+    showData: Page.Image
+  });
+}
+
 export const Discussions: React.FunctionComponent = () => {
   return (
     <React.Fragment>
@@ -127,13 +155,10 @@ export const Users: React.FunctionComponent = () => {
 }
 
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const pathname = props.location.pathname;
-  const split = splitPath(pathname, "User");
-  const first = split[0];
-  if (!isNumber(first)) {
+  const userId: number | undefined = getId(props, "User");
+  if (!userId) {
     return NoMatch(props);
   }
-  const userId: number = first;
   return (
     <React.Fragment>
       <h1>Users</h1>

@@ -62,6 +62,10 @@ export function isNumber(subpath: string | number): subpath is number {
   return (typeof subpath === "number");
 }
 
+export function postPageId(pageType: PageType, id: number): PageId {
+  return { pageType, id: { id, name: "unknown" }};
+}
+
 /*
 export function getPageId(pathname: string): PageId | undefined {
   const found = pageTypeUrls.find((pair) => pathname.startsWith(`/${pair[1]}`));
@@ -97,4 +101,5 @@ export const route = {
   siteMap: getPageUrl({ pageType: "SiteMap" }),
   discussions: getPageUrl({ pageType: "Discussion" }),
   users: getPageUrl({ pageType: "User" }),
+  images: getPageUrl({ pageType: "Image" }),
 }

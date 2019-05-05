@@ -1,7 +1,7 @@
 import * as I from "../data";
 import * as Post from "./post";
 import * as Mock from "./mock";
-import { PageId, getPageUrl } from "./pageId";
+import { PageId, getPageUrl, postPageId } from "./pageId";
 import { config } from "../config"
 
 // this declares a subset of the fields we use from the DOM Response interface
@@ -17,6 +17,9 @@ function mockData(pageId: PageId): object | undefined {
   }
   if (pageId.pageType === "Login") {
     return Mock.loginUser;
+  }
+  if (pageId.pageType === "Image") {
+    return Mock.image;
   }
   return undefined;
 }
@@ -94,6 +97,10 @@ function getT<T>(pageId: PageId, body?: object): Promise<T> {
 
 export async function getSiteMap(): Promise<I.SiteMap> {
   return getT<I.SiteMap>({ pageType: "SiteMap" });
+}
+
+export async function getImage(id: number): Promise<I.Image> {
+  return getT<I.Image>(postPageId("Image", id));
 }
 
 export async function login(data: Post.Login): Promise<I.UserSummary> {
