@@ -1,3 +1,5 @@
+/* image layers */
+
 ul.image-layers, ul.image-layers ul {
   list-style-type: none;
   padding-left: 1.5em;
@@ -20,4 +22,14 @@ ul.image-layers li.parent > label {
 
 ul.image-layers > li:first-child {
   margin-top: 0;
+}
+
+ul.image-layers input {
+  margin-right: 0.5em;
+}
+
+/* image images */
+
+div.image-images > img {
+  max-width: 100%;
 }
