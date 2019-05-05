@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderContentOne } from './Column';
+import { renderColumn, Contents } from './Column';
 import * as I from "../data";
 import * as IO from "../io";
 import { ErrorMessage } from "./ErrorMessage";
@@ -22,7 +22,7 @@ export const Login: React.FunctionComponent = () => {
     event.preventDefault();
   };
 
-  const contents = (
+  const main = (
     <React.Fragment>
       <p>This will be a login page, with user name and password.</p>
       <p>For this prototype, just press the button to simulate a login.</p>
@@ -42,6 +42,7 @@ export const Login: React.FunctionComponent = () => {
       <p>This is a prototype of the UI, without a server: so any data you enter isn't permanently stored anywhere.</p>
     </React.Fragment>
   );
-  return renderContentOne({ title: "Login", contents });
+  const contents: Contents = { main };
+  return renderColumn({ title: "Login", contents });
 }
 

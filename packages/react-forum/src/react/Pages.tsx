@@ -1,6 +1,6 @@
 import React from 'react';
 import * as I from "../data";
-import { renderContentOne, Content, Contents } from './Column';
+import { Content, Contents } from './Column';
 import * as Summaries from "./Summaries";
 
 /*
@@ -30,5 +30,5 @@ export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap) => {
   // render the images
   data.images.forEach(x => contents.push(Summaries.getImageSummary(x)));
 
-  return contents;
+  return { main: contents };
 }
