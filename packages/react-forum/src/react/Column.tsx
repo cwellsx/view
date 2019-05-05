@@ -17,7 +17,8 @@ export interface Content {
 type MainContent = ReadonlyArray<Content> | React.ReactElement | string;
 
 export interface Contents {
-  main: MainContent
+  main: MainContent,
+  wide?: boolean
 };
 
 export const loadingContents = { main: "Loading..." };
@@ -48,8 +49,9 @@ function renderMain(main: MainContent) {
 export const renderColumn = (column: Column): React.ReactElement => {
   setTitle(column.title);
   const content = renderMain(column.contents.main);
+  const className = (column.contents.wide) ? "column wide" : "column";
   return (
-    <div className="column">
+    <div className={className}>
       <div className="header">
         <h1>{column.title}</h1>
       </div>

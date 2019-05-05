@@ -49,7 +49,7 @@ function handleLayerChange(event: React.ChangeEvent<HTMLInputElement>) {
 
 function renderNode(node: I.LayerNode, alias: string): React.ReactElement {
   // https://stackoverflow.com/questions/26615779/react-checkbox-not-sending-onchange
-  return <label><input type="checkbox" defaultChecked={true} onChange={handleLayerChange} name={alias} /> {node.name}</label>
+  return <label><input type="checkbox" defaultChecked={true} onChange={handleLayerChange} name={alias} />{node.name}</label>
 }
 
 function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement {
@@ -72,6 +72,11 @@ function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement 
 }
 
 export const Image: Present<I.Image> = (data: I.Image) => {
+  const images =
+    <div className="image-images">
+      <img src={data.src} />
+    </div>;
   const layers = renderLayers(data.layers, 0);
+  return { main: images, wide: true };
   return { main: layers };
 }

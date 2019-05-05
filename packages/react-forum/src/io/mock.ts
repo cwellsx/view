@@ -1,4 +1,5 @@
 import * as I from "../data";
+import imageSrc from "../mock-data/Hereford-Karte.jpg"
 
 const imageSummary: I.ImageSummary = {
   idName: { id: 1, name: "Mappa Mundi" },
@@ -23,6 +24,6 @@ const imageLayers: I.ImageLayers = require("../mock-data/layers.json");
 
 export const image: I.Image = {
   summary: imageSummary,
-  src: "/mock-data/Hereford-Karte.jpg",
+  src: imageSrc,
   layers: imageLayers
 }
