@@ -23,3 +23,15 @@ form {
 .error {
   color: red;
 }
+
+img {
+  height: auto;
+}
+
+button {
+  border-radius: 3px;
+}
+
+label, button {
+  cursor: pointer;
+}

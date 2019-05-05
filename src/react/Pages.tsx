@@ -74,9 +74,12 @@ function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement 
 export const Image: Present<I.Image> = (data: I.Image) => {
   const images =
     <div className="image-images">
-      <img src={data.src} />
+      <img src={data.image.src} height={data.image.height} width={data.image.width} />
     </div>;
   const layers = renderLayers(data.layers, 0);
-  return { main: images, wide: true };
-  return { main: layers };
+  return {
+    main: images,
+    wide: true,
+    right: { element: layers, width: data.layersWidth, showButtonLabel: "Show Layers", visible: true }
+  };
 }
