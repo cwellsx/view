@@ -25,6 +25,19 @@ export const loginUser: I.UserSummary = {
   location: "Normandy"
 }
 
+const users: I.UserSummary[] = [
+  loginUser,
+  { gravatarHash: "25bfdecf63c3495489123fe9000833e1", idName: { id: 2, name: "JanineD" }, location: "Paris" },
+  { gravatarHash: "35bfdecf63c3495489123fe9000833e1", idName: { id: 3, name: "Andy" }, location: "London" },
+  { gravatarHash: "45bfdecf63c3495489123fe9000833e1", idName: { id: 4, name: "D. Smith" }, location: "Bristol" },
+  { gravatarHash: "55bfdecf63c3495489123fe9000833e1", idName: { id: 5, name: "Annette" }, location: "Boston" },
+  { gravatarHash: "65bfdecf63c3495489123fe9000833e1", idName: { id: 6, name: "HH" }, location: "Edinburgh" },
+  { gravatarHash: "75bfdecf63c3495489123fe9000833e1", idName: { id: 7, name: "Wolfgang" }, location: "Berlin" },
+  { gravatarHash: "85bfdecf63c3495489123fe9000833e1", idName: { id: 8, name: "王秀英" } },
+  { gravatarHash: "95bfdecf63c3495489123fe9000833e1", idName: { id: 9, name: "李敏" } },
+  { gravatarHash: "10bfdecf63c3495489123fe9000833e1", idName: { id: 10, name: "李娜" } },
+];
+
 /*
   Images
 */
@@ -52,7 +65,7 @@ const image: I.Image = {
 */
 
 const featureNames: string[] = require("../mock-data/features.json");
-const featureSummaries: I.FeatureSummary[] = featureNames.map((value, index) => {
+export const featureSummaries: I.FeatureSummary[] = featureNames.map((value, index) => {
   return { idName: { id: index, name: value } };
 });
 
