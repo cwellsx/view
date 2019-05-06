@@ -31,6 +31,31 @@ export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap) => {
   // render the images
   data.images.forEach(x => contents.push(Summaries.getImageSummary(x)));
 
+  const features = (
+    <React.Fragment>
+      <h2>Features</h2>
+      <div className="features">
+        {data.features.map(feature => {
+          const content = Summaries.getFeatureSummary(feature);
+          /*
+            either we need to add whitespace between elements ...
+            - https://github.com/facebook/react/issues/1643
+            - https://reactjs.org/blog/2014/02/20/react-v0.9.html#jsx-whitespace
+            ... or to add whitespace between spans ...
+            - https://github.com/facebook/react/issues/1643#issuecomment-321439506
+          */
+          return (
+            <span key={content.key}>
+              {content.element}
+            </span>
+          );
+        })}
+      </div>
+    </React.Fragment>
+  );
+
+  contents.push({ element: features, key: "Feature" });
+
   return { main: contents };
 }
 

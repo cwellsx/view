@@ -26,3 +26,12 @@ export function getUserSmallGravatar(summary: I.UserSummary, title: boolean = tr
   const src = `https://www.gravatar.com/avatar/${summary.gravatarHash}?s=48&d=identicon&r=PG`;
   return <NavLink to={href} title={title ? summary.idName.name : undefined}><img src={src} className="gravatar-small" alt={summary.idName.name} width="24" height="24" /></NavLink>;
 }
+
+const nbsp = "\u00A0";
+
+export function getFeatureSummary(summary: I.FeatureSummary): Content {
+  const href = getPageUrl({ pageType: "Feature", id: summary.idName });
+  const label = summary.idName.name.replace(" ", nbsp)
+  const element = <NavLink to={href}>{label}</NavLink>;
+  return { element, key: href };
+}

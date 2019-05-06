@@ -1,12 +1,6 @@
 import { IdName } from "../data/Id";
 
-export type PageType = "SiteMap" | "Login" | "Discussion" | "User" | "Image";
-
-export interface PageId {
-  pageType: PageType;
-  id?: IdName[] | IdName;
-  other?: string[];
-}
+export type PageType = "SiteMap" | "Login" | "Discussion" | "User" | "Image" | "Feature";
 
 const pageTypeUrls: Array<[PageType, string]> = [
   ["SiteMap", "sitemap"],
@@ -14,7 +8,14 @@ const pageTypeUrls: Array<[PageType, string]> = [
   ["Discussion", "discussions"],
   ["User", "users"],
   ["Image", "images"],
+  ["Feature", "features"],
 ];
+
+export interface PageId {
+  pageType: PageType;
+  id?: IdName[] | IdName;
+  other?: string[];
+}
 
 // from https://github.com/valeriangalliat/markdown-it-anchor/blob/master/index.js
 const slugify = (s: string) => encodeURIComponent(String(s).trim().toLowerCase().replace(/\s+/g, '-'))

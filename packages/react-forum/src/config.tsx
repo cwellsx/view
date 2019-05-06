@@ -3,5 +3,6 @@ export const config = {
   loginfails: false,
   autologin: true,
   appname: "Prototype",
-  mockdelay: 25
+  mockdelay: 25,
+  exerptlength: 200
 };
