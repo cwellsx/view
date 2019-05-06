@@ -35,3 +35,9 @@ button {
 label, button {
   cursor: pointer;
 }
+
+a {
+  color: #4c8dbd;
+  text-decoration: none;
+  cursor: pointer;
+}

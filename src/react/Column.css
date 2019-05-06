@@ -8,7 +8,8 @@
 /* text columns are narrow, have separate header and content, and content may be a list of elements */
 
 .column-text {
-  max-width: 751px;
+  max-width: 50em;
+  font-size: 15px;
   margin: 0 auto;
   border-left: 1px solid rgb(214, 217, 220);
 }
@@ -29,6 +30,11 @@
 .column-text .content .element {
   border-bottom: 1px solid rgb(239, 240, 241);
   padding: 0.75rem 0.5rem
+}
+
+.column-text.grid {
+  max-width: 71.5em;
+  width: 100%;
 }
 
 /* wide columns e.g. Images */

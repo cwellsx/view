@@ -26,7 +26,7 @@ interface RightContent {
 
 export interface Contents {
   main: MainContent,
-  wide?: boolean
+  width?: "Full" | "Grid"
   right?: RightContent
 };
 
@@ -115,31 +115,40 @@ function renderRightColumn(right?: RightContent) {
 function renderContents(contents: Contents, title: string) {
   const mainColumn = renderMainColumn(contents.main);
   const { rightColumn, rightButton } = renderRightColumn(contents.right);
-  if (!contents.wide) {
-    return (
-      <React.Fragment>
-        <div className="column-text">
-          {rightButton}
-          <div className="header">
-            <h1>{title}</h1>
+
+  const className = !contents.width
+    ? "column-text"
+    : (contents.width === "Grid")
+      ? "column-text grid"
+      : "column-wide";
+
+  switch (className) {
+    case "column-text":
+    case "column-text grid":
+      return (
+        <React.Fragment>
+          <div className={className}>
+            {rightButton}
+            <div className="header">
+              <h1>{title}</h1>
+            </div>
+            <div className="content">
+              {mainColumn}
+            </div>
           </div>
-          <div className="content">
+          {rightColumn}
+        </React.Fragment>
+      );
+    case "column-wide":
+      return (
+        <React.Fragment>
+          <div className="column-wide">
+            {rightButton}
             {mainColumn}
           </div>
-        </div>
-        {rightColumn}
-      </React.Fragment>
-    );
-  } else {
-    return (
-      <React.Fragment>
-        <div className="column-wide">
-          {rightButton}
-          {mainColumn}
-        </div>
-        {rightColumn}
-      </React.Fragment>
-    );
+          {rightColumn}
+        </React.Fragment>
+      );
   }
 }
 

@@ -92,3 +92,7 @@ export async function getImage(id: number): Promise<I.Image> {
 export async function login(data: Post.Login): Promise<I.UserSummary> {
   return getT<I.UserSummary>({ pageType: "Login" }, data);
 }
+
+export async function getUsers(): Promise<I.UserSummaryEx[]> {
+  return getT<I.UserSummaryEx[]>({ pageType: "User" });
+}

@@ -67,8 +67,12 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
 /*
   This is a "high-order component", which separates "getting data" from "presenting data".
 
-  https://reactjs.org/docs/higher-order-components.html
-  https://reactjs.org/docs/hooks-custom.html
+  - https://reactjs.org/docs/higher-order-components.html
+  - https://reactjs.org/docs/hooks-custom.html
+
+  To support different kinds of rendering (e.g. Image which requires an additional tray on the right),
+  it's convenient to have useGetSetData make a single hard-coded call to renderColumn in any case, but
+  to let the Contents to be flexible/expressive so the Page can define complex content to be rendered.
 */
 
 interface UseGetSetDataProps<T> {
@@ -76,7 +80,7 @@ interface UseGetSetDataProps<T> {
   getData: () => Promise<T>,
   showData: (data: T) => Contents
 }
-function useGetSetData<T>(props: UseGetSetDataProps<T>): React.ReactElement {
+function useGetSetData<T>(page: UseGetSetDataProps<T>): React.ReactElement {
 
   // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
   // also https://www.carlrippon.com/typed-usestate-with-typescript/
@@ -84,17 +88,17 @@ function useGetSetData<T>(props: UseGetSetDataProps<T>): React.ReactElement {
   const [data, setData] = React.useState<T | undefined>(undefined);
 
   React.useEffect(() => {
-    props.getData()
+    page.getData()
       .then((fetched) => setData(fetched));
   }, []); // [] implies the dependencies are constant i.e. don't re-run this effect
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
   const contents: Contents = (data)
-    ? props.showData(data) // render the data
+    ? page.showData(data) // render the data
     : loadingContents; // else no data yet to render
 
-  return renderColumn({ title: props.title, contents });
+  return renderColumn({ title: page.title, contents });
 }
 
 /*
@@ -103,10 +107,6 @@ function useGetSetData<T>(props: UseGetSetDataProps<T>): React.ReactElement {
   - Invoked as a route from AppRoutes
   - Delegate to useGetSetData
   - Customize using a function defined in Page
-
-  To support different kinds of rendering, e.g. Image which requires a tray on the right,
-  it's convenient to make a hard-coded call to renderColumn in useGetSetData.
-  but for Contents to be flexible/expressive to lat the Page defined complex content to be rendered.
 */
 
 export const SiteMap: React.FunctionComponent = () => {
@@ -124,18 +124,27 @@ export const Image: React.FunctionComponent<RouteComponentProps> = (props: Route
   if (!imageId) {
     return NoMatch(props);
   }
-  return ImageId(imageId);
+
+  return <ImageId imageId={imageId} />;
 }
 
 // TODO
 // https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
-
-export const ImageId: React.FunctionComponent<number> = (imageId: number) => {
+interface ImageIdProps { imageId: number };
+export const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
 
   return useGetSetData<I.Image>({
     title: "Image",
-    getData: () => IO.getImage(imageId),
+    getData: () => IO.getImage(props.imageId),
     showData: Page.Image
+  });
+}
+
+export const Users: React.FunctionComponent = () => {
+  return useGetSetData<I.UserSummaryEx[]>({
+    title: "Users",
+    getData: () => IO.getUsers(),
+    showData: Page.Users
   });
 }
 
@@ -144,15 +153,6 @@ export const Discussions: React.FunctionComponent = () => {
     <React.Fragment>
       <h1>Discussions</h1>
       <p>This will display a list of discussions.</p>
-    </React.Fragment>
-  );
-}
-
-export const Users: React.FunctionComponent = () => {
-  return (
-    <React.Fragment>
-      <h1>Users</h1>
-      <p>This will display a list of users.</p>
     </React.Fragment>
   );
 }

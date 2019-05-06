@@ -15,16 +15,16 @@ export function getImageSummary(summary: I.ImageSummary): Content {
   return { element, key: href };
 }
 
-export function getUserName(idName: I.IdName): React.ReactElement {
-  const href = getPageUrl({ pageType: "User", id: idName });
-  return <NavLink to={href}>{idName.name}</NavLink>;
-}
-
-export function getUserSmallGravatar(summary: I.UserSummary, title: boolean = true): React.ReactElement {
+export function getUserSummary(summary: I.UserSummary, option: { title: boolean, small: boolean })
+  : { userName: React.ReactElement, gravatar: React.ReactElement, key: string } {
   const href = getPageUrl({ pageType: "User", id: summary.idName });
+  const userName = <NavLink to={href}>{summary.idName.name}</NavLink>;
+  const size = (option.small) ? 24 : 48;
   // https://en.gravatar.com/site/implement/images/
-  const src = `https://www.gravatar.com/avatar/${summary.gravatarHash}?s=48&d=identicon&r=PG`;
-  return <NavLink to={href} title={title ? summary.idName.name : undefined}><img src={src} className="gravatar-small" alt={summary.idName.name} width="24" height="24" /></NavLink>;
+  const src = `https://www.gravatar.com/avatar/${summary.gravatarHash}?s=${size}&d=identicon&r=PG`;
+  const img = <img src={src} alt={summary.idName.name} width={size} height={size} />;
+  const gravatar = <NavLink to={href} title={option.title ? summary.idName.name : undefined}>{img}</NavLink>;
+  return { userName, gravatar, key: href };
 }
 
 const nbsp = "\u00A0";

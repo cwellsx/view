@@ -1,8 +1,9 @@
 import * as I from "../data";
 import imageSrc from "../mock-data/Hereford-Karte.jpg"
-import { PageId } from "./pageId";
+import { PageId, getPageUrl } from "./pageId";
 
 export function mockServer(pageId: PageId): object | undefined {
+  console.log(`mockServer getting ${getPageUrl(pageId)}`);
   if (pageId.pageType === "SiteMap") {
     return siteMap;
   }
@@ -11,6 +12,9 @@ export function mockServer(pageId: PageId): object | undefined {
   }
   if (pageId.pageType === "Image") {
     return image;
+  }
+  if (pageId.pageType === "User") {
+    return users;
   }
   return undefined;
 }
@@ -36,7 +40,7 @@ const users: I.UserSummary[] = [
   { gravatarHash: "85bfdecf63c3495489123fe9000833e1", idName: { id: 8, name: "王秀英" } },
   { gravatarHash: "95bfdecf63c3495489123fe9000833e1", idName: { id: 9, name: "李敏" } },
   { gravatarHash: "10bfdecf63c3495489123fe9000833e1", idName: { id: 10, name: "李娜" } },
-];
+].sort((x,y) => x.idName.name.localeCompare(y.idName.name));
 
 /*
   Images
