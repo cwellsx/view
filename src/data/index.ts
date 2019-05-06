@@ -1,6 +1,10 @@
 export * from "./Id";
+// export * from "./Discussion";
+// export * from "./DiscussionSummary";
+export * from "./FeatureSummary";
 export * from "./ImageSummary";
 export * from "./ImageLayers";
 export * from "./Image";
 export * from "./SiteMap";
+// export * from "./TopicSummary";
 export * from "./UserSummary";

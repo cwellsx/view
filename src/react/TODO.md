@@ -1,2 +1,5 @@
 - How big should the left margin be, underneath the page title, on a page of lists e.g. the Site Map?
 - Also rethink the vertical whitespace in those items
+- Make `getExerpt` markdown-aware, e.g. remove images and ignore the length of hyperlinks
+- Improve the style of all buttons e.g. on the Image page to show/hide the Layers column
+- Improve the style of the tags which identify a "feature"

@@ -1,6 +1,6 @@
 import * as I from "../data";
 import * as Post from "./post";
-import * as Mock from "./mock";
+import { mockServer } from "./mock";
 import { PageId, getPageUrl, postPageId } from "./pageId";
 import { config } from "../config"
 
@@ -9,19 +9,6 @@ interface SimpleResponse {
   readonly ok: boolean;
   readonly statusText: string;
   json(): Promise<any>;
-}
-
-function mockData(pageId: PageId): object | undefined {
-  if (pageId.pageType === "SiteMap") {
-    return Mock.siteMap;
-  }
-  if (pageId.pageType === "Login") {
-    return Mock.loginUser;
-  }
-  if (pageId.pageType === "Image") {
-    return Mock.image;
-  }
-  return undefined;
 }
 
 function mock(pageId: PageId): Promise<SimpleResponse> {
@@ -41,7 +28,7 @@ function mock(pageId: PageId): Promise<SimpleResponse> {
         resolve(failure);
         return;
       }
-      const json = mockData(pageId);
+      const json = mockServer(pageId);
       if (!json) {
         // from inside setTimeout we must reject not throw
         // https://stackoverflow.com/questions/33445415/javascript-promises-reject-vs-throw

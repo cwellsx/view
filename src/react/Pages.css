@@ -33,3 +33,9 @@ ul.image-layers input {
 div.image-images > img {
   max-width: 100%;
 }
+
+/* features */
+
+div.features > span::before {
+  content: ' ';
+}
