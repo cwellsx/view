@@ -5,14 +5,17 @@ import * as Summaries from "./Summaries";
 import './Pages.css';
 
 /*
-  App.tsx defines "container" components, which manage routes and state.
-
-  This Page.tsx defines "presentational" components.
+  While `App.tsx` defines "container" components, which manage routes and state,
+  conversely this `Page.tsx` defines "presentational" components.
 */
 
 export type Present<T> = (data: T) => Contents;
 
-export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap) => {
+/*
+  SiteMap
+*/
+
+export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap): Contents => {
   const contents: Content[] = [];
 
   /*
@@ -59,6 +62,10 @@ export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap) => {
   return { main: contents };
 }
 
+/*
+  Image
+*/
+
 function getLayerKey(layer: I.LayerNode): string {
   return (layer.alias)
     ? layer.alias
@@ -96,7 +103,7 @@ function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement 
   )
 }
 
-export const Image: Present<I.Image> = (data: I.Image) => {
+export const Image: Present<I.Image> = (data: I.Image): Contents => {
   const images =
     <div className="image-images">
       <img src={data.image.src} height={data.image.height} width={data.image.width} />
@@ -104,7 +111,34 @@ export const Image: Present<I.Image> = (data: I.Image) => {
   const layers = renderLayers(data.layers, 0);
   return {
     main: images,
-    wide: true,
+    width: "Full",
     right: { element: layers, width: data.layersWidth, showButtonLabel: "Show Layers", visible: true }
+  };
+}
+
+/*
+  Users
+*/
+
+export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Contents => {
+  const users: React.ReactElement =
+    <div className="all-users">
+      {data.map(user => {
+        const { userName, gravatar, key } = Summaries.getUserSummary(user, { title: false, small: false });
+        const location = user.location ? <span className="user-location">{user.location}</span> : undefined;
+        return (
+          <div className="user-info" key={key}>
+            {gravatar}
+            <div className="details">
+              {userName}
+              {location}
+            </div>
+          </div>
+        );
+      })}
+    </div>;
+  return {
+    main: users,
+    width: "Grid"
   };
 }

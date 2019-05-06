@@ -39,3 +39,39 @@ div.image-images > img {
 div.features > span::before {
   content: ' ';
 }
+
+/* users */
+
+div.all-users {
+  flex-wrap: wrap;
+  display: grid;
+  grid-gap: 8px;
+  grid-template-columns: repeat( auto-fill, minmax(250px, 1fr) );
+}
+
+div.all-users > .user-info {
+  /*min-width: 250px;*/
+  flex: 1 1 25%;
+  width: auto;
+}
+
+.user-info:hover {
+  background-color: #f4f8fb;
+}
+
+.user-info > a,
+.user-info > .details {
+  float: left;
+}
+
+.user-info > .details {
+  margin-left: 9px;
+  font-size: 14px;
+  color: rgb(76, 141, 189);
+}
+
+.user-info > .details > .user-location {
+  display: block;
+  font-size: 12px;
+  color: rgb(106, 115, 124);;
+}
