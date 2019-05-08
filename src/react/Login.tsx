@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderColumn, Contents } from './Column';
+import { renderContents, Contents } from './Column';
 import * as I from "../data";
 import * as IO from "../io";
 import { ErrorMessage } from "./ErrorMessage";
@@ -43,6 +43,6 @@ export const Login: React.FunctionComponent = () => {
     </React.Fragment>
   );
   const contents: Contents = { main };
-  return renderColumn({ title: "Login", contents });
+  return renderContents({ title: "Login", contents });
 }
 

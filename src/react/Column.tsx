@@ -112,7 +112,7 @@ function renderRightColumn(right?: RightContent) {
   return { rightColumn, rightButton };
 }
 
-function renderContents(contents: Contents, title: string) {
+function renderColumns(contents: Contents, title: string) {
   const mainColumn = renderMainColumn(contents.main);
   const { rightColumn, rightButton } = renderRightColumn(contents.right);
 
@@ -152,9 +152,9 @@ function renderContents(contents: Contents, title: string) {
   }
 }
 
-export const renderColumn = (column: Column): React.ReactElement => {
+export const renderContents = (column: Column): React.ReactElement => {
   setTitle(column.title);
-  const contents = renderContents(column.contents, column.title);
+  const contents = renderColumns(column.contents, column.title);
   return (
     <div className="all-columns">
       {contents}
