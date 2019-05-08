@@ -14,7 +14,17 @@ export function mockServer(pageId: PageId): object | undefined {
     return image;
   }
   if (pageId.pageType === "User") {
-    return users;
+    if (!pageId.id) {
+      return users;
+    } else {
+      const requested = pageId.id;
+      if (Array.isArray(requested)) {
+        // should return 404
+        return undefined;
+      } else {
+        return users.find(x => x.idName.id === requested.id);
+      }
+    }
   }
   return undefined;
 }

@@ -96,3 +96,7 @@ export async function login(data: Post.Login): Promise<I.UserSummary> {
 export async function getUsers(): Promise<I.UserSummaryEx[]> {
   return getT<I.UserSummaryEx[]>({ pageType: "User" });
 }
+
+export async function getUser(id: number): Promise<I.UserSummary> {
+  return getT<I.UserSummary>(postPageId("User", id));
+}

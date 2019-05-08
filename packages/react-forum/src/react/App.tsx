@@ -65,7 +65,7 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
 }
 
 /*
-  This is a "high-order component", which separates "getting data" from "presenting data".
+  This is a "high-order component", a "custom hook" -- it separates "getting" the data from "presenting" the data.
 
   - https://reactjs.org/docs/higher-order-components.html
   - https://reactjs.org/docs/hooks-custom.html
@@ -148,24 +148,32 @@ export const Users: React.FunctionComponent = () => {
   });
 }
 
-export const Discussions: React.FunctionComponent = () => {
-  return (
-    <React.Fragment>
-      <h1>Discussions</h1>
-      <p>This will display a list of discussions.</p>
-    </React.Fragment>
-  );
-}
-
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const userId: number | undefined = getId(props, "User");
   if (!userId) {
     return NoMatch(props);
   }
+
+  return <UserId userId={userId} />;
+}
+
+// TODO
+// https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
+interface UserIdProps { userId: number };
+export const UserId: React.FunctionComponent<UserIdProps> = (props: UserIdProps) => {
+
+  return useGetSetData<I.UserSummary>({
+    title: "User",
+    getData: () => IO.getUser(props.userId),
+    showData: Page.User
+  });
+}
+
+export const Discussions: React.FunctionComponent = () => {
   return (
     <React.Fragment>
-      <h1>Users</h1>
-      <p>This will display one user -- the profile for user number {userId}.</p>
+      <h1>Discussions</h1>
+      <p>This will display a list of discussions.</p>
     </React.Fragment>
   );
 }

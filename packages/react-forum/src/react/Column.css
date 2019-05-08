@@ -12,6 +12,7 @@
   font-size: 15px;
   margin: 0 auto;
   border-left: 1px solid rgb(214, 217, 220);
+  width: 100%;
 }
 
 .column-text .header {
@@ -34,7 +35,6 @@
 
 .column-text.grid {
   max-width: 71.5em;
-  width: 100%;
 }
 
 /* wide columns e.g. Images */
