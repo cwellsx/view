@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ReactRouter from 'react-router-dom';
-import { renderColumn, Contents, loadingContents } from './Column';
+import { renderContents, Contents, loadingContents } from './Column';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
 import './App.css';
@@ -70,52 +70,74 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
   - https://reactjs.org/docs/higher-order-components.html
   - https://reactjs.org/docs/hooks-custom.html
 
-  To support different kinds of rendering (e.g. Image which requires an additional tray on the right),
-  it's convenient to have useGetSetData make a single hard-coded call to renderColumn in any case, but
-  to let the Contents to be flexible/expressive so the Page can define complex content to be rendered.
+  The sequence of events is:
+
+  1. Called for the first time
+  2. Calls hard-coded renderContents(title, loadingContents)
+  3. useEffect fires and:
+     - Call getData to fetch data from the server
+     - Call getContents to render the data into a Contents object
+     - Call renderContents again to show the calculated Contents object
+  
+  The renderContents method support different page layouts --
+  e.g. narrow text, full-screen images, a grid, and with optional extra columns.
+
+  To support this it's convenient to make a single hard-coded call to renderContents in any case,
+  but to declare the Contents interface type to be flexible/expressive,
+  so that the getContents (i.e. one of the Page functions) can define arbitrarily complex content.
+
+  - getContents defines the contents of the page
+  - renderContents defines the page's columns within which the content is rendered
 */
 
-interface UseGetSetDataProps<T> {
+function useGetContents<TData, TParam>(
   title: string,
-  getData: () => Promise<T>,
-  showData: (data: T) => Contents
-}
-function useGetSetData<T>(page: UseGetSetDataProps<T>): React.ReactElement {
+  getData: (x: TParam) => Promise<TData>,
+  getContents: (data: TData) => Contents,
+  param: TParam): React.ReactElement {
 
   // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
   // also https://www.carlrippon.com/typed-usestate-with-typescript/
 
-  const [data, setData] = React.useState<T | undefined>(undefined);
+  const [data, setData] = React.useState<TData | undefined>(undefined);
 
   React.useEffect(() => {
-    page.getData()
+    getData(param)
       .then((fetched) => setData(fetched));
-  }, []); // [] implies the dependencies are constant i.e. don't re-run this effect
+  }, [title, getData, getContents, param]);
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
   const contents: Contents = (data)
-    ? page.showData(data) // render the data
+    ? getContents(data) // render the data
     : loadingContents; // else no data yet to render
 
-  return renderColumn({ title: page.title, contents });
+  return renderContents({ title: title, contents });
 }
+
+// It's difficult to declare useGetShow with a variable number of parameters,
+// which must all be passed as the deps parameter of the useEffect function.
+// My solution here is that for a function like IO.getSiteMap whose parameter is void (i.e. none),
+// I declare the type of the generic parameter as undefined, and use a wrapper as below to discard it.
+const getSiteMap = (x: undefined) => IO.getSiteMap();
+const getUsers = (x: undefined) => IO.getUsers();
+
 
 /*
   These are page definitions, which have a similar basic structure:
 
   - Invoked as a route from AppRoutes
-  - Delegate to useGetSetData
-  - Customize using a function defined in Page
+  - Delegate to useGetContents
 */
 
 export const SiteMap: React.FunctionComponent = () => {
 
-  return useGetSetData<I.SiteMap>({
-    title: "Site Map",
-    getData: () => IO.getSiteMap(),
-    showData: Page.SiteMap
-  });
+  return useGetContents<I.SiteMap, undefined>(
+    "Site Map",
+    getSiteMap,
+    Page.SiteMap,
+    undefined
+  );
 }
 
 export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
@@ -125,27 +147,31 @@ export const Image: React.FunctionComponent<RouteComponentProps> = (props: Route
     return NoMatch(props);
   }
 
+  // see https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
+  // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />`
+  // instead of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
+  // So far as I can tell frm testing what really matters is the array of dependencies passed to useEffects.
   return <ImageId imageId={imageId} />;
 }
 
-// TODO
-// https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
 interface ImageIdProps { imageId: number };
 export const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
 
-  return useGetSetData<I.Image>({
-    title: "Image",
-    getData: () => IO.getImage(props.imageId),
-    showData: Page.Image
-  });
+  return useGetContents<I.Image, number>(
+    "Image",
+    IO.getImage,
+    Page.Image,
+    props.imageId
+  );
 }
 
 export const Users: React.FunctionComponent = () => {
-  return useGetSetData<I.UserSummaryEx[]>({
-    title: "Users",
-    getData: () => IO.getUsers(),
-    showData: Page.Users
-  });
+  return useGetContents<I.UserSummaryEx[], undefined>(
+    "Users",
+    getUsers,
+    Page.Users,
+    undefined
+  );
 }
 
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
@@ -157,16 +183,15 @@ export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteC
   return <UserId userId={userId} />;
 }
 
-// TODO
-// https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
 interface UserIdProps { userId: number };
 export const UserId: React.FunctionComponent<UserIdProps> = (props: UserIdProps) => {
 
-  return useGetSetData<I.UserSummary>({
-    title: "User",
-    getData: () => IO.getUser(props.userId),
-    showData: Page.User
-  });
+  return useGetContents<I.UserSummary, number>(
+    "User",
+    IO.getUser,
+    Page.User,
+    props.userId
+  );
 }
 
 export const Discussions: React.FunctionComponent = () => {
