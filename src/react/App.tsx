@@ -88,23 +88,22 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
 
   - getContents defines the contents of the page
   - renderContents defines the page's columns within which the content is rendered
+  
+  Fetching data is as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
+  also https://www.carlrippon.com/typed-usestate-with-typescript/
 */
 
-function useGetContents<TData, TParam>(
+function useGetContents<TData>(
   title: string,
-  getData: (x: TParam) => Promise<TData>,
-  getContents: (data: TData) => Contents,
-  param: TParam): React.ReactElement {
-
-  // fetch SiteMap data as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
-  // also https://www.carlrippon.com/typed-usestate-with-typescript/
+  getData: () => Promise<TData>,
+  getContents: (data: TData) => Contents): React.ReactElement {
 
   const [data, setData] = React.useState<TData | undefined>(undefined);
 
   React.useEffect(() => {
-    getData(param)
+    getData()
       .then((fetched) => setData(fetched));
-  }, [title, getData, getContents, param]);
+  }, [title, getData, getContents]);
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
@@ -115,14 +114,6 @@ function useGetContents<TData, TParam>(
   return renderContents({ title: title, contents });
 }
 
-// It's difficult to declare useGetShow with a variable number of parameters,
-// which must all be passed as the deps parameter of the useEffect function.
-// My solution here is that for a function like IO.getSiteMap whose parameter is void (i.e. none),
-// I declare the type of the generic parameter as undefined, and use a wrapper as below to discard it.
-const getSiteMap = (x: undefined) => IO.getSiteMap();
-const getUsers = (x: undefined) => IO.getUsers();
-
-
 /*
   These are page definitions, which have a similar basic structure:
 
@@ -132,11 +123,10 @@ const getUsers = (x: undefined) => IO.getUsers();
 
 export const SiteMap: React.FunctionComponent = () => {
 
-  return useGetContents<I.SiteMap, undefined>(
+  return useGetContents<I.SiteMap>(
     "Site Map",
-    getSiteMap,
-    Page.SiteMap,
-    undefined
+    IO.getSiteMap,
+    Page.SiteMap
   );
 }
 
@@ -157,20 +147,21 @@ export const Image: React.FunctionComponent<RouteComponentProps> = (props: Route
 interface ImageIdProps { imageId: number };
 export const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
 
-  return useGetContents<I.Image, number>(
+  // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
+  const getImage = React.useCallback(() => IO.getImage(props.imageId), [props.imageId]);
+
+  return useGetContents<I.Image>(
     "Image",
-    IO.getImage,
-    Page.Image,
-    props.imageId
+    getImage,
+    Page.Image
   );
 }
 
 export const Users: React.FunctionComponent = () => {
-  return useGetContents<I.UserSummaryEx[], undefined>(
+  return useGetContents<I.UserSummaryEx[]>(
     "Users",
-    getUsers,
-    Page.Users,
-    undefined
+    IO.getUsers,
+    Page.Users
   );
 }
 
@@ -186,11 +177,12 @@ export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteC
 interface UserIdProps { userId: number };
 export const UserId: React.FunctionComponent<UserIdProps> = (props: UserIdProps) => {
 
-  return useGetContents<I.UserSummary, number>(
+  const getUser = React.useCallback(() => IO.getUser(props.userId), [props.userId]);
+
+  return useGetContents<I.UserSummary>(
     "User",
-    IO.getUser,
-    Page.User,
-    props.userId
+    getUser,
+    Page.User
   );
 }
 
