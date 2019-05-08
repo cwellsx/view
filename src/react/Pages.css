@@ -55,6 +55,8 @@ div.all-users > .user-info {
   width: auto;
 }
 
+/* user-info is shown on the list of users and to identify the author of any message */
+
 .user-info:hover {
   background-color: #f4f8fb;
 }

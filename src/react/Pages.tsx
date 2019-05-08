@@ -124,7 +124,7 @@ export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Cont
   const users: React.ReactElement =
     <div className="all-users">
       {data.map(user => {
-        const { userName, gravatar, key } = Summaries.getUserSummary(user, { title: false, small: false });
+        const { userName, gravatar, key } = Summaries.getUserSummary(user, { title: false, size: "big" });
         const location = user.location ? <span className="user-location">{user.location}</span> : undefined;
         return (
           <div className="user-info" key={key}>
@@ -140,5 +140,17 @@ export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Cont
   return {
     main: users,
     width: "Grid"
+  };
+}
+
+/*
+  User
+*/
+
+export const User: Present<I.UserSummary> = (data: I.UserSummary): Contents => {
+  const { userName, gravatar, key } = Summaries.getUserSummary(data, { title: false, size: "huge" });
+  return {
+    main: gravatar,
+    width: undefined
   };
 }
