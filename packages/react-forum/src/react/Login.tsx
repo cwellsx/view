@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderContents, Contents } from './PageLayout';
+import { renderLayout, Layout } from './PageLayout';
 import * as I from "../data";
 import * as IO from "../io";
 import { ErrorMessage } from "./ErrorMessage";
@@ -42,7 +42,7 @@ export const Login: React.FunctionComponent = () => {
       <p>This is a prototype of the UI, without a server: so any data you enter isn't permanently stored anywhere.</p>
     </React.Fragment>
   );
-  const contents: Contents = { main };
-  return renderContents({ title: "Login", contents });
+  const layout: Layout = { main };
+  return renderLayout("Login", layout);
 }
 

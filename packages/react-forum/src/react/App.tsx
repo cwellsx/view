@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ReactRouter from 'react-router-dom';
-import { renderContents, Contents, loadingContents } from './PageLayout';
+import { renderLayout, Layout, loadingContents } from './PageLayout';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
 import './App.css';
@@ -73,21 +73,21 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
   The sequence of events is:
 
   1. Called for the first time
-  2. Calls hard-coded renderContents(title, loadingContents)
+  2. Calls hard-coded renderLayout(title, loadingContents)
   3. useEffect fires and:
      - Call getData to fetch data from the server
-     - Call getContents to render the data into a Contents object
-     - Call renderContents again to show the calculated Contents object
+     - Call getContents to render the data into a Layout instance
+     - Call renderLayout again to show the calculated Layout elements
   
-  The renderContents method support different page layouts --
+  The renderLayout method support different page layouts --
   e.g. narrow text, full-screen images, a grid, and with optional extra columns.
 
-  To support this it's convenient to make a single hard-coded call to renderContents in any case,
-  but to declare the Contents interface type to be flexible/expressive,
-  so that the getContents (i.e. one of the Page functions) can define arbitrarily complex content.
+  To support this it's convenient to make a single hard-coded call to renderLayout in any case,
+  but to declare its input parameter type (i.e. the Layout interface) to be flexible/expressive,
+  so that the getContents (i.e. one of the Page functions) can define arbitrarily complex content and layout.
 
-  - getContents defines the contents of the page
-  - renderContents defines the page's columns within which the content is rendered
+  - getContents defines the contents of the page by creating a Layout instance which contains elements
+  - renderLayout defines the page's columns within which the elements in the Layout are rendered
   
   Fetching data is as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
   also https://www.carlrippon.com/typed-usestate-with-typescript/
@@ -96,7 +96,7 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
 function useGetContents<TData>(
   title: string,
   getData: () => Promise<TData>,
-  getContents: (data: TData) => Contents): React.ReactElement {
+  getContents: (data: TData) => Layout): React.ReactElement {
 
   const [data, setData] = React.useState<TData | undefined>(undefined);
 
@@ -107,11 +107,11 @@ function useGetContents<TData>(
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
-  const contents: Contents = (data)
+  const layout: Layout = (data)
     ? getContents(data) // render the data
     : loadingContents; // else no data yet to render
 
-  return renderContents({ title: title, contents });
+  return renderLayout(title, layout);
 }
 
 /*
@@ -119,6 +119,8 @@ function useGetContents<TData>(
 
   - Invoked as a route from AppRoutes
   - Delegate to useGetContents
+
+  There's a different function for each "route" -- i.e. for each type of URL -- i.e. each type of page data and layout.
 */
 
 export const SiteMap: React.FunctionComponent = () => {

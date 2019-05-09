@@ -4,18 +4,15 @@ import { config } from "../config"
 import { ReactComponent as Close } from "./icons/misc/Close_12x_16x.svg";
 
 /*
-  This passes content as ReactElement instances
-
-  It could pass content as FunctionComponent instances instead, see
-  https://stackoverflow.com/a/55963664/49942
+  This module renders content into a page layout (e.g. into one or more columns of various widths).
+  The Layout interface defines/contains the content to be layed out (and identifies which layout to use).
+  Functions in the App and Pages module create instances of Layout, and pass them to the renderLayout method.
 */
 
 export interface KeyedItem {
   element: React.ReactElement;
   key: string;
 }
-
-type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
 
 interface RightContent {
   element: React.ReactElement,
@@ -24,18 +21,15 @@ interface RightContent {
   visible: boolean
 }
 
-export interface Contents {
+type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
+
+export interface Layout {
   main: MainContent,
   width?: "Full" | "Grid"
   right?: RightContent
 };
 
 export const loadingContents = { main: "Loading..." };
-
-interface Column {
-  title: string;
-  contents: Contents;
-}
 
 function setTitle(title: string): void {
   document.title = `${title} - ${config.appname}`;
@@ -112,7 +106,7 @@ function renderRightColumn(right?: RightContent) {
   return { rightColumn, rightButton };
 }
 
-function renderColumns(contents: Contents, title: string) {
+function switchLayout(contents: Layout, title: string) {
   const mainColumn = renderMainColumn(contents.main);
   const { rightColumn, rightButton } = renderRightColumn(contents.right);
 
@@ -152,9 +146,9 @@ function renderColumns(contents: Contents, title: string) {
   }
 }
 
-export const renderContents = (column: Column): React.ReactElement => {
-  setTitle(column.title);
-  const contents = renderColumns(column.contents, column.title);
+export const renderLayout = (title: string, layout: Layout): React.ReactElement => {
+  setTitle(title);
+  const contents = switchLayout(layout, title);
   return (
     <div className="all-columns">
       {contents}
