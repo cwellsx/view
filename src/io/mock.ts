@@ -1,8 +1,9 @@
 import * as I from "../data";
 import imageSrc from "../mock-data/Hereford-Karte.jpg"
 import { PageId, getPageUrl } from "./pageId";
+import { UserProfile } from "../data";
 
-export function mockServer(pageId: PageId): object | undefined {
+export function mockServer(pageId: PageId, userIdLogin?: number): object | undefined {
   console.log(`mockServer getting ${getPageUrl(pageId)}`);
   if (pageId.pageType === "SiteMap") {
     return siteMap;
@@ -15,14 +16,14 @@ export function mockServer(pageId: PageId): object | undefined {
   }
   if (pageId.pageType === "User") {
     if (!pageId.id) {
-      return users;
+      return getUserSummaries();
     } else {
       const requested = pageId.id;
       if (Array.isArray(requested)) {
         // should return 404
         return undefined;
       } else {
-        return users.find(x => x.idName.id === requested.id);
+        return getUser(requested.id, userIdLogin);
       }
     }
   }
@@ -33,24 +34,126 @@ export function mockServer(pageId: PageId): object | undefined {
   Users
 */
 
-export const loginUser: I.UserSummary = {
-  idName: { id: 1, name: "ChrisW" },
-  gravatarHash: "75bfdecf63c3495489123fe9c0b833e1",
-  location: "Normandy"
+// if data for each user is stored in a separate (numbered) directory
+// then this defines the data which would be stored in each directory
+interface BareUser {
+  name: string;
+  email: string;
+  gravatarHash: string;
+  // TODO: add some authentication or credential data somewhere e.g. here
+  profile: I.UserProfile
+  favourites: I.FavouriteId[];
 }
 
-const users: I.UserSummary[] = [
-  loginUser,
-  { gravatarHash: "25bfdecf63c3495489123fe9000833e1", idName: { id: 2, name: "JanineD" }, location: "Paris" },
-  { gravatarHash: "35bfdecf63c3495489123fe9000833e1", idName: { id: 3, name: "Andy" }, location: "London" },
-  { gravatarHash: "45bfdecf63c3495489123fe9000833e1", idName: { id: 4, name: "D. Smith" }, location: "Bristol" },
-  { gravatarHash: "55bfdecf63c3495489123fe9000833e1", idName: { id: 5, name: "Annette" }, location: "Boston" },
-  { gravatarHash: "65bfdecf63c3495489123fe9000833e1", idName: { id: 6, name: "HH" }, location: "Edinburgh" },
-  { gravatarHash: "75bfdecf63c3495489123fe9000833e1", idName: { id: 7, name: "Wolfgang" }, location: "Berlin" },
-  { gravatarHash: "85bfdecf63c3495489123fe9000833e1", idName: { id: 8, name: "王秀英" } },
-  { gravatarHash: "95bfdecf63c3495489123fe9000833e1", idName: { id: 9, name: "李敏" } },
-  { gravatarHash: "10bfdecf63c3495489123fe9000833e1", idName: { id: 10, name: "李娜" } },
-].sort((x,y) => x.idName.name.localeCompare(y.idName.name));
+const allUsers: Map<number, BareUser> = new Map<number, BareUser>([
+  [1, {
+    name: "ChrisW",
+    email: "cwellsx@gmail.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e1",
+    profile: {
+      location: "Normandy",
+      aboutMe: `I wrote this!
+        
+Further details are to be supplied ...`
+    },
+    favourites: []
+  }],
+  [2, {
+    name: "JanineD",
+    email: "2@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e2",
+    profile: { location: "Paris" }, favourites: []
+  }],
+  [3, {
+    name: "Andy",
+    email: "3@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e3",
+    profile: { location: "London" }, favourites: []
+  }],
+  [4, {
+    name: "D. Smith",
+    email: "4@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e4",
+    profile: { location: "Bristol" }, favourites: []
+  }],
+  [5, {
+    name: "Annette",
+    email: "5@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e5",
+    profile: { location: "Boston" }, favourites: []
+  }],
+  [6, {
+    name: "HH",
+    email: "6@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e6",
+    profile: { location: "Edinburgh" }, favourites: []
+  }],
+  [7, {
+    name: "Wolfgang",
+    email: "7@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e7",
+    profile: { location: "Berlin" }, favourites: []
+  }],
+  [8, {
+    name: "王秀英",
+    email: "8@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e8",
+    profile: {}, favourites: []
+  }],
+  [9, {
+    name: "李敏",
+    email: "9@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e9",
+    profile: {}, favourites: []
+  }],
+  [10, {
+    name: "李娜",
+    email: "10@mailinator.com",
+    gravatarHash: "75bfdecf63c3495489123fe9c0b833e0",
+    profile: {}, favourites: []
+  }],
+]);
+
+function getUserSummaryFrom(userId: number, data: BareUser): I.UserSummary {
+  return {
+    idName: { id: userId, name: data.name },
+    gravatarHash: data.gravatarHash,
+    location: data.profile.location
+  }
+}
+
+function getUserSummaries(): I.UserSummary[] {
+  const rc: I.UserSummary[] = [];
+  allUsers.forEach((data, userId) => rc.push(getUserSummaryFrom(userId, data)));
+  return rc.sort((x, y) => x.idName.name.localeCompare(y.idName.name));
+}
+
+function getUserSummary(userId: number): I.UserSummary | undefined {
+  const data: BareUser | undefined = allUsers.get(userId);
+  if (!data) {
+    return undefined;
+  }
+  return getUserSummaryFrom(userId, data);
+}
+
+function getUser(userId: number, userIdLogin?: number): I.User | undefined {
+  const data: BareUser | undefined = allUsers.get(userId);
+  if (!data) {
+    return undefined;
+  }
+  const preferences: I.UserPreferences | undefined = (userId !== userIdLogin) ? undefined : {
+    email: data.email
+  };
+  return {
+    summary: getUserSummaryFrom(userId, data),
+    profile: data.profile,
+    preferences: preferences
+  };
+}
+
+export function loginUser(): I.UserSummary {
+  return getUserSummary(1)!;
+}
 
 /*
   Images
@@ -78,7 +181,8 @@ const image: I.Image = {
   Features
 */
 
-const featureNames: string[] = require("../mock-data/features.json");
+const featureNames: string[] = assertTypeT<string[]>(require("../mock-data/features.json"), ["foo"]);
+
 export const featureSummaries: I.FeatureSummary[] = featureNames.map((value, index) => {
   return { idName: { id: index, name: value } };
 });
@@ -92,3 +196,42 @@ const siteMap: I.SiteMap = {
   features: featureSummaries
 };
 
+/*
+  load data from json files
+*/
+
+function assertType(found: any, wanted: any): void {
+  if (typeof wanted !== typeof found) {
+    throw new Error(`assertType expected ${typeof wanted} but found ${typeof found}`);
+  }
+  switch (typeof wanted) {
+    case "boolean":
+    case "number":
+    case "string":
+      return; // primitive vaue type -- done checking
+    case "object":
+      break; // more to check
+    case "undefined":
+    case "symbol":
+    case "function":
+    default:
+      throw new Error(`assertType does not support ${typeof wanted}`);
+  }
+  if (Array.isArray(wanted)) {
+    if (!Array.isArray(found)) {
+      throw new Error(`assertType expected an array but found ${found}`);
+    }
+    for (const element of found) {
+      assertType(element, wanted[0]);
+    }
+    return;
+  }
+  for (const element in wanted) {
+    assertType(found[element], wanted[element]);
+  }
+}
+
+function assertTypeT<T>(loaded: any, wanted: T): T {
+  assertType(loaded, wanted);
+  return loaded as T;
+}

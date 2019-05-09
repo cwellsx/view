@@ -3,6 +3,10 @@ import * as Post from "./post";
 import { mockServer } from "./mock";
 import { PageId, getPageUrl, postPageId } from "./pageId";
 import { config } from "../config"
+// only used for the mock
+// import React from 'react';
+// import { AppContext } from '../react/AppContext';
+import { loginUser } from "../io/mock";
 
 // this declares a subset of the fields we use from the DOM Response interface
 interface SimpleResponse {
@@ -28,7 +32,13 @@ function mock(pageId: PageId): Promise<SimpleResponse> {
         resolve(failure);
         return;
       }
-      const json = mockServer(pageId);
+      // a real server would infer the userId from authentication cookies
+      // and not trust the client to pass its userId as an API parameter
+      // but for the mock implementation we get and pass it from app context
+      // const me: I.UserSummary | undefined = React.useContext(AppContext).me;
+      // const userId: number | undefined = me ? me.idName.id : undefined;
+      const userId = loginUser().idName.id;
+      const json = mockServer(pageId, userId);
       if (!json) {
         // from inside setTimeout we must reject not throw
         // https://stackoverflow.com/questions/33445415/javascript-promises-reject-vs-throw
@@ -97,6 +107,6 @@ export async function getUsers(): Promise<I.UserSummaryEx[]> {
   return getT<I.UserSummaryEx[]>({ pageType: "User" });
 }
 
-export async function getUser(id: number): Promise<I.UserSummary> {
-  return getT<I.UserSummary>(postPageId("User", id));
+export async function getUser(id: number): Promise<I.User> {
+  return getT<I.User>(postPageId("User", id));
 }

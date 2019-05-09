@@ -147,8 +147,8 @@ export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Cont
   User
 */
 
-export const User: Present<I.UserSummary> = (data: I.UserSummary): Contents => {
-  const { userName, gravatar, key } = Summaries.getUserSummary(data, { title: false, size: "huge" });
+export const User: Present<I.User> = (data: I.User): Contents => {
+  const { userName, gravatar, key } = Summaries.getUserSummary(data.summary, { title: false, size: "huge" });
   return {
     main: gravatar,
     width: undefined

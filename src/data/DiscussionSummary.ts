@@ -18,7 +18,8 @@ export interface DiscussionSummary {
 // slightly more compact form in which it's sent from server
 export interface BareDiscussionSummary {
   idName: IdName, // discussion ID
-  userId: number, // + users
+  userId: number, // + user ID
+  ownerId?: number, // plus ID of user who started the discussion, if this is a list messages not of discussions
   topic: { id: Id, pageType: PageType },
   messageExerpt: string,
   dateTime: string
