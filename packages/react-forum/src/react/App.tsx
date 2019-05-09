@@ -20,7 +20,7 @@ import { loginUser } from "../io/mock";
 const App: React.FunctionComponent = () => {
   // https://fettblog.eu/typescript-react/context/ and
   // https://reactjs.org/docs/context.html#updating-context-from-a-nested-component
-  const autologin = config.autologin ? loginUser : undefined;
+  const autologin = config.autologin ? loginUser() : undefined;
   const [me, setMe] = React.useState<I.UserSummary | undefined>(autologin);
 
   document.title = `${config.appname}`;
@@ -179,7 +179,7 @@ export const UserId: React.FunctionComponent<UserIdProps> = (props: UserIdProps)
 
   const getUser = React.useCallback(() => IO.getUser(props.userId), [props.userId]);
 
-  return useGetContents<I.UserSummary>(
+  return useGetContents<I.User>(
     "User",
     getUser,
     Page.User
