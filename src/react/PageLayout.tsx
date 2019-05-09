@@ -1,5 +1,5 @@
 import React from 'react';
-import "./Column.css"
+import "./PageLayout.css"
 import { config } from "../config"
 import { ReactComponent as Close } from "./icons/misc/Close_12x_16x.svg";
 
@@ -10,12 +10,12 @@ import { ReactComponent as Close } from "./icons/misc/Close_12x_16x.svg";
   https://stackoverflow.com/a/55963664/49942
 */
 
-export interface Content {
+export interface KeyedItem {
   element: React.ReactElement;
   key: string;
 }
 
-type MainContent = ReadonlyArray<Content> | React.ReactElement | string;
+type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
 
 interface RightContent {
   element: React.ReactElement,

@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ReactRouter from 'react-router-dom';
-import { renderContents, Contents, loadingContents } from './Column';
+import { renderContents, Contents, loadingContents } from './PageLayout';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
 import './App.css';

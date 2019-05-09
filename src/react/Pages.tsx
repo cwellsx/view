@@ -1,7 +1,7 @@
 import React from 'react';
 import * as I from "../data";
-import { Content, Contents } from './Column';
-import * as Summaries from "./Summaries";
+import { KeyedItem, Contents } from './PageLayout';
+import * as Summaries from "./Components";
 import './Pages.css';
 
 /*
@@ -16,7 +16,7 @@ export type Present<T> = (data: T) => Contents;
 */
 
 export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap): Contents => {
-  const contents: Content[] = [];
+  const contents: KeyedItem[] = [];
 
   /*
     visitors can see:

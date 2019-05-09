@@ -7,7 +7,7 @@ import { ReactComponent as Search } from "./icons/topbar/Search_16x.svg";
 import { ReactComponent as UserProfile } from "./icons/topbar/UserProfile_16x.svg";
 import { route } from "../io/pageId";
 import { AppContext, AppContextProps } from './AppContext';
-import { getUserSummary } from "./Summaries";
+import { getUserSummary } from "./Components";
 
 export const Topbar: React.FunctionComponent = () => {
   const appContext: AppContextProps = React.useContext(AppContext);

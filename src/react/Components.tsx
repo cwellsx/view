@@ -1,10 +1,16 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import * as I from "../data";
-import { Content } from './Column';
+import { KeyedItem } from './PageLayout';
 import { getPageUrl } from "../io/pageId";
 
-export function getImageSummary(summary: I.ImageSummary): Content {
+/*
+  This module defines components which exist within larger content.
+  https://reactjs.org/docs/components-and-props.html#extracting-components
+  They're currently defined as functions, however.
+*/
+
+export function getImageSummary(summary: I.ImageSummary): KeyedItem {
   const href = getPageUrl({ pageType: "Image", id: summary.idName });
   const element: React.ReactElement = (
     <React.Fragment>
@@ -29,7 +35,7 @@ export function getUserSummary(summary: I.UserSummary, option: { title: boolean,
 
 const nbsp = "\u00A0";
 
-export function getFeatureSummary(summary: I.FeatureSummary): Content {
+export function getFeatureSummary(summary: I.FeatureSummary): KeyedItem {
   const href = getPageUrl({ pageType: "Feature", id: summary.idName });
   const label = summary.idName.name.replace(" ", nbsp)
   const element = <NavLink to={href}>{label}</NavLink>;
