@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderContents, Contents } from './Column';
+import { renderContents, Contents } from './PageLayout';
 import * as I from "../data";
 import * as IO from "../io";
 import { ErrorMessage } from "./ErrorMessage";
