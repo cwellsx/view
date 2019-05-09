@@ -1,6 +1,6 @@
 import React from 'react';
 import * as I from "../data";
-import { KeyedItem, Contents } from './PageLayout';
+import { KeyedItem, Layout } from './PageLayout';
 import * as Summaries from "./Components";
 import './Pages.css';
 
@@ -9,13 +9,13 @@ import './Pages.css';
   conversely this `Page.tsx` defines "presentational" components.
 */
 
-export type Present<T> = (data: T) => Contents;
+export type Present<T> = (data: T) => Layout;
 
 /*
   SiteMap
 */
 
-export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap): Contents => {
+export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap): Layout => {
   const contents: KeyedItem[] = [];
 
   /*
@@ -86,7 +86,6 @@ function renderNode(node: I.LayerNode, alias: string): React.ReactElement {
 
 function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement {
   const className = (level === 0) ? "image-layers" : undefined;
-  //const white = "  ".repeat(level + 1);
   const listItems = layers.map((node) => {
     const alias = getLayerKey(node);
     return (
@@ -103,7 +102,7 @@ function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement 
   )
 }
 
-export const Image: Present<I.Image> = (data: I.Image): Contents => {
+export const Image: Present<I.Image> = (data: I.Image): Layout => {
   const images =
     <div className="image-images">
       <img src={data.image.src} height={data.image.height} width={data.image.width} />
@@ -120,7 +119,7 @@ export const Image: Present<I.Image> = (data: I.Image): Contents => {
   Users
 */
 
-export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Contents => {
+export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Layout => {
   const users: React.ReactElement =
     <div className="all-users">
       {data.map(user => {
@@ -147,7 +146,7 @@ export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Cont
   User
 */
 
-export const User: Present<I.User> = (data: I.User): Contents => {
+export const User: Present<I.User> = (data: I.User): Layout => {
   const { userName, gravatar, key } = Summaries.getUserSummary(data.summary, { title: false, size: "huge" });
   return {
     main: gravatar,
