@@ -2,6 +2,7 @@ import React from 'react';
 import "./PageLayout.css"
 import { config } from "../config"
 import { ReactComponent as Close } from "./icons/misc/Close_12x_16x.svg";
+import { NavLink } from 'react-router-dom';
 
 /*
   This module renders content into a page layout (e.g. into one or more columns of various widths).
@@ -21,13 +22,33 @@ interface RightContent {
   visible: boolean
 }
 
-type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
+export interface Tab {
+  navlink: { href: string, text: string }; // becomes a Navlink instance
+  content: ReadonlyArray<KeyedItem> | React.ReactElement;
+}
+
+export interface Tabs {
+  style: "Discussion" | "List" | "Profile";
+  header?: { first: React.ReactElement, next: React.ReactElement }; // required when style === "Profile"
+  selected: number; // index into tabbed
+  tabbed: Tab[];
+}
+
+function isTabs(content: MainContent): content is Tabs {
+  return (content as Tabs).tabbed !== undefined;
+}
+
+type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | Tabs | string;
 
 export interface Layout {
   main: MainContent,
   width?: "Full" | "Grid"
   right?: RightContent
 };
+
+/*
+  Implementation details
+*/
 
 export const loadingContents = { main: "Loading..." };
 
@@ -36,17 +57,54 @@ function setTitle(title: string): void {
 }
 
 function renderMainColumn(main: MainContent) {
-  return (Array.isArray(main))
-    ?
-    main.map((x) =>
-      <div className="element" key={x.key}>
-        {x.element}
+  if (Array.isArray(main)) {
+    return (
+      main.map((x) =>
+        <div className="element" key={x.key}>
+          {x.element}
+        </div>
+      )
+    );
+  }
+  if (!isTabs(main)) {
+    return (
+      <div className="element">
+        {main}
       </div>
-    )
-    :
-    <div className="element">
-      {main}
-    </div>;
+    );
+  }
+  return renderTabs(main);
+}
+
+function renderTabs(main: Tabs) {
+  const style = main.style;
+  const isProfile = (style === "Profile");
+  const className = (!isProfile) ? "tab-head" : "tab-head profile";
+  return (
+    <React.Fragment>
+      <div className={className}>
+        <div className="tabs">
+          {main.tabbed.map((tab, index) =>
+            <NavLink
+              to={tab.navlink.href}
+              key={"" + index}
+              className={(index === main.selected) ? "selected" : undefined}>
+              {tab.navlink.text}
+            </NavLink>)}
+        </div>
+      </div>
+      <div className="tabbed">
+        {main.tabbed.map((tab, index) => {
+          return (
+            <div className={(index !== main.selected) ? "hidden" : undefined} key={"" + index}>
+              {tab.content}
+            </div>
+          );
+        })
+        }
+      </div>
+    </React.Fragment>
+  );
 }
 
 function renderRightColumn(right?: RightContent) {
@@ -116,6 +174,15 @@ function switchLayout(contents: Layout, title: string) {
       ? "column-text grid"
       : "column-wide";
 
+  if (isTabs(contents.main) && (contents.main.style === "Profile")) {
+    // tabs are located above the header and the header is inside the first tab
+    return (
+      <div className={className}>
+        {mainColumn}
+      </div>
+    );
+  }
+
   switch (className) {
     case "column-text":
     case "column-text grid":
@@ -143,6 +210,8 @@ function switchLayout(contents: Layout, title: string) {
           {rightColumn}
         </React.Fragment>
       );
+    default:
+      throw new Error();
   }
 }
 

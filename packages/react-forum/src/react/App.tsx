@@ -7,8 +7,8 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import { route, splitPath, isNumber, PageType } from "../io/pageId";
-import { AppContext } from './AppContext';
+import { route, splitPath, splitPathUser, isNumber, PageType, UserPageType } from "../io/pageId";
+import { AppContext, AppContextProps } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
 
@@ -89,11 +89,18 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
   - getContents defines the contents of the page by creating a Layout instance which contains elements
   - renderLayout defines the page's columns within which the elements in the Layout are rendered
   
-  Fetching data is as described at https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
-  also https://www.carlrippon.com/typed-usestate-with-typescript/
+  Fetching data is as described at:
+  
+  - https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
+  - https://overreacted.io/a-complete-guide-to-useeffect/
+  - https://www.robinwieruch.de/react-hooks-fetch-data
+
+  And using a hook with TypeScript:
+
+  - https://www.carlrippon.com/typed-usestate-with-typescript/
 */
 
-function useGetContents<TData>(
+function useGetLayout<TData>(
   title: string,
   getData: () => Promise<TData>,
   getContents: (data: TData) => Layout): React.ReactElement {
@@ -114,18 +121,40 @@ function useGetContents<TData>(
   return renderLayout(title, layout);
 }
 
+function useGet2<TData, TParam>(getData: () => Promise<TData>, param: TParam): TData | undefined {
+
+  const [prev, setPrev] = React.useState<TParam | undefined>(undefined);
+  const [data, setData] = React.useState<TData | undefined>(undefined);
+
+  React.useEffect(() => {
+    getData()
+      .then((fetched) => setData(fetched));
+  }, [getData, param]);
+
+  if (prev !== param) {
+    // https://stackoverflow.com/questions/56096560/avoid-old-data-when-using-useeffect-to-fetch-data
+    setPrev(param);
+    setData(undefined);
+    return undefined;
+  }
+
+  // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
+
+  return data;
+}
+
 /*
   These are page definitions, which have a similar basic structure:
 
   - Invoked as a route from AppRoutes
-  - Delegate to useGetContents
+  - Delegate to useGetLayout
 
   There's a different function for each "route" -- i.e. for each type of URL -- i.e. each type of page data and layout.
 */
 
 export const SiteMap: React.FunctionComponent = () => {
 
-  return useGetContents<I.SiteMap>(
+  return useGetLayout<I.SiteMap>(
     "Site Map",
     IO.getSiteMap,
     Page.SiteMap
@@ -152,7 +181,7 @@ export const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdPro
   // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
   const getImage = React.useCallback(() => IO.getImage(props.imageId), [props.imageId]);
 
-  return useGetContents<I.Image>(
+  return useGetLayout<I.Image>(
     "Image",
     getImage,
     Page.Image
@@ -160,7 +189,7 @@ export const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdPro
 }
 
 export const Users: React.FunctionComponent = () => {
-  return useGetContents<I.UserSummaryEx[]>(
+  return useGetLayout<I.UserSummaryEx[]>(
     "Users",
     IO.getUsers,
     Page.Users
@@ -168,24 +197,53 @@ export const Users: React.FunctionComponent = () => {
 }
 
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const userId: number | undefined = getId(props, "User");
-  if (!userId) {
+  const appContext: AppContextProps = React.useContext(AppContext);
+  try {
+    const { userId, userPageType } = splitPathUser(props.location.pathname, props.location.search);
+    const isActivity: boolean = userPageType === "Activity";
+    const canEdit: boolean = appContext.me ? (appContext.me.idName.id === userId) : false;
+    if (!canEdit && (userPageType === "EditSettings")) {
+      return NoMatch(props);
+    }
+    return isActivity
+      ? <UserActivity userId={userId} canEdit={canEdit} />
+      : <UserProfile userId={userId} userPageType={userPageType} canEdit={canEdit} />;
+  } catch (e) {
+    console.error(e.message);
     return NoMatch(props);
   }
-
-  return <UserId userId={userId} />;
 }
 
-interface UserIdProps { userId: number };
-export const UserId: React.FunctionComponent<UserIdProps> = (props: UserIdProps) => {
+interface UserActivityProps { userId: number, canEdit: boolean };
+export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
 
-  const getUser = React.useCallback(() => IO.getUser(props.userId), [props.userId]);
+  const { userId, canEdit } = props;
+  const getUser = React.useCallback(() => IO.getUser(userId), [userId]);
+  const showUser = React.useCallback((data: I.User) => Page.User(data, "Activity", canEdit), [canEdit]);
 
-  return useGetContents<I.User>(
+  return useGetLayout<I.User>(
     "User",
     getUser,
-    Page.User
+    showUser
   );
+}
+
+interface UserProfileProps { userId: number, userPageType: UserPageType, canEdit: boolean };
+export const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfileProps) => {
+
+  const { userId, userPageType, canEdit } = props;
+  const getUser = React.useCallback(() => IO.getUser(userId), [userId]);
+
+  // we want to do something different here -- 
+  // i.e. want reuse the data from the call to IO.getUser,
+  // even if the userPageType changes between "Profile" and "EditSettings"
+  // if we used useGetLayout then we ought to specify (e.g. via useCallback) that userPageType is a dependency, so
+  // instead we use `useGet` and invoke the "get layout" from here i.e. outside the function which contains useEffect.
+
+  // const data: I.User | undefined = useGet(getUser);
+  const data: I.User | undefined = useGet2(getUser, userId);
+  const layout = (!data) ? loadingContents : Page.User(data, userPageType, canEdit);
+  return renderLayout("User", layout);
 }
 
 export const Discussions: React.FunctionComponent = () => {

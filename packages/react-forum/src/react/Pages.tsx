@@ -1,21 +1,22 @@
 import React from 'react';
 import * as I from "../data";
-import { KeyedItem, Layout } from './PageLayout';
+import { KeyedItem, Layout, Tab, Tabs } from './PageLayout';
 import * as Summaries from "./Components";
+import { getUserPageUrl, UserPageType } from "../io/pageId";
 import './Pages.css';
+import { ReactComponent as LocationIcon } from "./icons/material/ic_location_on_24px.svg";
+
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
   conversely this `Page.tsx` defines "presentational" components.
 */
 
-export type Present<T> = (data: T) => Layout;
-
 /*
   SiteMap
 */
 
-export const SiteMap: Present<I.SiteMap> = (data: I.SiteMap): Layout => {
+export function SiteMap(data: I.SiteMap): Layout {
   const contents: KeyedItem[] = [];
 
   /*
@@ -102,10 +103,10 @@ function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement 
   )
 }
 
-export const Image: Present<I.Image> = (data: I.Image): Layout => {
+export function Image(data: I.Image): Layout {
   const images =
     <div className="image-images">
-      <img src={data.image.src} height={data.image.height} width={data.image.width} />
+      <img src={data.image.src} height={data.image.height} width={data.image.width} alt="" />
     </div>;
   const layers = renderLayers(data.layers, 0);
   return {
@@ -119,18 +120,17 @@ export const Image: Present<I.Image> = (data: I.Image): Layout => {
   Users
 */
 
-export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Layout => {
+export function Users(data: I.UserSummaryEx[]): Layout {
   const users: React.ReactElement =
     <div className="all-users">
       {data.map(user => {
         const { userName, gravatar, key } = Summaries.getUserSummary(user, { title: false, size: "big" });
-        const location = user.location ? <span className="user-location">{user.location}</span> : undefined;
         return (
           <div className="user-info" key={key}>
             {gravatar}
             <div className="details">
               {userName}
-              {location}
+              {user.location ? <span className="user-location">{user.location}</span> : undefined}
             </div>
           </div>
         );
@@ -146,10 +146,89 @@ export const Users: Present<I.UserSummaryEx[]> = (data: I.UserSummaryEx[]): Layo
   User
 */
 
-export const User: Present<I.User> = (data: I.User): Layout => {
-  const { userName, gravatar, key } = Summaries.getUserSummary(data.summary, { title: false, size: "huge" });
+export function User(data: I.User, userPageType: UserPageType, canEdit: boolean): Layout {
+  const { userName, gravatar } = Summaries.getUserSummary(data.summary, { title: false, size: "huge" });
+  const gravatarSmall = Summaries.getUserSummary(data.summary, { title: false, size: "small" }).gravatar;
+  const selected = canEdit
+    ? ((userPageType === "Profile") ? 0 : (userPageType === "EditSettings") ? 1 : 2)
+    : ((userPageType === "Profile") ? 0 : 1);
+  const idName: I.IdName = data.summary.idName;
+
+  const profile: Tab = {
+    navlink: { href: getUserPageUrl(idName, "Profile"), text: "Profile" },
+    content: (
+      <div className="user-profile profile">
+        {gravatar}
+        <div className="column">
+          <h1>{data.summary.idName.name}</h1>
+          {data.summary.location ? <p className="location"><LocationIcon viewBox="0 0 24 24" width="18" height="18" /> {data.summary.location}</p> : undefined}
+          <div className="about">
+            <p>About me</p>
+          </div>
+        </div>
+      </div>
+    )
+  };
+
+  function getSettings(): Tab {
+    const inputDisplayName = React.createRef<HTMLInputElement>();
+    const inputEmail = React.createRef<HTMLInputElement>();
+    const inputLocation = React.createRef<HTMLInputElement>();
+    const inputAbout = React.createRef<HTMLInputElement>();
+    const preferences: I.UserPreferences = data.preferences!;
+
+    const rc: Tab = {
+      navlink: { href: getUserPageUrl(idName, "EditSettings"), text: "Edit" },
+      content: (
+        <div className="user-profile settings">
+          <h1>Edit</h1>
+          <h2>Public information</h2>
+          <div className="public">
+            {gravatar}
+            <div className="column">
+              <label>Display name</label>
+              <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={data.summary.idName.name} />
+              <label>Location (optional)</label>
+              <input type="text" ref={inputLocation} placeholder="optional" defaultValue={data.summary.location} />
+            </div>
+          </div>
+          <label>About me</label>
+          <input type="text" ref={inputAbout} placeholder="required" defaultValue={data.profile.aboutMe} />
+          <h2>Private settings</h2>
+          <label>Email</label>
+          <input type="text" ref={inputEmail} placeholder="required" defaultValue={preferences.email} />
+        </div>
+      )
+    };
+    return rc;
+  }
+  const settings: Tab | undefined = canEdit ? getSettings() : undefined;
+
+  const activity: Tab = {
+    navlink: { href: getUserPageUrl(idName, "Activity"), text: "Activity" },
+    content: <p>Where</p>
+  };
+  const header = {
+    first: (
+      <React.Fragment>
+        {gravatar}
+        <h1>{userName}</h1>
+      </React.Fragment>
+    ),
+    next: (
+      <React.Fragment>
+        <h1>{userName}</h1>
+        {gravatarSmall}
+      </React.Fragment>
+    )
+  };
+  const tabs: Tabs = {
+    style: "Profile",
+    header,
+    selected,
+    tabbed: canEdit ? [profile, settings!, activity] : [profile, activity]
+  };
   return {
-    main: gravatar,
-    width: undefined
+    main: tabs
   };
 }

@@ -38,6 +38,7 @@ export interface UserPreferences {
 
 // UserActivity is fetched separately because it's potentially long
 export type UserActivity = {
+  user: IdName;
   messages: WireDiscussionSummary;
   favourites: FavouriteId[];
 }
@@ -48,7 +49,7 @@ export type UserActivity = {
 export interface User {
   summary: UserSummary; // include idName, gravatarHash, location
   profile: UserProfile;
-  // elements is optional and not present if this is another user's profile
+  // preferences is present or not present depending on whether this is another user's profile
   // in future could refine this into PublicPreference | PrivatePreferences if we want any preferences to be public
   preferences?: UserPreferences;
 };
