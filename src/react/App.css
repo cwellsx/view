@@ -2,11 +2,16 @@ html {
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
   font-size: 15px;
   font-size: 100%;
+  color: rgb(59, 64, 69);;
 }
 
 h1 {
   font-weight: 400;
   font-size: 2.07692308rem;
+}
+
+h2 {
+  font-weight: 400;
 }
 
 form {
@@ -40,4 +45,14 @@ a {
   color: #4c8dbd;
   text-decoration: none;
   cursor: pointer;
+}
+
+input[type="text"] {
+  font-size: 14px;
+  padding: 8px 10px;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+*, *:before, *:after {
+  box-sizing: border-box;
 }

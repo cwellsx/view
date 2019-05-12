@@ -72,8 +72,73 @@ div.all-users > .user-info {
   color: rgb(76, 141, 189);
 }
 
-.user-info > .details > .user-location {
+.user-info > .details > .user-location,
+.user-profile .user-location {
   display: block;
   font-size: 12px;
   color: rgb(106, 115, 124);;
+}
+
+/* styles on user profile tabs */
+
+.user-profile.profile,
+.user-profile.settings .public {
+  display: flex;
+}
+
+.user-profile.profile .column,
+.user-profile.settings .public .column {
+  flex-grow: 1;
+}
+
+.user-profile.profile > .column > h1 {
+  margin: 0;
+}
+
+.user-profile.profile > .gravatar,
+.user-profile.settings .gravatar {
+    margin-right: 2em;
+}
+
+.user-profile.profile .location,
+.user-profile.profile .location * {
+  vertical-align: middle;
+  color: rgb(59, 64, 69);
+}
+
+.user-profile.profile .location svg {
+  fill: rgb(145, 153, 161);
+}
+
+.user-profile.profile .location {
+  margin-top: 0.25em;
+}
+
+.user-profile.settings > h1 {
+  font-size: 1.5em;
+}
+
+.user-profile.settings > h2 {
+  margin-top: 1.5em;
+  padding-top: 0.5em;
+  border-top: 1px solid rgb(234, 234, 234);;
+  font-size: 18px;
+}
+
+.user-profile.settings input,
+.user-profile.settings label {
+  display: block;
+}
+
+.user-profile.settings input {
+  margin: 5px 0 6px;
+  width: 100%;
+}
+
+.user-profile.settings label {
+  margin-top: 18px;
+}
+
+.user-profile.settings .column > label:first-child {
+  margin-top: 0;
 }

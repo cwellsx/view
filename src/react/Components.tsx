@@ -29,7 +29,7 @@ export function getUserSummary(summary: I.UserSummary, option: { title: boolean,
   // https://en.gravatar.com/site/implement/images/
   const src = `https://www.gravatar.com/avatar/${summary.gravatarHash}?s=${size * 2}&d=identicon&r=PG`;
   const img = <img src={src} alt={summary.idName.name} width={size} height={size} />;
-  const gravatar = <NavLink to={href} title={option.title ? summary.idName.name : undefined}>{img}</NavLink>;
+  const gravatar = <NavLink to={href} title={option.title ? summary.idName.name : undefined} className="gravatar">{img}</NavLink>;
   return { userName, gravatar, key: href };
 }
 
