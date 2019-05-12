@@ -1,7 +1,7 @@
 import React from 'react';
 import "./PageLayout.css"
 import { config } from "../config"
-import { ReactComponent as Close } from "./icons/misc/Close_12x_16x.svg";
+import { ReactComponent as Close } from "../icons/misc/Close_12x_16x.svg";
 import { NavLink } from 'react-router-dom';
 
 /*

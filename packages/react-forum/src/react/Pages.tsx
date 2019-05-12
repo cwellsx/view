@@ -4,7 +4,7 @@ import { KeyedItem, Layout, Tab, Tabs } from './PageLayout';
 import * as Summaries from "./Components";
 import { getUserPageUrl, UserPageType } from "../io/pageId";
 import './Pages.css';
-import { ReactComponent as LocationIcon } from "./icons/material/ic_location_on_24px.svg";
+import { ReactComponent as LocationIcon } from "../icons/material/ic_location_on_24px.svg";
 
 
 /*
