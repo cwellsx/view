@@ -6,6 +6,6 @@ export * from "./ImageSummary";
 export * from "./ImageLayers";
 export * from "./Image";
 export * from "./SiteMap";
-// export * from "./TopicSummary";
+export * from "./TopicSummary";
 export * from "./User";
 export * from "./UserSummary";

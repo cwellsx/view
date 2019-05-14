@@ -1,0 +1,1 @@
+No subdirectories, therefore no images by default.

@@ -14,4 +14,3 @@ export function getExerpt(markdown: string): string {
   }
   return rc ? rc : "(no message)";
 }
-
