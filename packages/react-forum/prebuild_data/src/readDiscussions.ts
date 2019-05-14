@@ -1,11 +1,19 @@
-import * as fs from "fs";
-import * as path from "path";
-import { BareDiscussion } from "../data/Discussion";
-import { FeatureSummary } from "../data/FeatureSummary";
-import { featureSummaries } from "../io/mock";
+import { BareDiscussion } from "../../src/server/bare";
+import { FeatureSummary } from "../../src/data/FeatureSummary";
 
-export function readDiscussions(filename: string) {
-  const text = fs.readFileSync(filename, "utf8");
+/*
+  This function takes "Lorem ipsum" text from `random.txt`
+  and uses it to construct an array of discussions each with an array of messages.
+  The following are assigned randomly:
+
+  - dates
+  - topics
+  - users
+  - the number of sentences per message
+  - the number of messages per discussion
+*/
+
+export function readDiscussions(text: string, nUsers: number, featureSummaries: FeatureSummary[]): object {
   const lines = text.split(/\r?\n/);
   const input: string[][] = [];
 
@@ -13,6 +21,7 @@ export function readDiscussions(filename: string) {
     if (!line.length) {
       return;
     }
+    // split the line into sentences
     const words: string[] = line.split(".").map(word => word.trim()).filter(word => word.length);
     if (!words.length) {
       return;
@@ -20,6 +29,7 @@ export function readDiscussions(filename: string) {
     input.push(words);
   });
 
+  function random_userId(): number { return Math.floor(Math.random() * nUsers); };
   function random_1to10(): number { return Math.floor((Math.random() * 10) + 1); };
   function random_feature(): FeatureSummary { return featureSummaries[Math.floor((Math.random() * featureSummaries.length))]; };
   const startDate = new Date(2019, 0);
@@ -71,7 +81,7 @@ export function readDiscussions(filename: string) {
     const messages = [];
     const n = random_1to10();
     for (let i = 0; i < n; ++i) {
-      const userId = random_1to10() - 1; // 0 to 9
+      const userId = random_userId();
       const text: string[] | undefined = fetch(random_1to10(), ".");
       if (!text) {
         return undefined;
@@ -99,10 +109,5 @@ export function readDiscussions(filename: string) {
     rc.push(discussion);
   }
 
-  const json = JSON.stringify(rc, null, '\t');
-
-  const ext = path.extname(filename);
-  const output = filename.slice(0, -ext.length) + ".json";
-
-  fs.writeFileSync(output, json, "utf8");
+  return rc;
 }

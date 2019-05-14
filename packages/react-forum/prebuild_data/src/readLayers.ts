@@ -1,9 +1,23 @@
-import * as fs from "fs";
-import * as path from "path";
-import { ImageLayers, LayerNode } from "../data/ImageLayers";
+import { ImageLayers, LayerNode } from "../../src/data/ImageLayers";
 
-export function readLayers(filename: string) {
-  const text = fs.readFileSync(filename, "utf8");
+/*
+  This processes a layers.txt file whose format is a tree of words,
+  with "  " of indentation for child nodes, for example:
+
+Dogs
+  Poodle
+  Yorkie
+  Collies
+    Border Collie
+    Australian Collie
+Cats
+  Persian
+  Siamese
+  Tabby
+
+*/
+
+export function readLayers(text: string): object {
   const lines = text.split(/\r?\n/);
   const rc: ImageLayers = [];
   const current: LayerNode[] = [];
@@ -55,10 +69,5 @@ export function readLayers(filename: string) {
     all.add(name);
   })
 
-  const json = JSON.stringify(rc);
-
-  const ext = path.extname(filename);
-  const output = filename.slice(0, -ext.length) + ".json";
-
-  fs.writeFileSync(output, json, "utf8");
+  return rc;
 }

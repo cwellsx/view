@@ -108,11 +108,12 @@ export function Image(data: I.Image): Layout {
     <div className="image-images">
       <img src={data.image.src} height={data.image.height} width={data.image.width} alt="" />
     </div>;
-  const layers = renderLayers(data.layers, 0);
+  const right = !data.layers ? undefined :
+    { element: renderLayers(data.layers, 0), width: data.layersWidth, showButtonLabel: "Show Layers", visible: true };
   return {
     main: images,
     width: "Full",
-    right: { element: layers, width: data.layersWidth, showButtonLabel: "Show Layers", visible: true }
+    right
   };
 }
 

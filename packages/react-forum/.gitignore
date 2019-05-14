@@ -3,6 +3,12 @@
 /src/react/NOTES.md
 /src/mock-data
 
+# site-specific content not included in the default deploy for this project
+/prebuild_data/data/*.alt
+
+/src/server_data/*
+!/src/server_data/README.md
+
 # dependencies
 /node_modules
 /.pnp
