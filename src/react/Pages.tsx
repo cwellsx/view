@@ -147,13 +147,27 @@ export function Users(data: I.UserSummaryEx[]): Layout {
   User
 */
 
-export function User(data: I.User, userPageType: UserPageType, canEdit: boolean): Layout {
-  const { userName, gravatar } = Summaries.getUserSummary(data.summary, { title: false, size: "huge" });
-  const gravatarSmall = Summaries.getUserSummary(data.summary, { title: false, size: "small" }).gravatar;
+interface UserProfileProps { data: I.User, userPageType: UserPageType };
+
+function isUserProfile(props: UserProfileProps | I.UserActivity): props is UserProfileProps {
+  return (props as UserProfileProps).userPageType !== undefined;
+}
+
+export function User(
+  props: UserProfileProps | I.UserActivity,
+  canEdit: boolean,
+  userId: number): Layout {
+  // crack the input parameters
+  const summary = !isUserProfile(props) ? props.summary : props.data.summary;
+  const userPageType: UserPageType = !isUserProfile(props) ? "Activity" : props.userPageType;
+
+  // build the gravatars
+  const { userName, gravatar } = Summaries.getUserSummary(summary, { title: false, size: "huge" });
+  const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
   const selected = canEdit
     ? ((userPageType === "Profile") ? 0 : (userPageType === "EditSettings") ? 1 : 2)
     : ((userPageType === "Profile") ? 0 : 1);
-  const idName: I.IdName = data.summary.idName;
+  const idName: I.IdName = summary.idName;
 
   const profile: Tab = {
     navlink: { href: getUserPageUrl(idName, "Profile"), text: "Profile" },
@@ -161,8 +175,8 @@ export function User(data: I.User, userPageType: UserPageType, canEdit: boolean)
       <div className="user-profile profile">
         {gravatar}
         <div className="column">
-          <h1>{data.summary.idName.name}</h1>
-          {data.summary.location ? <p className="location"><LocationIcon viewBox="0 0 24 24" width="18" height="18" /> {data.summary.location}</p> : undefined}
+          <h1>{summary.idName.name}</h1>
+          {summary.location ? <p className="location"><LocationIcon viewBox="0 0 24 24" width="18" height="18" /> {summary.location}</p> : undefined}
           <div className="about">
             <p>About me</p>
           </div>
@@ -172,15 +186,19 @@ export function User(data: I.User, userPageType: UserPageType, canEdit: boolean)
   };
 
   function getSettings(): Tab {
-    const inputDisplayName = React.createRef<HTMLInputElement>();
-    const inputEmail = React.createRef<HTMLInputElement>();
-    const inputLocation = React.createRef<HTMLInputElement>();
-    const inputAbout = React.createRef<HTMLInputElement>();
-    const preferences: I.UserPreferences = data.preferences!;
 
-    const rc: Tab = {
-      navlink: { href: getUserPageUrl(idName, "EditSettings"), text: "Edit" },
-      content: (
+    function getSettingsContent() {
+      if (!isUserProfile(props)) {
+        return <p>To be supplied</p>;
+      }
+      const inputDisplayName = React.createRef<HTMLInputElement>();
+      const inputEmail = React.createRef<HTMLInputElement>();
+      const inputLocation = React.createRef<HTMLInputElement>();
+      const inputAbout = React.createRef<HTMLInputElement>();
+      const preferences: I.UserPreferences = props.data.preferences!;
+      const profile: I.UserProfile = props.data.profile;
+
+      return (
         <div className="user-profile settings">
           <h1>Edit</h1>
           <h2>Public information</h2>
@@ -188,18 +206,23 @@ export function User(data: I.User, userPageType: UserPageType, canEdit: boolean)
             {gravatar}
             <div className="column">
               <label>Display name</label>
-              <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={data.summary.idName.name} />
+              <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={summary.idName.name} />
               <label>Location (optional)</label>
-              <input type="text" ref={inputLocation} placeholder="optional" defaultValue={data.summary.location} />
+              <input type="text" ref={inputLocation} placeholder="optional" defaultValue={summary.location} />
             </div>
           </div>
           <label>About me</label>
-          <input type="text" ref={inputAbout} placeholder="required" defaultValue={data.profile.aboutMe} />
+          <input type="text" ref={inputAbout} placeholder="required" defaultValue={profile.aboutMe} />
           <h2>Private settings</h2>
           <label>Email</label>
           <input type="text" ref={inputEmail} placeholder="required" defaultValue={preferences.email} />
         </div>
-      )
+      );
+    }
+
+    const rc: Tab = {
+      navlink: { href: getUserPageUrl(idName, "EditSettings"), text: "Edit" },
+      content: getSettingsContent()
     };
     return rc;
   }

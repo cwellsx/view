@@ -1,6 +1,6 @@
 import * as I from "../data";
 import * as Post from "./post";
-import { PageId, getPageUrl, postPageId } from "./pageId";
+import { PageId, getPageUrl, requestPageId } from "./pageId";
 import { config } from "../config"
 // only used for the mock
 import { SimpleResponse, mockFetch } from "../io/mock";
@@ -43,7 +43,7 @@ export async function getSiteMap(): Promise<I.SiteMap> {
 }
 
 export async function getImage(id: number): Promise<I.Image> {
-  return getT<I.Image>(postPageId("Image", id));
+  return getT<I.Image>(requestPageId("Image", id));
 }
 
 export async function login(data: Post.Login): Promise<I.UserSummary> {
@@ -55,5 +55,9 @@ export async function getUsers(): Promise<I.UserSummaryEx[]> {
 }
 
 export async function getUser(id: number): Promise<I.User> {
-  return getT<I.User>(postPageId("User", id));
+  return getT<I.User>(requestPageId("User", id));
+}
+
+export async function getUserActivity(id: number): Promise<I.UserActivity> {
+  throw new Error("not yet implemented");
 }

@@ -38,7 +38,7 @@ export interface UserPreferences {
 
 // UserActivity is fetched separately because it's potentially long
 export type UserActivity = {
-  user: IdName;
+  summary: UserSummary;
   messages: WireDiscussionSummary;
   favourites: FavouriteId[];
 }

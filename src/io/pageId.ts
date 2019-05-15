@@ -74,7 +74,8 @@ export function isNumber(subpath: string | number): subpath is number {
   return (typeof subpath === "number");
 }
 
-export function postPageId(pageType: PageType, id: number): PageId {
+// called from ./index to contruct a PageId from input parameters, suitable for a request to the server
+export function requestPageId(pageType: PageType, id: number): PageId {
   return { pageType, id: { id, name: "unknown" } };
 }
 
