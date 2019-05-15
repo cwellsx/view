@@ -1,5 +1,5 @@
 import { config } from "../config"
-import { PageId, getPageUrl, postPageId } from "./pageId";
+import { PageId, getPageUrl } from "./pageId";
 import { mockServer, loginUser } from "../server/routes";
 
 export { loginUser } from "../server/routes";

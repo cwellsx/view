@@ -88,6 +88,8 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
 
   - getContents defines the contents of the page by creating a Layout instance which contains elements
   - renderLayout defines the page's columns within which the elements in the Layout are rendered
+
+  ---
   
   Fetching data is as described at:
   
@@ -98,43 +100,76 @@ function getId(props: RouteComponentProps, pageType: PageType): number | undefin
   And using a hook with TypeScript:
 
   - https://www.carlrippon.com/typed-usestate-with-typescript/
+
+  The template supports a parameter of type TParam (which is optional and may be void/undefined).
+  If specified then the parameter is passed to the getData function and to the getContents function.
+
+  ---
+
+  Also, as described here ...
+
+  https://stackoverflow.com/questions/56096560/avoid-old-data-when-using-useeffect-to-fetch-data
+
+  ... if the parameter value changes then there's a brief wndow before the useEffect hook is run.
+  Therefore the param value is stored in state whenever the data value is stored,
+  and the data value is discarded when it's associated param value doesn't match the current param value.
+
+  The solution described here ...
+  
+  https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
+
+  ... i.e. to "wrap it into the useCallback Hook" was insufficient because it leaves a brief
+  timing hole before the useEffect fires and the data is refetched.
 */
 
-function useGetLayout<TData>(
+function useGetLayout<TData, TParam = void>(
   title: string,
-  getData: () => Promise<TData>,
-  getContents: (data: TData) => Layout): React.ReactElement {
+  getData: (param: TParam) => Promise<TData>,
+  getContents: (data: TData, param: TParam) => Layout,
+  param: TParam)
+  : React.ReactElement {
 
+  const [prev, setParam] = React.useState<TParam | undefined>(undefined);
   const [data, setData] = React.useState<TData | undefined>(undefined);
 
   React.useEffect(() => {
-    getData()
-      .then((fetched) => setData(fetched));
-  }, [title, getData, getContents]);
+    getData(param)
+      .then((fetched) => {
+        setData(fetched);
+        setParam(param);
+      });
+  }, [title, getData, getContents, param]);
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
-  const layout: Layout = (data)
-    ? getContents(data) // render the data
+  const layout: Layout = (data) && (prev === param)
+    ? getContents(data, param) // render the data
     : loadingContents; // else no data yet to render
 
   return renderLayout(title, layout);
 }
 
-function useGet2<TData, TParam>(getData: () => Promise<TData>, param: TParam): TData | undefined {
+// passed as param to useGetLayout when TParam is void
+// or I could have implemented a copy-and-paste of useGetLayout without the TParam
+const isVoid: void = (() => { })(); 
 
-  const [prev, setPrev] = React.useState<TParam | undefined>(undefined);
+function useGet<TData, TParam>(getData: (param: TParam) => Promise<TData>, param: TParam): TData | undefined {
+
+  const [prev, setParam] = React.useState<TParam | undefined>(undefined);
   const [data, setData] = React.useState<TData | undefined>(undefined);
 
   React.useEffect(() => {
-    getData()
-      .then((fetched) => setData(fetched));
+    getData(param)
+      .then((fetched) => {
+        setData(fetched);
+        setParam(param);
+      });
   }, [getData, param]);
 
   if (prev !== param) {
+    // the param used n the most recent useEffect and currently saved in state doesn't match the current/desired prop
+    // so return undefined for now and wait until useEffect has a chance to run again.
     // https://stackoverflow.com/questions/56096560/avoid-old-data-when-using-useeffect-to-fetch-data
-    setPrev(param);
-    setData(undefined);
     return undefined;
   }
 
@@ -157,7 +192,8 @@ export const SiteMap: React.FunctionComponent = () => {
   return useGetLayout<I.SiteMap>(
     "Site Map",
     IO.getSiteMap,
-    Page.SiteMap
+    Page.SiteMap,
+    isVoid
   );
 }
 
@@ -169,9 +205,9 @@ export const Image: React.FunctionComponent<RouteComponentProps> = (props: Route
   }
 
   // see https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
-  // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />`
-  // instead of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
-  // So far as I can tell frm testing what really matters is the array of dependencies passed to useEffects.
+  // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />` instead
+  // of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
+  // So far as I can tell from testing, what really matters is the array of dependencies passed to useEffects.
   return <ImageId imageId={imageId} />;
 }
 
@@ -179,12 +215,12 @@ interface ImageIdProps { imageId: number };
 export const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
 
   // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
-  const getImage = React.useCallback(() => IO.getImage(props.imageId), [props.imageId]);
 
-  return useGetLayout<I.Image>(
+  return useGetLayout<I.Image, number>(
     "Image",
-    getImage,
-    Page.Image
+    IO.getImage,
+    Page.Image,
+    props.imageId
   );
 }
 
@@ -192,7 +228,8 @@ export const Users: React.FunctionComponent = () => {
   return useGetLayout<I.UserSummaryEx[]>(
     "Users",
     IO.getUsers,
-    Page.Users
+    Page.Users,
+    isVoid
   );
 }
 
@@ -214,35 +251,34 @@ export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteC
   }
 }
 
-interface UserActivityProps { userId: number, canEdit: boolean };
-export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
-
-  const { userId, canEdit } = props;
-  const getUser = React.useCallback(() => IO.getUser(userId), [userId]);
-  const showUser = React.useCallback((data: I.User) => Page.User(data, "Activity", canEdit), [canEdit]);
-
-  return useGetLayout<I.User>(
-    "User",
-    getUser,
-    showUser
-  );
-}
-
 interface UserProfileProps { userId: number, userPageType: UserPageType, canEdit: boolean };
 export const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfileProps) => {
 
   const { userId, userPageType, canEdit } = props;
-  const getUser = React.useCallback(() => IO.getUser(userId), [userId]);
 
   // we want to do something different here -- 
-  // i.e. want reuse the data from the call to IO.getUser,
+  // i.e. we want reuse the data from the call to IO.getUser,
   // even if the userPageType changes between "Profile" and "EditSettings"
   // if we used useGetLayout then we ought to specify (e.g. via useCallback) that userPageType is a dependency, so
   // instead we use `useGet` and invoke the "get layout" from here i.e. outside the function which contains useEffect.
 
-  // const data: I.User | undefined = useGet(getUser);
-  const data: I.User | undefined = useGet2(getUser, userId);
-  const layout = (!data) ? loadingContents : Page.User(data, userPageType, canEdit);
+  const data: I.User | undefined = useGet(IO.getUser, userId);
+  const layout = (!data) ? loadingContents : Page.User({ data, userPageType }, canEdit, userId);
+  return renderLayout("User", layout);
+}
+
+interface UserActivityProps { userId: number, canEdit: boolean };
+export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
+
+  const { userId, canEdit } = props;
+
+  // we want to do something a bit different here too --
+  // i.e. we want to pass the canEdit value to the Page.User function
+  // so that it knows whether to display the "Edit Settings" tab as an option
+  // even though canEdit is not a parameter passed to the IO.getUserActivity function
+  // so again we use `useGet` here instead of `useGetLayout` to better control how we invoke the "get layout" function
+  const data: I.UserActivity | undefined = useGet(IO.getUserActivity, userId);
+  const layout = (!data) ? loadingContents : Page.User(data, canEdit, userId);
   return renderLayout("User", layout);
 }
 
