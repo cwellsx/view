@@ -1,7 +1,7 @@
 import { IdName } from "./Id";
 import { PageType } from "../io/pageId";
 import { UserSummary } from "./UserSummary";
-import { WireDiscussionSummary } from "./DiscussionSummary";
+import { DiscussionSummary } from "./DiscussionSummary";
 
 /*
   Copied from my specs:
@@ -37,9 +37,9 @@ export interface UserPreferences {
 }
 
 // UserActivity is fetched separately because it's potentially long
-export type UserActivity = {
+export interface UserActivity {
   summary: UserSummary;
-  messages: WireDiscussionSummary;
+  messages: DiscussionSummary[];
   favourites: FavouriteId[];
 }
 

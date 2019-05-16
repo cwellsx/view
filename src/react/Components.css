@@ -1,0 +1,105 @@
+/* user-info is shown on the list of users and to identify the author of any message */
+
+.user-info:hover {
+  background-color: #f4f8fb;
+}
+
+.user-info > a,
+.user-info > .details {
+  float: left;
+}
+
+.user-info > .details {
+  margin-left: 9px;
+  font-size: 14px;
+  color: rgb(76, 141, 189);
+}
+
+.user-info > .details > .user-location,
+.user-profile .user-location {
+  display: block;
+  font-size: 12px;
+  color: rgb(106, 115, 124);;
+}
+
+.user-info .when {
+  font-size: 12px;
+  color: rgb(145, 153, 161);
+  margin: 1px 0 2px;
+}
+
+.user-info::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* discussion-summary */
+
+.discussion-summary h3 {
+  font-size: 15px;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+.discussion-summary h3 > a {
+  font-size: 16px;
+}
+
+.discussion-summary .excerpt {
+  padding-bottom: 5px;
+}
+
+.discussion-summary .user-info {
+  padding: 5px 6px 7px 7px;
+  float: right;
+  width: 200px;
+}
+
+.discussion-summary .topic {
+  padding: 5px 6px 7px 7px;
+  float: left;
+}
+
+.discussion-summary .topic > * {
+  padding: 5px 6px 7px 7px;
+  display: inline-block;
+  font-size: 12px;
+  padding: 0.4em 0.5em;
+  border: 1px solid rgb(225, 236, 244);
+  background-color: rgb(225, 236, 244);
+  margin: 2px 2px 2px 0;
+  border-radius: 3px;
+}
+
+.discussion-summary {
+  overflow: hidden;
+  display: flex;
+}
+
+.discussion-summary .stats {
+  width: 58px;
+  flex-shrink: 0;
+  margin: 0 16px 0 8px;
+}
+
+.discussion-summary .stats strong {
+  display: block;
+  font-size: 20px;
+  font-weight: normal;
+}
+
+.discussion-summary .stats .answers {
+  padding: 7px 0 5px;
+  border: 1px solid rgba(69, 161, 99, 0.5);
+  font-size: 11px;
+  color: rgb(69, 161, 99);
+  text-align: center;
+  border-radius: 3px;
+}
+
+.discussion-summary .summary {
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: auto;
+}

@@ -1,4 +1,5 @@
 import * as I from "../data";
+import { WireDiscussionSummaries, unwireDiscussionSummaries } from "../data/Wire"
 import * as Post from "./post";
 import { PageId, getPageUrl, requestPageId } from "./pageId";
 import { config } from "../config"
@@ -60,4 +61,18 @@ export async function getUser(id: number): Promise<I.User> {
 
 export async function getUserActivity(id: number): Promise<I.UserActivity> {
   throw new Error("not yet implemented");
+}
+
+export async function getDiscussions(): Promise<I.DiscussionSummary[]> {
+  const wirePromise: Promise<WireDiscussionSummaries> = getT<WireDiscussionSummaries>({ pageType: "Discussion" });
+  const rc: Promise<I.DiscussionSummary[]> = new Promise<I.DiscussionSummary[]>((resolve, reject) => {
+    wirePromise.then((wire: WireDiscussionSummaries) => {
+      const wanted: I.DiscussionSummary[] = unwireDiscussionSummaries(wire);
+      resolve(wanted);
+    })
+    wirePromise.catch(error => {
+      reject(error);
+    });
+  });
+  return rc;
 }

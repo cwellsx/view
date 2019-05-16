@@ -31,6 +31,11 @@ export function mockServer(pageId: PageId, userIdLogin?: number): object | undef
       }
     }
   }
+  if (pageId.pageType === "Discussion") {
+    if (!pageId.id) {
+      return DB.getDiscussions();
+    }
+  }
   return undefined;
 }
 

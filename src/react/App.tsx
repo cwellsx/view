@@ -283,11 +283,11 @@ export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: 
 }
 
 export const Discussions: React.FunctionComponent = () => {
-  return (
-    <React.Fragment>
-      <h1>Discussions</h1>
-      <p>This will display a list of discussions.</p>
-    </React.Fragment>
+  return useGetLayout<I.DiscussionSummary[]>(
+    "Discussions",
+    IO.getDiscussions,
+    Page.Discussions,
+    isVoid
   );
 }
 
