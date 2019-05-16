@@ -3,10 +3,10 @@ import * as I from "../data";
 /*
   This defines 'bare' data formats i.e. the format in which data is stored on disk before it's loaded.
 
-  For any given data type (e.g. named `Data`) defined in `/src/data`, there may also be:
+  For any given data type (e.g. named `Data`) defined in `/src/data/Data`, there may also be:
 
-  - `WireData` (also defined in `/src/data`)
-  - `BareData` (defined in this `/server/bare`)
+  - `WireData` (also defined in `/src/io/Wire`)
+  - `BareData` (defined in this `/src/server/bare`)
 
   Only a "data" format is used in the `/src/react` code.
 
@@ -29,15 +29,16 @@ export interface BareUser {
   favourites: I.FavouriteId[];
 }
 
+export interface BareMessage {
+  userId: number;
+  markdown: string;
+  dateTime: string;
+}
+
 export interface BareDiscussion {
   meta: {
     idName: I.IdName;
     topicSummary: I.TopicSummary;
   };
-  messages: {
-    userId: number; // + users
-    markdown: string;
-    dateTime: string;
-    exerpt?: string;
-  }[];
+  messages: BareMessage[];
 }

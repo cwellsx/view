@@ -29,7 +29,7 @@ export function readDiscussions(text: string, nUsers: number, featureSummaries: 
     input.push(words);
   });
 
-  function random_userId(): number { return Math.floor(Math.random() * nUsers); };
+  function random_userId(): number { return Math.floor(Math.random() * nUsers) + 1; };
   function random_1to10(): number { return Math.floor((Math.random() * 10) + 1); };
   function random_feature(): FeatureSummary { return featureSummaries[Math.floor((Math.random() * featureSummaries.length))]; };
   const startDate = new Date(2019, 0);

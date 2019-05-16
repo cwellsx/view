@@ -125,16 +125,7 @@ export function Users(data: I.UserSummaryEx[]): Layout {
   const users: React.ReactElement =
     <div className="all-users">
       {data.map(user => {
-        const { userName, gravatar, key } = Summaries.getUserSummary(user, { title: false, size: "big" });
-        return (
-          <div className="user-info" key={key}>
-            {gravatar}
-            <div className="details">
-              {userName}
-              {user.location ? <span className="user-location">{user.location}</span> : undefined}
-            </div>
-          </div>
-        );
+        return Summaries.getUserInfo(user, "big");
       })}
     </div>;
   return {
@@ -254,5 +245,16 @@ export function User(
   };
   return {
     main: tabs
+  };
+}
+
+/*
+  Discussions
+*/
+
+export function Discussions(data: I.DiscussionSummary[]): Layout {
+  const elements = data.map(summary => Summaries.getDiscussionSummary(summary));
+  return {
+    main: elements
   };
 }

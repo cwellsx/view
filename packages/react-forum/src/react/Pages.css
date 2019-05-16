@@ -55,30 +55,6 @@ div.all-users > .user-info {
   width: auto;
 }
 
-/* user-info is shown on the list of users and to identify the author of any message */
-
-.user-info:hover {
-  background-color: #f4f8fb;
-}
-
-.user-info > a,
-.user-info > .details {
-  float: left;
-}
-
-.user-info > .details {
-  margin-left: 9px;
-  font-size: 14px;
-  color: rgb(76, 141, 189);
-}
-
-.user-info > .details > .user-location,
-.user-profile .user-location {
-  display: block;
-  font-size: 12px;
-  color: rgb(106, 115, 124);;
-}
-
 /* styles on user profile tabs */
 
 .user-profile.profile,

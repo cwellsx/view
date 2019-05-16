@@ -8,6 +8,7 @@ export function getExerpt(markdown: string): string {
       continue;
     }
     if (rc && (rc.length + word.length > config.exerptlength)) {
+      rc += " ...";
       break;
     }
     rc = rc ? (rc + " " + word): word;
