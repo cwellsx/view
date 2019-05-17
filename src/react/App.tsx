@@ -7,10 +7,11 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import { route, splitPath, splitPathUser, isNumber, PageType, UserPageType } from "../io/pageId";
+import { route, UserPageType, getPageIdImage, getPageIdUser, isPageIdError } from "../io/pageId";
 import { AppContext, AppContextProps } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
+import { ErrorMessage } from "./ErrorMessage";
 
 /*
   This defines the App's routes
@@ -54,15 +55,7 @@ const AppRoutes: React.FunctionComponent = () => {
   );
 }
 
-
 type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
-
-function getId(props: RouteComponentProps, pageType: PageType): number | undefined {
-  const pathname = props.location.pathname;
-  const split = splitPath(pathname, pageType);
-  const first = split[0];
-  return (!isNumber(first)) ? undefined : first;
-}
 
 /*
   This is a "high-order component", a "custom hook" -- it separates "getting" the data from "presenting" the data.
@@ -151,7 +144,7 @@ function useGetLayout<TData, TParam = void>(
 
 // passed as param to useGetLayout when TParam is void
 // or I could have implemented a copy-and-paste of useGetLayout without the TParam
-const isVoid: void = (() => { })(); 
+const isVoid: void = (() => { })();
 
 function useGet<TData, TParam>(getData: (param: TParam) => Promise<TData>, param: TParam): TData | undefined {
 
@@ -199,16 +192,16 @@ export const SiteMap: React.FunctionComponent = () => {
 
 export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
 
-  const imageId: number | undefined = getId(props, "Image");
-  if (!imageId) {
-    return NoMatch(props);
+  const parsed = getPageIdImage(props.location.pathname);
+  if (isPageIdError(parsed)) {
+    return noMatch(props, parsed.error);
   }
 
   // see https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
   // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />` instead
   // of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
   // So far as I can tell from testing, what really matters is the array of dependencies passed to useEffects.
-  return <ImageId imageId={imageId} />;
+  return <ImageId imageId={parsed.imageId} />;
 }
 
 interface ImageIdProps { imageId: number };
@@ -236,18 +229,22 @@ export const Users: React.FunctionComponent = () => {
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const appContext: AppContextProps = React.useContext(AppContext);
   try {
-    const { userId, userPageType } = splitPathUser(props.location.pathname, props.location.search);
+    const parsed = getPageIdUser(props.location.pathname, props.location.search);
+    if (isPageIdError(parsed)) {
+      return noMatch(props, parsed.error);
+    }
+    const { userId, userPageType } = parsed;
     const isActivity: boolean = userPageType === "Activity";
     const canEdit: boolean = appContext.me ? (appContext.me.idName.id === userId) : false;
     if (!canEdit && (userPageType === "EditSettings")) {
-      return NoMatch(props);
+      return noMatch(props, "You cannot edit another user's profile");
     }
     return isActivity
       ? <UserActivity userId={userId} canEdit={canEdit} />
       : <UserProfile userId={userId} userPageType={userPageType} canEdit={canEdit} />;
   } catch (e) {
     console.error(e.message);
-    return NoMatch(props);
+    return noMatch(props, e.message);
   }
 }
 
@@ -292,11 +289,16 @@ export const Discussions: React.FunctionComponent = () => {
 }
 
 export const NoMatch: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+  return noMatch(props);
+}
+
+function noMatch(props: RouteComponentProps, error?: string) {
   const pathname = props.location.pathname;
   return (
     <div>
       <h3>Not Found</h3>
       <p>No page found for <code>{pathname}</code></p>
+      <ErrorMessage errorMessage={error}/>
     </div>
   );
 }

@@ -39,8 +39,8 @@ export function SiteMap(data: I.SiteMap): Layout {
     <React.Fragment>
       <h2>Features</h2>
       <div className="features">
-        {data.features.map(feature => {
-          const content = Summaries.getFeatureSummary(feature);
+        {data.tags.map(tag => {
+          const content = Summaries.getTagSummary(tag);
           /*
             either we need to add whitespace between elements ...
             - https://github.com/facebook/react/issues/1643

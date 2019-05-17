@@ -12,7 +12,7 @@ import './Components.css';
 */
 
 export function getImageSummary(summary: I.ImageSummary): KeyedItem {
-  const href = getPageUrl({ pageType: "Image", id: summary.idName });
+  const href = getPageUrl({ pageType: "Image", what: summary.idName });
   const element: React.ReactElement = (
     <React.Fragment>
       <h3><NavLink to={href}>{summary.idName.name}</NavLink></h3>
@@ -26,7 +26,7 @@ type GravatarSize = "small" | "big" | "huge";
 
 export function getUserSummary(summary: I.UserSummary, option: { title: boolean, size: GravatarSize })
   : { userName: React.ReactElement, gravatar: React.ReactElement, key: string } {
-  const href = getPageUrl({ pageType: "User", id: summary.idName });
+  const href = getPageUrl({ pageType: "User", what: summary.idName });
   const userName = <NavLink to={href}>{summary.idName.name}</NavLink>;
   const size = (option.size === "small") ? 32 : (option.size === "big") ? 48 : 164;
   // https://en.gravatar.com/site/implement/images/
@@ -53,9 +53,9 @@ export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: s
 
 const nbsp = "\u00A0";
 
-export function getFeatureSummary(summary: I.FeatureSummary): KeyedItem {
-  const href = getPageUrl({ pageType: "Feature", id: summary.idName });
-  const label = summary.idName.name.replace(" ", nbsp)
+export function getTagSummary(summary: I.TagSummary): KeyedItem {
+  const href = getPageUrl({ pageType: "Feature", what: {key: summary.key} });
+  const label = summary.key.replace(" ", nbsp)
   const element = <NavLink to={href}>{label}</NavLink>;
   return { element, key: href };
 }
@@ -68,9 +68,9 @@ function toLocaleString(date: Date): string {
 }
 
 export function getDiscussionSummary(summary: I.DiscussionSummary): KeyedItem {
-  const href = getPageUrl({ pageType: "Discussion", id: summary.idName });
+  const href = getPageUrl({ pageType: "Discussion", what: summary.idName });
   const when = toLocaleString(new Date(summary.messageSummary.dateTime));
-  const topic = summary.topicSummary.idName.name;
+  const tag = summary.tag;
   const element: React.ReactElement = (
     <div className="discussion-summary">
       <div className="stats">
@@ -81,7 +81,7 @@ export function getDiscussionSummary(summary: I.DiscussionSummary): KeyedItem {
       <div className="summary">
         <h3><NavLink to={href}>{summary.idName.name}</NavLink></h3>
         <div className="excerpt">{summary.messageSummary.messageExerpt}</div>
-        <div className="topic"><span>{topic}</span></div>
+        <div className="topic"><span>{I.getTagIdText(tag)}</span></div>
         {getUserInfo(summary.messageSummary.userSummary, "small", when)}
       </div>
     </div>

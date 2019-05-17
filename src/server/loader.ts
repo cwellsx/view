@@ -93,12 +93,12 @@ export function loadUsers(): Map<number, BareUser> {
 
 export { loadImages } from "../server_data/images";
 
-export function loadFeatures(): I.FeatureSummary[] {
-  const found = require("../server_data/features.json");
-  const sample: I.FeatureSummary = {
-    idName: { id: 1, name: "" }
+export function loadTags(): I.Tag[] {
+  const found = require("../server_data/tags.json");
+  const sample: I.Tag = {
+    key: "foo"
   };
-  const loaded: I.FeatureSummary[] = assertTypeT(found, [sample]);
+  const loaded: I.Tag[] = assertTypeT(found, [sample]);
   return loaded;
 }
 
@@ -110,13 +110,7 @@ export function loadDiscussions(): Map<number, BareDiscussion> {
         id: 1,
         name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?"
       },
-      topicSummary: {
-        idName: {
-          id: 33,
-          name: "Altars of Alexander"
-        },
-        pageType: "Feature"
-      }
+      tag: { key: "foo" }
     },
     messages: [
       {

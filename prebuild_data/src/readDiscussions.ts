@@ -1,5 +1,5 @@
 import { BareDiscussion } from "../../src/server/bare";
-import { FeatureSummary } from "../../src/data/FeatureSummary";
+import { Tag } from "../../src/data/Tag";
 
 /*
   This function takes "Lorem ipsum" text from `random.txt`
@@ -13,7 +13,7 @@ import { FeatureSummary } from "../../src/data/FeatureSummary";
   - the number of messages per discussion
 */
 
-export function readDiscussions(text: string, nUsers: number, featureSummaries: FeatureSummary[]): object {
+export function readDiscussions(text: string, nUsers: number, tags: Tag[]): object {
   const lines = text.split(/\r?\n/);
   const input: string[][] = [];
 
@@ -31,7 +31,7 @@ export function readDiscussions(text: string, nUsers: number, featureSummaries: 
 
   function random_userId(): number { return Math.floor(Math.random() * nUsers) + 1; };
   function random_1to10(): number { return Math.floor((Math.random() * 10) + 1); };
-  function random_feature(): FeatureSummary { return featureSummaries[Math.floor((Math.random() * featureSummaries.length))]; };
+  function random_tag(): Tag { return tags[Math.floor((Math.random() * tags.length))]; };
   const startDate = new Date(2019, 0);
   function random_date(): string {
     const date = new Date(startDate.getTime() + (Math.random() * (Date.now() - startDate.getTime())));
@@ -77,7 +77,7 @@ export function readDiscussions(text: string, nUsers: number, featureSummaries: 
     if (!title) {
       return undefined;
     }
-    const topic: FeatureSummary = random_feature();
+    const tag: Tag = random_tag();
     const messages = [];
     const n = random_1to10();
     for (let i = 0; i < n; ++i) {
@@ -94,7 +94,7 @@ export function readDiscussions(text: string, nUsers: number, featureSummaries: 
     return {
       meta: {
         idName: { id: discussionId, name: title },
-        topicSummary: { idName: topic.idName, pageType: "Feature" }
+        tag
       },
       messages
     }

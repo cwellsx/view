@@ -6,16 +6,16 @@
 export function readTopics(text: string): string[] {
   const lines = text.split(/\r?\n/);
   const rc: string[] = [];
-
+  const unique: Set<string> = new Set<string>();
   lines.forEach(line => {
     const words: string[] = line.split("\t");
     words.forEach(word => {
       if (word.length) {
-        rc.push(word);
+        unique.add(word);
       }
     });
   });
-
+  unique.forEach(value => rc.push(value));
   rc.sort((x, y) => x.localeCompare(y));
   return rc;
 }

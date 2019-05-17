@@ -38,7 +38,7 @@ export interface BareMessage {
 export interface BareDiscussion {
   meta: {
     idName: I.IdName;
-    topicSummary: I.TopicSummary;
+    tag: I.TagId;
   };
   messages: BareMessage[];
 }
