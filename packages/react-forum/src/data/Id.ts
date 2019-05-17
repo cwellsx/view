@@ -1,6 +1,8 @@
-export type Id = number;
-
 export interface IdName {
-  id: Id,
+  id: number,
   name: string
 };
+
+export interface Key {
+  key: string;
+}

@@ -1,6 +1,6 @@
 import * as I from "../data";
 import { BareUser, BareDiscussion, BareMessage } from "./bare";
-import { loadUsers, loadImages, loadFeatures, loadDiscussions } from "./loader";
+import { loadUsers, loadImages, loadTags, loadDiscussions } from "./loader";
 import { WireDiscussionSummaries } from "../data/Wire";
 import { getExerpt } from "../data/Exerpt";
 
@@ -17,7 +17,7 @@ const allUsers: Map<number, BareUser> = loadUsers();
 
 const allImages: I.Image[] = loadImages();
 
-const allFeatures: I.FeatureSummary[] = loadFeatures();
+const allTags: I.Tag[] = loadTags();
 
 const allDiscussions: Map<number, BareDiscussion> = loadDiscussions();
 const { sortedDiscussionsNewest, sortedDiscussionsActive } = loadSortedDiscussions(allDiscussions);
@@ -85,26 +85,21 @@ function sortDiscussions(index: [number, number][]): void {
 function wireDiscussionSummaries(discussions: BareDiscussion[], getMessage: GetMessage): WireDiscussionSummaries {
   const rc: WireDiscussionSummaries = {
     users: [],
-    topics: [],
     discussions: []
   }
   const userIds: Set<number> = new Set<number>();
-  const topics: I.TopicSummary[] = [];
   discussions.forEach(discussion => {
     const message: BareMessage = getMessage(discussion);
-    const topicSummary: I.TopicSummary = discussion.meta.topicSummary;
     userIds.add(message.userId);
-    topics.push(topicSummary);
     rc.discussions.push({
       idName: discussion.meta.idName,
+      tag: discussion.meta.tag,
       userId: message.userId,
-      topic: { id: topicSummary.idName.id, pageType: topicSummary.pageType },
       messageExerpt: getExerpt(message.markdown),
       dateTime: message.dateTime,
       nAnswers: discussion.messages.length - 1
     });
   });
-  rc.topics = topics;
   userIds.forEach(userId => rc.users.push(getUserSummary(userId)));
   return rc;
 }
@@ -116,7 +111,7 @@ function wireDiscussionSummaries(discussions: BareDiscussion[], getMessage: GetM
 export function getSiteMap(): I.SiteMap {
   return {
     images: allImages.map(image => image.summary),
-    features: allFeatures
+    tags: allTags.map(tag => { return { key: tag.key, summary: tag.summary }; })
   };
 }
 

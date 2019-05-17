@@ -49,17 +49,15 @@ const inputImages = getInputDir("images");
 const outputImages = getOutputFile("images", ".ts");
 readImages(inputImages, outputImages, rootOutputDir);
 
-// topics
+// topics as tags
 
 const inputTopics = path.join(getInputDir("topics"), "topics.txt");
-const outputTopics = getOutputFile("topics");
-const outputFeaures = getOutputFile("features");
 const topics: string[] = readTopics(fs.readFileSync(inputTopics, "utf8"));
-const features: I.FeatureSummary[] = topics.map((value, index) => {
-  return { idName: { id: index, name: value } };
+const outputTags = getOutputFile("tags");
+const tags: I.Tag[] = topics.map((value, index) => {
+  return { key: value };
 });
-writeJson(topics, outputTopics);
-writeJson(features, outputFeaures);
+writeJson(tags, outputTags);
 
 // users
 
@@ -72,5 +70,5 @@ writeJson(users, outputUsers);
 
 const inputDiscussions = path.join(getInputDir("discussions"), "random.txt");
 const outputDiscussions = getOutputFile("discussions");
-const discussions = readDiscussions(fs.readFileSync(inputDiscussions, "utf8"), users.length, features);
+const discussions = readDiscussions(fs.readFileSync(inputDiscussions, "utf8"), users.length, tags);
 writeJson(discussions, outputDiscussions);

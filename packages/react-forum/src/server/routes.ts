@@ -1,5 +1,5 @@
 import * as DB from "./database";
-import { PageId, getPageUrl } from "../io/pageId";
+import { PageId, getPageUrl, getPageIdNumber } from "../io/pageId";
 import { UserSummary } from "../data";
 
 export function mockServer(pageId: PageId, userIdLogin?: number): object | undefined {
@@ -11,28 +11,28 @@ export function mockServer(pageId: PageId, userIdLogin?: number): object | undef
     return loginUser();
   }
   if (pageId.pageType === "Image") {
-    const requested = pageId.id;
-    if (!requested || Array.isArray(requested)) {
+    const requested = getPageIdNumber(pageId);
+    if (!requested) {
       // should return 400 Bad Request
       return undefined;
     }
-    return DB.getImage(requested.id);
+    return DB.getImage(requested);
   }
   if (pageId.pageType === "User") {
-    if (!pageId.id) {
+    if (!pageId.what) {
       return DB.getUserSummaries();
     } else {
-      const requested = pageId.id;
-      if (Array.isArray(requested)) {
+      const requested = getPageIdNumber(pageId);
+      if (!requested) {
         // should return 404 Not Found
         return undefined;
       } else {
-        return DB.getUser(requested.id, userIdLogin);
+        return DB.getUser(requested, userIdLogin);
       }
     }
   }
   if (pageId.pageType === "Discussion") {
-    if (!pageId.id) {
+    if (!pageId.what) {
       return DB.getDiscussions();
     }
   }

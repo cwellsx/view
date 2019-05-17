@@ -1,7 +1,5 @@
 import { IdName } from "./Id";
-import { PageType } from "../io/pageId";
-import { UserSummary } from "./UserSummary";
-import { DiscussionSummary } from "./DiscussionSummary";
+import { TagId } from "./Tag";
 
 /*
   Copied from my specs:
@@ -20,27 +18,25 @@ import { DiscussionSummary } from "./DiscussionSummary";
 
 */
 
+export interface UserSummary {
+  idName: IdName;
+  gravatarHash: string;
+  location?: string;
+}
+
+export interface UserSummaryEx extends UserSummary {
+  tags?: TagId[];
+}
+
 export interface UserProfile {
   location?: string;
   aboutMe?: string; // markdown
-}
-
-export interface FavouriteId {
-  pageType: PageType;
-  idName: IdName;
 }
 
 // elements are optional e.g. because they're not defined or because they're private
 export interface UserPreferences {
   email: string;
   // notifications and groups are TBD
-}
-
-// UserActivity is fetched separately because it's potentially long
-export interface UserActivity {
-  summary: UserSummary;
-  messages: DiscussionSummary[];
-  favourites: FavouriteId[];
 }
 
 // to be implemented later

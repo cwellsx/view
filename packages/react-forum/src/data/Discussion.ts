@@ -1,6 +1,6 @@
-import { IdName, Id } from "./Id";
-import { UserSummary } from "./UserSummary";
-import { TopicSummary } from "./TopicSummary";
+import { IdName } from "./Id";
+import { UserSummary } from "./User";
+import { TagId } from "./Tag";
 
 export interface Message {
   userSummary: UserSummary;
@@ -12,8 +12,25 @@ export interface Message {
 export interface Discussion {
   meta: {
     idName: IdName;
-    topicSummary: TopicSummary;
+    tag: TagId;
     owner: UserSummary; // equals the user of the first message
   };
   messages: Message[];
+}
+
+/*
+  Summaries
+*/
+
+export interface MessageSummary {
+  userSummary: UserSummary;
+  messageExerpt: string;
+  dateTime: string;
+}
+
+export interface DiscussionSummary {
+  idName: IdName;
+  tag: TagId;
+  messageSummary: MessageSummary;
+  nAnswers: number;
 }
