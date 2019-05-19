@@ -1,8 +1,9 @@
 import * as I from "../data";
 import { BareUser, BareDiscussion, BareMessage } from "./bare";
 import { loadUsers, loadImages, loadTags, loadDiscussions } from "./loader";
-import { WireDiscussionSummaries } from "../data/Wire";
+import { WireDiscussions } from "../data/Wire";
 import { getExerpt } from "../data/Exerpt";
+import { DiscussionsPageOptions } from "../io/pageId";
 
 /*
   This is an in-RAM database
@@ -82,10 +83,12 @@ function sortDiscussions(index: [number, number][]): void {
   index.sort((x, y) => y[1] - x[1]);
 }
 
-function wireDiscussionSummaries(discussions: BareDiscussion[], getMessage: GetMessage): WireDiscussionSummaries {
-  const rc: WireDiscussionSummaries = {
+function wireDiscussionSummaries(discussions: BareDiscussion[], getMessage: GetMessage, meta: I.DiscussionsMeta):
+  WireDiscussions {
+  const rc: WireDiscussions = {
     users: [],
-    discussions: []
+    discussions: [],
+    meta
   }
   const userIds: Set<number> = new Set<number>();
   discussions.forEach(discussion => {
@@ -140,11 +143,19 @@ export function getUser(userId: number, userIdLogin?: number): I.User | undefine
   };
 }
 
-export function getDiscussions(): WireDiscussionSummaries {
-  const sortedDiscussions: [number, number][] = sortedDiscussionsActive;
-  const getMessage: GetMessage = getMessageEnded;
-  const start = 0;
-  const length = 50;
-  const selectedDiscussions = sortedDiscussions.slice(start, start + length).map((pair) => allDiscussions.get(pair[0])!);
-  return wireDiscussionSummaries(selectedDiscussions, getMessage);
+export function getDiscussions(options: DiscussionsPageOptions): WireDiscussions {
+  const meta: I.DiscussionsMeta = {
+    nTotal: allDiscussions.size,
+    sort: options.sort ? options.sort : "Active",
+    pageSize: options.pagesize ? options.pagesize : 50,
+    pageNumber: options.page ? options.page : 1
+  }
+  console.log(meta.pageNumber);
+  const active = meta.sort === "Active";
+  const sortedDiscussions: [number, number][] = (active) ? sortedDiscussionsActive : sortedDiscussionsNewest;
+  const getMessage: GetMessage = (active) ? getMessageEnded : getMessageStarted;
+  const length = meta.pageSize;
+  const start = (meta.pageNumber - 1) * meta.pageSize;
+  const selected = sortedDiscussions.slice(start, start + length).map((pair) => allDiscussions.get(pair[0])!);
+  return wireDiscussionSummaries(selected, getMessage, meta);
 }

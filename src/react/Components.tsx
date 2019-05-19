@@ -54,7 +54,7 @@ export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: s
 const nbsp = "\u00A0";
 
 export function getTagSummary(summary: I.TagSummary): KeyedItem {
-  const href = getPageUrl({ pageType: "Feature", what: {key: summary.key} });
+  const href = getPageUrl({ pageType: "Feature", what: { key: summary.key } });
   const label = summary.key.replace(" ", nbsp)
   const element = <NavLink to={href}>{label}</NavLink>;
   return { element, key: href };
@@ -87,4 +87,57 @@ export function getDiscussionSummary(summary: I.DiscussionSummary): KeyedItem {
     </div>
   );
   return { element, key: href };
+}
+
+function getPageNumbers(current: number, max: number): Array<{ text: string, n: number } | undefined> {
+  function numbers(first: number, last: number): Array<number | undefined> {
+    // https://stackoverflow.com/questions/3746725/how-to-create-an-array-containing-1-n
+    // says that convenient ways to do this are for higher versions of ES than supported in this project
+    const rc: number[] = [];
+    for (let i = first; i <= last; ++i) {
+      rc.push(i);
+    }
+    return rc;
+  }
+  const wanted: Array<number | undefined> =
+    (max <= 6)
+      ? numbers(1, max)
+      : ((current - 1) <= 3)
+        ? numbers(1, 5).concat([undefined, max])
+        : ((max - current) <= 3)
+          ? [1, undefined].concat(numbers(max - 4, max))
+          : [1, undefined].concat(numbers(current - 2, current + 2)).concat(undefined, max);
+  const rc: Array<{ text: string, n: number } | undefined> = wanted.map(x => x ? { text: "" + x, n: x } : undefined);
+  if (current > 1) {
+    rc.unshift({ text: "prev", n: current - 1 });
+  }
+  if (current < max) {
+    rc.push({ text: "next", n: current + 1 });
+  }
+  return rc;
+}
+
+export function getNavLinks(
+  wanted: Array<{ text: string, n: number } | undefined>,
+  href: (page: number) => string,
+  title: (n: number) => string,
+  current: number,
+  spanifySelected: boolean): React.ReactElement[] {
+  return wanted.map((x, index) => {
+    if (!x) {
+      const before: number = (wanted[index - 1] as { text: string, n: number }).n;
+      return <span key={"dots-" + before} className="dots">…</span>;
+    }
+    const { text, n } = x;
+    if (spanifySelected && (current === n)) {
+      return <span className="selected" key={text} >{text}</span>;
+    }
+    const className = (current === n) ? "selected" : undefined;
+    return <NavLink to={href(n)} key={text} title={title(n)} className={className}>{text}</NavLink >;
+  });
+}
+
+export function getPageNavLinks(current: number, max: number, href: (page: number) => string): React.ReactElement[] {
+  const wanted = getPageNumbers(current, max);
+  return getNavLinks(wanted, href, n => "go to page " + n, current, true);
 }

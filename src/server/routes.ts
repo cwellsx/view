@@ -1,9 +1,10 @@
 import * as DB from "./database";
-import { PageId, getPageUrl, getPageIdNumber } from "../io/pageId";
+import * as P from "../io/pageId";
+import * as Session from "./session";
 import { UserSummary } from "../data";
 
-export function mockServer(pageId: PageId, userIdLogin?: number): object | undefined {
-  console.log(`mockServer getting ${getPageUrl(pageId)}`);
+export function mockServer(pageId: P.PageId, userIdLogin: number): object | undefined {
+  console.log(`mockServer getting ${P.getPageUrl(pageId)}`);
   if (pageId.pageType === "SiteMap") {
     return DB.getSiteMap();
   }
@@ -11,7 +12,7 @@ export function mockServer(pageId: PageId, userIdLogin?: number): object | undef
     return loginUser();
   }
   if (pageId.pageType === "Image") {
-    const requested = getPageIdNumber(pageId);
+    const requested = P.getPageIdNumber(pageId);
     if (!requested) {
       // should return 400 Bad Request
       return undefined;
@@ -22,7 +23,7 @@ export function mockServer(pageId: PageId, userIdLogin?: number): object | undef
     if (!pageId.what) {
       return DB.getUserSummaries();
     } else {
-      const requested = getPageIdNumber(pageId);
+      const requested = P.getPageIdNumber(pageId);
       if (!requested) {
         // should return 404 Not Found
         return undefined;
@@ -33,7 +34,13 @@ export function mockServer(pageId: PageId, userIdLogin?: number): object | undef
   }
   if (pageId.pageType === "Discussion") {
     if (!pageId.what) {
-      return DB.getDiscussions();
+      const options = P.getDiscussionsPageOptions(pageId);
+      if (P.isPageIdError(options)) {
+        // should return 400 Bad Request
+        return undefined;
+      }
+      Session.getSetDiscussionsPageOptions(userIdLogin, options);
+      return DB.getDiscussions(options);
     }
   }
   return undefined;

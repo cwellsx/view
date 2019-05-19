@@ -2,4 +2,5 @@
 - Also rethink the vertical whitespace in those items
 - Make `getExerpt` markdown-aware, e.g. remove images and ignore the length of hyperlinks
 - Improve the style of all buttons e.g. on the Image page to show/hide the Layers column
-- Improve the style of the tags which identify a "feature"
+- Rename PageId to Request
+- Support writing to local storage -- https://github.com/donavon/use-dark-mode

@@ -7,7 +7,8 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import { route, UserPageType, getPageIdImage, getPageIdUser, isPageIdError } from "../io/pageId";
+import { route, UserPageType, getPageIdImage, getUserPageOptions, isPageIdError } from "../io/pageId";
+import * as R from "../io/pageId";
 import { AppContext, AppContextProps } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
@@ -192,7 +193,7 @@ export const SiteMap: React.FunctionComponent = () => {
 
 export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
 
-  const parsed = getPageIdImage(props.location.pathname);
+  const parsed = getPageIdImage(props.location);
   if (isPageIdError(parsed)) {
     return noMatch(props, parsed.error);
   }
@@ -229,7 +230,7 @@ export const Users: React.FunctionComponent = () => {
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const appContext: AppContextProps = React.useContext(AppContext);
   try {
-    const parsed = getPageIdUser(props.location.pathname, props.location.search);
+    const parsed = getUserPageOptions(props.location);
     if (isPageIdError(parsed)) {
       return noMatch(props, parsed.error);
     }
@@ -279,12 +280,27 @@ export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: 
   return renderLayout("User", layout);
 }
 
-export const Discussions: React.FunctionComponent = () => {
-  return useGetLayout<I.DiscussionSummary[]>(
-    "Discussions",
+export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+  // get the options
+  const options = R.getDiscussionsPageOptions(props.location);
+  if (R.isPageIdError(options)) {
+    return noMatch(props, options.error);
+  }
+  // split options into its components instead of passing whole options
+  // otherwise the eslint "react-hooks/exhaustive-deps" rule wil complain when we use useMemo
+  return <DiscussionsOptions sort={options.sort} pagesize={options.pagesize} page={options.page} />;
+}
+
+export const DiscussionsOptions: React.FunctionComponent<R.DiscussionsPageOptions> = (props: R.DiscussionsPageOptions) => {
+
+  const { sort, pagesize, page } = props;
+  const options: R.DiscussionsPageOptions = React.useMemo(() => { return { sort, pagesize, page }; }, [sort, pagesize, page])
+
+  return useGetLayout<I.Discussions, R.DiscussionsPageOptions>(
+    "All " + config.strQuestions,
     IO.getDiscussions,
     Page.Discussions,
-    isVoid
+    options
   );
 }
 
@@ -298,7 +314,7 @@ function noMatch(props: RouteComponentProps, error?: string) {
     <div>
       <h3>Not Found</h3>
       <p>No page found for <code>{pathname}</code></p>
-      <ErrorMessage errorMessage={error}/>
+      <ErrorMessage errorMessage={error} />
     </div>
   );
 }

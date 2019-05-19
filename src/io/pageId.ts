@@ -62,6 +62,14 @@ import { IdName, Key } from "../data/Id";
   Images:
 
   - /images/<id>/<name>
+
+  ---
+
+  For any given data type (e.g. `User`) this module may export the following functions:
+
+  UserPageOptions
+  getUserPageUrl(options: UserPageOptions): string
+  getUserPageOptions(url: string): UserPageOptions
 */
 
 export type PageType = "SiteMap" | "Login" | "Discussion" | "User" | "Image" | "Feature";
@@ -84,39 +92,58 @@ export function isPageIdError(rc: any | PageIdError): rc is PageIdError {
   return (rc as PageIdError).error !== undefined;
 }
 
+// subset of the Location which is exported by the "history" module
+// and which is passed to routes in the ReactRouter.RouteComponentProps
+interface Location {
+  pathname: string;
+  search: string;
+}
+
+function isLocation(location: Location | any): location is Location {
+  return (location as Location).pathname !== undefined;
+}
+
 /*
   Helpers to convert between PageType and URL path
 */
 
-const pageTypeUrls: Array<[PageType, string]> = [
+class Pairs<T0, T1> {
+  readonly array: [T0, T1][];
+  constructor(array: [T0, T1][]) {
+    this.array = array;
+  }
+  find0(wanted: T0): T1 | undefined {
+    const found = this.array.find(x => x[0] === wanted);
+    return !!found ? found[1] : undefined;
+  }
+  find1(wanted: T1): T0 | undefined {
+    const found = this.array.find(x => x[1] === wanted);
+    return !!found ? found[0] : undefined;
+  }
+}
+
+const pageTypeUrls = new Pairs<PageType, string>([
   ["SiteMap", "sitemap"],
   ["Login", "login"],
   ["Discussion", "discussions"],
   ["User", "users"],
   ["Image", "images"],
   ["Feature", "features"],
-];
+]);
 
-const pageIdWords: Array<[PageType, PageIdWord[]]> = [
+const pageIdWords = new Pairs<PageType, PageIdWord[]>([
   ["User", ["edit"]],
   ["Discussion", ["tagged"]]
-];
+]);
 
 function isPageIdWord(pageType: PageType, word: string): word is PageIdWord {
-  const found = pageIdWords.find(x => x[0] === pageType);
-  return !!found && found[1].includes(word as PageIdWord);
+  const found = pageIdWords.find0(pageType);
+  return !!found && found.includes(word as PageIdWord);
 }
 
 // from https://github.com/valeriangalliat/markdown-it-anchor/blob/master/index.js
 const slugify = (s: string) => encodeURIComponent(String(s).trim().toLowerCase().replace(/\s+/g, '-'))
 
-function getPageUrlRoot(pageType: PageType): string {
-  const found = pageTypeUrls.find((pair) => pair[0] === pageType);
-  if (!found) {
-    throw new Error(`Undefined PageType: '${pageType}'`);
-  }
-  return `/${found[1]}`;
-}
 function getIdName(idName: IdName): string {
   return `/${idName.id}/${slugify(idName.name)}`;
 }
@@ -127,6 +154,15 @@ function getQuery(pageId: PageId, name: string): string | undefined {
   }
   const found = pageId.queries.find(x => x[0] === name);
   return (!!found) ? found[1] : undefined;
+}
+
+function toNumber(s: string): number | undefined {
+  const rc: number = +s;
+  return (typeof rc === "number") ? rc : undefined;
+}
+
+export function getOptionsValues<T, K extends keyof T>(options: T, keys: K[]): T[K][] {
+  return keys.map(key => options[key]);
 }
 
 /*
@@ -150,7 +186,11 @@ export function getPageIdKey(pageId: PageId): string | undefined {
 */
 
 export function getPageUrl(pageId: PageId): string {
-  let url = getPageUrlRoot(pageId.pageType);
+  const root = pageTypeUrls.find0(pageId.pageType);
+  if (!root) {
+    throw new Error(`Undefined PageType: '${pageId.pageType}'`);
+  }
+  let url = `/${root}`;
   if (pageId.word) {
     url += `/${pageId.word}`;
   }
@@ -160,6 +200,9 @@ export function getPageUrl(pageId: PageId): string {
     } else {
       url += `/${pageId.what.id}/${slugify(pageId.what.name)}`;
     }
+  }
+  if (pageId.queries && pageId.queries.length) {
+    url += "?" + pageId.queries.map(pair => pair[1] ? pair[0] + "=" + pair[1] : pair[0]).join("&");
   }
   return url;
 }
@@ -179,30 +222,19 @@ function splitQueries(queries: string): [string, string | undefined][] {
 interface SplitUrl {
   path: string[];
   queries: [string, string | undefined][];
-  hash: string | undefined
 };
 
-export function splitLocation(pathname: string, search?: string, hash?: string): SplitUrl | PageIdError {
-  if (search) {
-    if (search[0] !== "?") {
-      return { error: "Expected search to start with `?`" };
-    } else {
-      search = search.substring(1);
-    }
-  }
-  if (hash) {
-    if (hash[0] !== "#") {
-      return { error: "Expected hash to start with `#`" };
-    } else {
-      hash = hash.substring(1);
-    }
+export function splitLocation(location: Location): SplitUrl | PageIdError {
+  let { pathname, search } = location;
+  if (search && (search[0] !== "?")) {
+    return { error: "Expected search to start with `?`" };
   }
   if (pathname[0] !== "/") {
     return { error: "Expected pathname to start with `/`" };
   }
   const path = pathname.substring(1).split("/");
-  const queries = (search) ? splitQueries(search) : [];
-  return { path, queries, hash };
+  const queries = (search) ? splitQueries(search.substring(1)) : [];
+  return { path, queries };
 }
 
 export function splitUrl(url: string): SplitUrl | PageIdError {
@@ -211,18 +243,17 @@ export function splitUrl(url: string): SplitUrl | PageIdError {
   }
 
   const splitHash = url.indexOf("#");
-  const hash = (splitHash !== -1) ? url.substring(splitHash) : undefined;
   if (splitHash !== -1) {
     url = url.substring(0, splitHash);
   }
 
   const splitQuery = url.indexOf("?");
-  const query = (splitQuery !== -1) ? url.substring(splitQuery) : undefined;
+  const query = (splitQuery !== -1) ? url.substring(splitQuery) : "";
   if (splitQuery !== -1) {
     url = url.substring(0, splitQuery);
   }
 
-  return splitLocation(url, query, hash);
+  return splitLocation({ pathname: url, search: query });
 }
 
 export function getPageId(split: SplitUrl | PageIdError): PageId | PageIdError {
@@ -230,17 +261,13 @@ export function getPageId(split: SplitUrl | PageIdError): PageId | PageIdError {
   if (isPageIdError(split)) {
     return split;
   }
-  const { path, queries, hash } = split;
+  const { path, queries } = split;
 
   // get the PageType
   if (!path.length) {
     return { error: "Check for the root URL before calling getPageId" };
   }
-  function getPagetype(): PageType | undefined {
-    const found = pageTypeUrls.find(x => x[1] === path[0]);
-    return found ? found[0] : undefined;
-  }
-  const pageType = getPagetype();
+  const pageType = pageTypeUrls.find1(path[0]);
   if (!pageType) {
     return { error: "Unknown page type" };
   };
@@ -268,13 +295,13 @@ export function getPageId(split: SplitUrl | PageIdError): PageId | PageIdError {
       case "Discussion":
       case "Image":
         // expect an IdName
-        if (typeof +path[0] !== "number") {
+        const id = toNumber(path[0]);
+        if (!id) {
           return { error: `Expected ${path[0]} to be a numeric ID` };
         }
         if (path.length > 2) {
           return { error: `Unexpected extra elements in the path` };
         }
-        const id = +path[0];
         const name = (path.length === 2) ? path[1] : "";
         what = { id, name };
         break;
@@ -313,7 +340,7 @@ export function requestPageId(pageType: PageType, id: number): PageId {
 }
 
 /*
-  Specialist functions to support the 3 tabs of a specific User page
+  User page supports 3 tabs
 */
 
 export type UserPageType = "Profile" | "EditSettings" | "Activity";
@@ -331,7 +358,7 @@ export function getUserPageUrl(userId: IdName, userPageType: UserPageType): stri
   }
 }
 
-export interface PageIdUser { userId: number, userPageType: UserPageType };
+export interface UserPageOptions { userId: number, userPageType: UserPageType };
 
 function getUserPageType(pageId: PageId): UserPageType | PageIdError {
   if (pageId.word === "edit") {
@@ -349,8 +376,8 @@ function getUserPageType(pageId: PageId): UserPageType | PageIdError {
   }
 }
 
-export function getPageIdUser(pathname: string, search: string): PageIdUser | PageIdError {
-  const split = getPageId(splitLocation(pathname, search));
+export function getUserPageOptions(location: Location): UserPageOptions | PageIdError {
+  const split = getPageId(splitLocation(location));
   if (isPageIdError(split)) {
     return split;
   }
@@ -370,11 +397,11 @@ export function getPageIdUser(pathname: string, search: string): PageIdUser | Pa
 }
 
 /*
-  Specialist function to support a specific Image page
+  Image page just has a numeric ID
 */
 
-export function getPageIdImage(pathname: string): { imageId: number } | PageIdError {
-  const split = getPageId(splitLocation(pathname));
+export function getPageIdImage(location: Location): { imageId: number } | PageIdError {
+  const split = getPageId(splitLocation(location));
   if (isPageIdError(split)) {
     return split;
   }
@@ -387,4 +414,66 @@ export function getPageIdImage(pathname: string): { imageId: number } | PageIdEr
     return { error: "Expected a numeric userId" };
   }
   return { imageId };
+}
+
+/*
+  Discussions page has two tabs
+*/
+
+export type DiscussionsSort = "Active" | "Newest";
+export type DiscussionSort = "Oldest" | "Newest";
+export type PageSize = 15 | 30 | 50;
+
+const discussionsSort = new Pairs<DiscussionsSort, string>([
+  ["Active", "active"],
+  ["Newest", "newest"]
+]);
+
+const pageSizes = new Pairs<PageSize, string>([
+  [15, "15"],
+  [30, "30"],
+  [50, "50"]
+]);
+
+export interface DiscussionsPageOptions {
+  sort?: DiscussionsSort;
+  pagesize?: PageSize
+  page?: number; //1-based
+}
+
+export function getDiscussionsPageId(options: DiscussionsPageOptions): PageId {
+  const queries: [string, string | undefined][] = [];
+  if (options.sort) {
+    queries.push(["sort", discussionsSort.find0(options.sort)!]);
+  }
+  if (options.pagesize) {
+    queries.push(["pagesize", "" + options.pagesize]);
+  }
+  if (options.page) {
+    queries.push(["page", "" + options.page]);
+  }
+  return { pageType: "Discussion", queries };
+}
+
+export function getDiscussionsPageUrl(options: DiscussionsPageOptions): string {
+  return getPageUrl(getDiscussionsPageId(options));
+}
+
+function ensurePageId(either: PageId | Location): PageId | PageIdError {
+  return isLocation(either) ? getPageId(splitLocation(either)) : either;
+}
+
+export function getDiscussionsPageOptions(either: PageId | Location): DiscussionsPageOptions | PageIdError {
+  const pageId = ensurePageId((either));
+  if (isPageIdError(pageId)) {
+    return pageId;
+  }
+  const sort = getQuery(pageId, "sort");
+  const pagesize = getQuery(pageId, "pagesize");
+  const page = getQuery(pageId, "page");
+  return {
+    sort: sort ? discussionsSort.find1(sort) : undefined,
+    pagesize: pagesize ? pageSizes.find1(pagesize) : undefined,
+    page: page ? toNumber(page) : undefined,
+  };
 }
