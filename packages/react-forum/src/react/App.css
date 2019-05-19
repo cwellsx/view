@@ -8,6 +8,8 @@ html {
 h1 {
   font-weight: 400;
   font-size: 2.07692308rem;
+  font-size: 27px;
+  margin-bottom: 24px;
 }
 
 h2 {

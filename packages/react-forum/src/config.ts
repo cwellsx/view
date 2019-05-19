@@ -4,5 +4,6 @@ export const config = {
   autologin: true,
   appname: "Prototype",
   mockdelay: 25,
-  exerptlength: 200
+  exerptlength: 200,
+  strQuestions: "Questions" // could be "Discussions or "Questions"
 };

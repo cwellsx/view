@@ -1,7 +1,8 @@
 import * as I from "../data";
-import { WireDiscussionSummaries, unwireDiscussionSummaries } from "../data/Wire"
+import { WireDiscussions, unwireDiscussions } from "../data/Wire"
 import * as Post from "./post";
 import { PageId, getPageUrl, requestPageId } from "./pageId";
+import * as R from "./pageId";
 import { config } from "../config"
 // only used for the mock
 import { SimpleResponse, mockFetch } from "../io/mock";
@@ -63,11 +64,12 @@ export async function getUserActivity(id: number): Promise<I.UserActivity> {
   throw new Error("not yet implemented");
 }
 
-export async function getDiscussions(): Promise<I.DiscussionSummary[]> {
-  const wirePromise: Promise<WireDiscussionSummaries> = getT<WireDiscussionSummaries>({ pageType: "Discussion" });
-  const rc: Promise<I.DiscussionSummary[]> = new Promise<I.DiscussionSummary[]>((resolve, reject) => {
-    wirePromise.then((wire: WireDiscussionSummaries) => {
-      const wanted: I.DiscussionSummary[] = unwireDiscussionSummaries(wire);
+export async function getDiscussions(options: R.DiscussionsPageOptions): Promise<I.Discussions> {
+  const url = R.getDiscussionsPageId(options);
+  const wirePromise: Promise<WireDiscussions> = getT<WireDiscussions>(url);
+  const rc: Promise<I.Discussions> = new Promise<I.Discussions>((resolve, reject) => {
+    wirePromise.then((wire: WireDiscussions) => {
+      const wanted: I.Discussions = unwireDiscussions(wire);
       resolve(wanted);
     })
     wirePromise.catch(error => {

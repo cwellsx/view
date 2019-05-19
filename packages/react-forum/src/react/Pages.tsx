@@ -2,9 +2,11 @@ import React from 'react';
 import * as I from "../data";
 import { KeyedItem, Layout, Tab, Tabs } from './PageLayout';
 import * as Summaries from "./Components";
-import { getUserPageUrl, UserPageType } from "../io/pageId";
+import { getUserPageUrl, UserPageType, getDiscussionsPageUrl, PageSize } from "../io/pageId";
 import './Pages.css';
 import { ReactComponent as LocationIcon } from "../icons/material/ic_location_on_24px.svg";
+import { config } from '../config';
+import { NavLink } from 'react-router-dom';
 
 
 /*
@@ -252,9 +254,52 @@ export function User(
   Discussions
 */
 
-export function Discussions(data: I.DiscussionSummary[]): Layout {
-  const elements = data.map(summary => Summaries.getDiscussionSummary(summary));
+export function Discussions(data: I.Discussions): Layout {
+  const { meta, summaries } = data;
+
+  // https://blog.abelotech.com/posts/number-currency-formatting-javascript/
+  const numQuestions = meta.nTotal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + config.strQuestions.toLowerCase();
+
+  const subtitle = (
+    <React.Fragment>
+      <div className="subtitle">
+        <div className="count">{numQuestions}</div>
+        <div className="sort">
+          <NavLink to={getDiscussionsPageUrl({ sort: "Newest" })}
+            className={meta.sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
+          <NavLink to={getDiscussionsPageUrl({ sort: "Active" })}
+            className={meta.sort === "Active" ? "selected" : undefined}>Active</NavLink>
+        </div>
+      </div>
+    </React.Fragment>
+  );
+
+  const nPages = Math.floor(meta.nTotal / meta.pageSize) + ((meta.nTotal % meta.pageSize) ? 1 : 0);
+  const sort = meta.sort;
+  const footer = (
+    <React.Fragment>
+      <div className="footer">
+        <div className="index">
+          {Summaries.getPageNavLinks(meta.pageNumber, nPages, (page) => getDiscussionsPageUrl({ page, sort }))}
+        </div>
+        <div className="size">
+          {Summaries.getNavLinks(
+            [15, 30, 50].map(n => { return { text: "" + n, n }; }),
+            (n: number) => getDiscussionsPageUrl({ pagesize: n as PageSize }),
+            (n: number) => `show ${n} items per page`,
+            meta.pageSize,
+            false
+          )}
+          <span className="dots">per page</span>
+        </div>
+      </div>
+    </React.Fragment>
+  );
+
+  const elements = summaries.map(summary => Summaries.getDiscussionSummary(summary));
+  elements.push({ element: footer, key: "footer" });
   return {
-    main: elements
+    main: elements,
+    subtitle
   };
 }

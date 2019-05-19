@@ -44,6 +44,8 @@
 
 .discussion-summary h3 > a {
   font-size: 16px;
+  font-weight: normal;
+  color: rgb(44, 87, 119);
 }
 
 .discussion-summary .excerpt {

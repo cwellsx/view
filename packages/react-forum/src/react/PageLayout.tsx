@@ -41,9 +41,10 @@ function isTabs(content: MainContent): content is Tabs {
 type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | Tabs | string;
 
 export interface Layout {
-  main: MainContent,
-  width?: "Full" | "Grid"
-  right?: RightContent
+  main: MainContent;
+  width?: "Full" | "Grid";
+  right?: RightContent;
+  subtitle?: React.ReactElement;
 };
 
 /*
@@ -192,6 +193,7 @@ function switchLayout(contents: Layout, title: string) {
             {rightButton}
             <div className="header">
               <h1>{title}</h1>
+              {contents.subtitle}
             </div>
             <div className="content">
               {mainColumn}

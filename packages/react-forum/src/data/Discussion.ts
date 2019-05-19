@@ -1,6 +1,7 @@
 import { IdName } from "./Id";
 import { UserSummary } from "./User";
 import { TagId } from "./Tag";
+import { DiscussionsSort } from "../io/pageId";
 
 export interface Message {
   userSummary: UserSummary;
@@ -33,4 +34,16 @@ export interface DiscussionSummary {
   tag: TagId;
   messageSummary: MessageSummary;
   nAnswers: number;
+}
+
+export interface DiscussionsMeta {
+  nTotal: number;
+  sort: DiscussionsSort;
+  pageSize: number;
+  pageNumber: number; // 1-based
+}
+
+export interface Discussions {
+  meta: DiscussionsMeta;
+  summaries: DiscussionSummary[];
 }

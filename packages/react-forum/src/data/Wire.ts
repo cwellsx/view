@@ -1,12 +1,12 @@
 import { IdName } from "./Id";
 import { UserSummary } from "./User";
 import { TagId } from "./Tag";
-import { DiscussionSummary } from "./Discussion";
+import { DiscussionSummary, Discussions, DiscussionsMeta } from "./Discussion";
 import { Discussion } from "./Discussion";
 import { getExerpt } from "./Exerpt";
 
 // slightly more compact form in which it's sent from server
-export interface WireDiscussionSummaries {
+export interface WireDiscussions {
   users: UserSummary[];
   discussions: {
     idName: IdName, // discussion ID
@@ -17,15 +17,16 @@ export interface WireDiscussionSummaries {
     dateTime: string,
     nAnswers: number
   }[];
+  meta: DiscussionsMeta;
 }
 
-export function unwireDiscussionSummaries(input: WireDiscussionSummaries): DiscussionSummary[] {
+export function unwireDiscussions(input: WireDiscussions): Discussions {
   // create a Map of the users
   const users: Map<number, UserSummary> = new Map<number, UserSummary>(
     input.users.map(user => [user.idName.id, user])
   );
 
-  return input.discussions.map(wire => {
+  const summaries: DiscussionSummary[] = input.discussions.map(wire => {
     return {
       idName: wire.idName,
       tag: wire.tag,
@@ -37,6 +38,8 @@ export function unwireDiscussionSummaries(input: WireDiscussionSummaries): Discu
       nAnswers: wire.nAnswers
     };
   });
+
+  return { summaries, meta: input.meta };
 }
 
 // slightly more compact form in which it's sent from server
