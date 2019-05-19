@@ -1,7 +1,7 @@
-import { IdName } from "./Id";
-import { UserSummary } from "./User";
-import { TagId } from "./Tag";
-import { DiscussionsSort } from "../io/pageId";
+import { IdName } from "./id";
+import { UserSummary } from "./user";
+import { TagId } from "./tag";
+import { DiscussionsSort } from "../shared/request";
 
 export interface Message {
   userSummary: UserSummary;

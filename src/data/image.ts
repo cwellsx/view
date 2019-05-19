@@ -1,5 +1,5 @@
-import { IdName } from "./Id";
-import { ImageLayers } from "./ImageLayers";
+import { IdName } from "./id";
+import { ImageLayers } from "./imageLayers";
 
 export interface Image {
   summary: ImageSummary;

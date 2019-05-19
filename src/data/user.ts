@@ -1,5 +1,5 @@
-import { IdName } from "./Id";
-import { TagId } from "./Tag";
+import { IdName } from "./id";
+import { TagId } from "./tag";
 
 /*
   Copied from my specs:

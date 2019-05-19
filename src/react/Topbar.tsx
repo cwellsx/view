@@ -5,7 +5,7 @@ import { ReactComponent as Mail } from "../icons/topbar/Mail_16x.svg";
 import { ReactComponent as Message } from "../icons/topbar/Message_16x.svg";
 import { ReactComponent as Search } from "../icons/topbar/Search_16x.svg";
 import { ReactComponent as UserProfile } from "../icons/topbar/UserProfile_16x.svg";
-import { route } from "../io/pageId";
+import { route } from "../shared/request";
 import { AppContext, AppContextProps } from './AppContext';
 import { getUserSummary } from "./Components";
 

@@ -1,5 +1,5 @@
-import { PageType } from "../io/pageId";
-import { IdName, Key } from "./Id";
+import { ResourceType } from "../shared/request";
+import { IdName, Key } from "./id";
 
 export interface Tag extends Key {
   summary?: string;
@@ -19,7 +19,7 @@ export interface TagSummary extends Key {
 */
 
 export type TagId = Key | {
-  pageType: PageType;
+  resourceType: ResourceType;
   what: IdName;
 };
 

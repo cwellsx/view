@@ -1,9 +1,9 @@
 import * as I from "../data";
 import { BareUser, BareDiscussion, BareMessage } from "./bare";
 import { loadUsers, loadImages, loadTags, loadDiscussions } from "./loader";
-import { WireDiscussions } from "../data/Wire";
-import { getExerpt } from "../data/Exerpt";
-import { DiscussionsPageOptions } from "../io/pageId";
+import { WireDiscussions } from "../shared/wire";
+import { getExerpt } from "../shared/exerpt";
+import { DiscussionsOptions } from "../shared/request";
 
 /*
   This is an in-RAM database
@@ -143,7 +143,7 @@ export function getUser(userId: number, userIdLogin?: number): I.User | undefine
   };
 }
 
-export function getDiscussions(options: DiscussionsPageOptions): WireDiscussions {
+export function getDiscussions(options: DiscussionsOptions): WireDiscussions {
   const meta: I.DiscussionsMeta = {
     nTotal: allDiscussions.size,
     sort: options.sort ? options.sort : "Active",

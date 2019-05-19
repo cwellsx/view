@@ -2,7 +2,7 @@ import React from 'react';
 import * as I from "../data";
 import { KeyedItem, Layout, Tab, Tabs } from './PageLayout';
 import * as Summaries from "./Components";
-import { getUserPageUrl, UserPageType, getDiscussionsPageUrl, PageSize } from "../io/pageId";
+import { getUserUrl, UserTabType, getDiscussionsUrl, PageSize } from "../shared/request";
 import './Pages.css';
 import { ReactComponent as LocationIcon } from "../icons/material/ic_location_on_24px.svg";
 import { config } from '../config';
@@ -140,10 +140,10 @@ export function Users(data: I.UserSummaryEx[]): Layout {
   User
 */
 
-interface UserProfileProps { data: I.User, userPageType: UserPageType };
+interface UserProfileProps { data: I.User, userTabType: UserTabType };
 
 function isUserProfile(props: UserProfileProps | I.UserActivity): props is UserProfileProps {
-  return (props as UserProfileProps).userPageType !== undefined;
+  return (props as UserProfileProps).userTabType !== undefined;
 }
 
 export function User(
@@ -152,18 +152,18 @@ export function User(
   userId: number): Layout {
   // crack the input parameters
   const summary = !isUserProfile(props) ? props.summary : props.data.summary;
-  const userPageType: UserPageType = !isUserProfile(props) ? "Activity" : props.userPageType;
+  const userTabType: UserTabType = !isUserProfile(props) ? "Activity" : props.userTabType;
 
   // build the gravatars
   const { userName, gravatar } = Summaries.getUserSummary(summary, { title: false, size: "huge" });
   const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
   const selected = canEdit
-    ? ((userPageType === "Profile") ? 0 : (userPageType === "EditSettings") ? 1 : 2)
-    : ((userPageType === "Profile") ? 0 : 1);
+    ? ((userTabType === "Profile") ? 0 : (userTabType === "EditSettings") ? 1 : 2)
+    : ((userTabType === "Profile") ? 0 : 1);
   const idName: I.IdName = summary.idName;
 
   const profile: Tab = {
-    navlink: { href: getUserPageUrl(idName, "Profile"), text: "Profile" },
+    navlink: { href: getUserUrl(idName, "Profile"), text: "Profile" },
     content: (
       <div className="user-profile profile">
         {gravatar}
@@ -214,7 +214,7 @@ export function User(
     }
 
     const rc: Tab = {
-      navlink: { href: getUserPageUrl(idName, "EditSettings"), text: "Edit" },
+      navlink: { href: getUserUrl(idName, "EditSettings"), text: "Edit" },
       content: getSettingsContent()
     };
     return rc;
@@ -222,7 +222,7 @@ export function User(
   const settings: Tab | undefined = canEdit ? getSettings() : undefined;
 
   const activity: Tab = {
-    navlink: { href: getUserPageUrl(idName, "Activity"), text: "Activity" },
+    navlink: { href: getUserUrl(idName, "Activity"), text: "Activity" },
     content: <p>Where</p>
   };
   const header = {
@@ -265,9 +265,9 @@ export function Discussions(data: I.Discussions): Layout {
       <div className="subtitle">
         <div className="count">{numQuestions}</div>
         <div className="sort">
-          <NavLink to={getDiscussionsPageUrl({ sort: "Newest" })}
+          <NavLink to={getDiscussionsUrl({ sort: "Newest" })}
             className={meta.sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
-          <NavLink to={getDiscussionsPageUrl({ sort: "Active" })}
+          <NavLink to={getDiscussionsUrl({ sort: "Active" })}
             className={meta.sort === "Active" ? "selected" : undefined}>Active</NavLink>
         </div>
       </div>
@@ -280,12 +280,12 @@ export function Discussions(data: I.Discussions): Layout {
     <React.Fragment>
       <div className="footer">
         <div className="index">
-          {Summaries.getPageNavLinks(meta.pageNumber, nPages, (page) => getDiscussionsPageUrl({ page, sort }))}
+          {Summaries.getPageNavLinks(meta.pageNumber, nPages, (page) => getDiscussionsUrl({ page, sort }))}
         </div>
         <div className="size">
           {Summaries.getNavLinks(
             [15, 30, 50].map(n => { return { text: "" + n, n }; }),
-            (n: number) => getDiscussionsPageUrl({ pagesize: n as PageSize }),
+            (n: number) => getDiscussionsUrl({ pagesize: n as PageSize }),
             (n: number) => `show ${n} items per page`,
             meta.pageSize,
             false

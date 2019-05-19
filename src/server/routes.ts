@@ -1,29 +1,29 @@
 import * as DB from "./database";
-import * as P from "../io/pageId";
+import * as P from "../shared/request";
 import * as Session from "./session";
 import { UserSummary } from "../data";
 
-export function mockServer(pageId: P.PageId, userIdLogin: number): object | undefined {
-  console.log(`mockServer getting ${P.getPageUrl(pageId)}`);
-  if (pageId.pageType === "SiteMap") {
+export function mockServer(resource: P.Resource, userIdLogin: number): object | undefined {
+  console.log(`mockServer getting ${P.getResourceUrl(resource)}`);
+  if (resource.resourceType === "SiteMap") {
     return DB.getSiteMap();
   }
-  if (pageId.pageType === "Login") {
+  if (resource.resourceType === "Login") {
     return loginUser();
   }
-  if (pageId.pageType === "Image") {
-    const requested = P.getPageIdNumber(pageId);
+  if (resource.resourceType === "Image") {
+    const requested = P.getResourceId(resource);
     if (!requested) {
       // should return 400 Bad Request
       return undefined;
     }
     return DB.getImage(requested);
   }
-  if (pageId.pageType === "User") {
-    if (!pageId.what) {
+  if (resource.resourceType === "User") {
+    if (!resource.what) {
       return DB.getUserSummaries();
     } else {
-      const requested = P.getPageIdNumber(pageId);
+      const requested = P.getResourceId(resource);
       if (!requested) {
         // should return 404 Not Found
         return undefined;
@@ -32,14 +32,14 @@ export function mockServer(pageId: P.PageId, userIdLogin: number): object | unde
       }
     }
   }
-  if (pageId.pageType === "Discussion") {
-    if (!pageId.what) {
-      const options = P.getDiscussionsPageOptions(pageId);
-      if (P.isPageIdError(options)) {
+  if (resource.resourceType === "Discussion") {
+    if (!resource.what) {
+      const options = P.getDiscussionsOptions(resource);
+      if (P.isParserError(options)) {
         // should return 400 Bad Request
         return undefined;
       }
-      Session.getSetDiscussionsPageOptions(userIdLogin, options);
+      Session.getSetDiscussionsOptions(userIdLogin, options);
       return DB.getDiscussions(options);
     }
   }
