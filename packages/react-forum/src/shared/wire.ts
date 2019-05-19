@@ -1,9 +1,9 @@
-import { IdName } from "./Id";
-import { UserSummary } from "./User";
-import { TagId } from "./Tag";
-import { DiscussionSummary, Discussions, DiscussionsMeta } from "./Discussion";
-import { Discussion } from "./Discussion";
-import { getExerpt } from "./Exerpt";
+import { IdName } from "../data/id";
+import { UserSummary } from "../data/user";
+import { TagId } from "../data/tag";
+import { DiscussionSummary, Discussions, DiscussionsMeta } from "../data/discussion";
+import { Discussion } from "../data/discussion";
+import { getExerpt } from "./exerpt";
 
 // slightly more compact form in which it's sent from server
 export interface WireDiscussions {

@@ -1,4 +1,4 @@
-import * as R from "../io/pageId";
+import * as R from "../shared/request";
 
 /*
   In future, add code to load old state from disk and to save new state to disk.
@@ -25,7 +25,7 @@ function getOrSet(userId: number): SessionState {
   return sessionState;
 }
 
-export function getSetDiscussionsPageOptions(userId: number, options: R.DiscussionsPageOptions) {
+export function getSetDiscussionsOptions(userId: number, options: R.DiscussionsOptions) {
   const sessionState = getOrSet(userId);
   // write any new explicitly-set options to the session state
   if (options.sort || options.pagesize) {

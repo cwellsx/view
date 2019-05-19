@@ -7,8 +7,8 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import { route, UserPageType, getPageIdImage, getUserPageOptions, isPageIdError } from "../io/pageId";
-import * as R from "../io/pageId";
+import { route, UserTabType, getImageId, getUserOptions, isParserError } from "../shared/request";
+import * as R from "../shared/request";
 import { AppContext, AppContextProps } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
@@ -193,8 +193,8 @@ export const SiteMap: React.FunctionComponent = () => {
 
 export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
 
-  const parsed = getPageIdImage(props.location);
-  if (isPageIdError(parsed)) {
+  const parsed = getImageId(props.location);
+  if (isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
 
@@ -230,38 +230,38 @@ export const Users: React.FunctionComponent = () => {
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const appContext: AppContextProps = React.useContext(AppContext);
   try {
-    const parsed = getUserPageOptions(props.location);
-    if (isPageIdError(parsed)) {
+    const parsed = getUserOptions(props.location);
+    if (isParserError(parsed)) {
       return noMatch(props, parsed.error);
     }
-    const { userId, userPageType } = parsed;
-    const isActivity: boolean = userPageType === "Activity";
+    const { userId, userTabType } = parsed;
+    const isActivity: boolean = userTabType === "Activity";
     const canEdit: boolean = appContext.me ? (appContext.me.idName.id === userId) : false;
-    if (!canEdit && (userPageType === "EditSettings")) {
+    if (!canEdit && (userTabType === "EditSettings")) {
       return noMatch(props, "You cannot edit another user's profile");
     }
     return isActivity
       ? <UserActivity userId={userId} canEdit={canEdit} />
-      : <UserProfile userId={userId} userPageType={userPageType} canEdit={canEdit} />;
+      : <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} />;
   } catch (e) {
     console.error(e.message);
     return noMatch(props, e.message);
   }
 }
 
-interface UserProfileProps { userId: number, userPageType: UserPageType, canEdit: boolean };
+interface UserProfileProps { userId: number, userTabType: UserTabType, canEdit: boolean };
 export const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfileProps) => {
 
-  const { userId, userPageType, canEdit } = props;
+  const { userId, userTabType, canEdit } = props;
 
   // we want to do something different here -- 
   // i.e. we want reuse the data from the call to IO.getUser,
-  // even if the userPageType changes between "Profile" and "EditSettings"
-  // if we used useGetLayout then we ought to specify (e.g. via useCallback) that userPageType is a dependency, so
+  // even if the userTabType changes between "Profile" and "EditSettings"
+  // if we used useGetLayout then we ought to specify (e.g. via useCallback) that userTabType is a dependency, so
   // instead we use `useGet` and invoke the "get layout" from here i.e. outside the function which contains useEffect.
 
   const data: I.User | undefined = useGet(IO.getUser, userId);
-  const layout = (!data) ? loadingContents : Page.User({ data, userPageType }, canEdit, userId);
+  const layout = (!data) ? loadingContents : Page.User({ data, userTabType }, canEdit, userId);
   return renderLayout("User", layout);
 }
 
@@ -282,8 +282,8 @@ export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: 
 
 export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options
-  const options = R.getDiscussionsPageOptions(props.location);
-  if (R.isPageIdError(options)) {
+  const options = R.getDiscussionsOptions(props.location);
+  if (R.isParserError(options)) {
     return noMatch(props, options.error);
   }
   // split options into its components instead of passing whole options
@@ -291,12 +291,12 @@ export const Discussions: React.FunctionComponent<RouteComponentProps> = (props:
   return <DiscussionsOptions sort={options.sort} pagesize={options.pagesize} page={options.page} />;
 }
 
-export const DiscussionsOptions: React.FunctionComponent<R.DiscussionsPageOptions> = (props: R.DiscussionsPageOptions) => {
+export const DiscussionsOptions: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
 
   const { sort, pagesize, page } = props;
-  const options: R.DiscussionsPageOptions = React.useMemo(() => { return { sort, pagesize, page }; }, [sort, pagesize, page])
+  const options: R.DiscussionsOptions = React.useMemo(() => { return { sort, pagesize, page }; }, [sort, pagesize, page])
 
-  return useGetLayout<I.Discussions, R.DiscussionsPageOptions>(
+  return useGetLayout<I.Discussions, R.DiscussionsOptions>(
     "All " + config.strQuestions,
     IO.getDiscussions,
     Page.Discussions,

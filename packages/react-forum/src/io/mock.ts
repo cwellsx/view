@@ -1,5 +1,5 @@
 import { config } from "../config"
-import { PageId, getPageUrl } from "./pageId";
+import { Resource, getResourceUrl } from "../shared/request";
 import { mockServer, loginUser } from "../server/routes";
 
 export { loginUser } from "../server/routes";
@@ -11,7 +11,7 @@ export interface SimpleResponse {
   json(): Promise<any>;
 }
 
-export function mockFetch(pageId: PageId): Promise<SimpleResponse> {
+export function mockFetch(resource: Resource): Promise<SimpleResponse> {
   return new Promise<SimpleResponse>((resolve, reject) => {
     setTimeout(() => {
       if (config.loginfails) {
@@ -34,11 +34,11 @@ export function mockFetch(pageId: PageId): Promise<SimpleResponse> {
       // const me: I.UserSummary | undefined = React.useContext(AppContext).me;
       // const userId: number | undefined = me ? me.idName.id : undefined;
       const userId = loginUser().idName.id;
-      const json = mockServer(pageId, userId);
+      const json = mockServer(resource, userId);
       if (!json) {
         // from inside setTimeout we must reject not throw
         // https://stackoverflow.com/questions/33445415/javascript-promises-reject-vs-throw
-        reject(new Error(`No mock data found for ${getPageUrl(pageId)}`));
+        reject(new Error(`No mock data found for ${getResourceUrl(resource)}`));
       }
       const jsonPromise: Promise<any> = new Promise<any>((resolve, reject) => {
         // no possible need to call reject because we already have the data

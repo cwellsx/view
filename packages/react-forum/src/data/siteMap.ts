@@ -1,5 +1,5 @@
-import { ImageSummary } from "./Image";
-import { TagSummary } from "./Tag";
+import { ImageSummary } from "./image";
+import { TagSummary } from "./tag";
 
 export interface SiteMap {
   images: ReadonlyArray<ImageSummary>,

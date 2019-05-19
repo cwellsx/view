@@ -1,10 +1,10 @@
-import { IdName } from "./Id";
-import { PageType } from "../io/pageId";
-import { UserSummary } from "./User";
-import { DiscussionSummary } from "./Discussion";
+import { IdName } from "./id";
+import { ResourceType } from "../shared/request";
+import { UserSummary } from "./user";
+import { DiscussionSummary } from "./discussion";
 
 export interface FavouriteId {
-  pageType: PageType;
+  resourceType: ResourceType;
   idName: IdName;
 }
 
