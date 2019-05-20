@@ -141,3 +141,29 @@ export function getPageNavLinks(current: number, max: number, href: (page: numbe
   const wanted = getPageNumbers(current, max);
   return getNavLinks(wanted, href, n => "go to page " + n, current, true);
 }
+
+function getMessage(message: I.Message, index: number, tag?: I.TagId): KeyedItem {
+  const topic = (!tag) ? undefined
+    : <div className="topic"><span>{I.getTagIdText(tag)}</span></div>
+  const when = toLocaleString(new Date(message.dateTime));
+  const element = (
+    <React.Fragment>
+      <div className="message">
+        <p>
+          {message.markdown}
+        </p>
+        {topic}
+        {getUserInfo(message.userSummary, "small", when)}
+      </div>
+    </React.Fragment>
+  );
+  return { key: "" + index, element };
+}
+
+export function getFirstMessage(message: I.Message, tag: I.TagId): KeyedItem {
+  return getMessage(message, 0, tag);
+}
+
+export function getNextMessage(message: I.Message, index: number): KeyedItem {
+  return getMessage(message, index + 1);
+}

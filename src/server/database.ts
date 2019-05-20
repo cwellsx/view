@@ -1,9 +1,9 @@
 import * as I from "../data";
 import { BareUser, BareDiscussion, BareMessage } from "./bare";
 import { loadUsers, loadImages, loadTags, loadDiscussions } from "./loader";
-import { WireDiscussions } from "../shared/wire";
+import { WireDiscussions, WireDiscussion } from "../shared/wire";
 import { getExerpt } from "../shared/exerpt";
-import { DiscussionsOptions } from "../shared/request";
+import { DiscussionsOptions, DiscussionOptions } from "../shared/request";
 
 /*
   This is an in-RAM database
@@ -83,12 +83,12 @@ function sortDiscussions(index: [number, number][]): void {
   index.sort((x, y) => y[1] - x[1]);
 }
 
-function wireDiscussionSummaries(discussions: BareDiscussion[], getMessage: GetMessage, meta: I.DiscussionsMeta):
+function wireDiscussionSummaries(discussions: BareDiscussion[], getMessage: GetMessage, range: I.DiscussionsRange):
   WireDiscussions {
   const rc: WireDiscussions = {
     users: [],
     discussions: [],
-    meta
+    range
   }
   const userIds: Set<number> = new Set<number>();
   discussions.forEach(discussion => {
@@ -103,6 +103,21 @@ function wireDiscussionSummaries(discussions: BareDiscussion[], getMessage: GetM
       nAnswers: discussion.messages.length - 1
     });
   });
+  userIds.forEach(userId => rc.users.push(getUserSummary(userId)));
+  return rc;
+}
+
+function wireDiscussion(discussion: BareDiscussion, messages: BareMessage[], range: I.DiscussionRange): WireDiscussion {
+  const rc: WireDiscussion = {
+    users: [],
+    meta: discussion.meta,
+    first: discussion.messages[0],
+    range,
+    messages
+  }
+  const userIds: Set<number> = new Set<number>();
+  messages.forEach(message => userIds.add(message.userId));
+  userIds.add(rc.first.userId);
   userIds.forEach(userId => rc.users.push(getUserSummary(userId)));
   return rc;
 }
@@ -144,18 +159,41 @@ export function getUser(userId: number, userIdLogin?: number): I.User | undefine
 }
 
 export function getDiscussions(options: DiscussionsOptions): WireDiscussions {
-  const meta: I.DiscussionsMeta = {
+  const range: I.DiscussionsRange = {
     nTotal: allDiscussions.size,
     sort: options.sort ? options.sort : "Active",
     pageSize: options.pagesize ? options.pagesize : 50,
     pageNumber: options.page ? options.page : 1
   }
-  console.log(meta.pageNumber);
-  const active = meta.sort === "Active";
+  const active = range.sort === "Active";
   const sortedDiscussions: [number, number][] = (active) ? sortedDiscussionsActive : sortedDiscussionsNewest;
   const getMessage: GetMessage = (active) ? getMessageEnded : getMessageStarted;
-  const length = meta.pageSize;
-  const start = (meta.pageNumber - 1) * meta.pageSize;
+  const length = range.pageSize;
+  const start = (range.pageNumber - 1) * range.pageSize;
   const selected = sortedDiscussions.slice(start, start + length).map((pair) => allDiscussions.get(pair[0])!);
-  return wireDiscussionSummaries(selected, getMessage, meta);
+  return wireDiscussionSummaries(selected, getMessage, range);
+}
+
+export function getDiscussion(options: DiscussionOptions): WireDiscussion | undefined {
+  const discussion = allDiscussions.get(options.discussion.id);
+  if (!discussion) {
+    return undefined;
+  }
+  if (!discussion.messages.length) {
+    // should be error 500 or something like that
+    return undefined;
+  }
+  const range: I.DiscussionRange = {
+    nTotal: discussion.messages.length - 1,
+    sort: options.sort ? options.sort : "Oldest",
+    pageSize: 30,
+    pageNumber: options.page ? options.page : 1
+  }
+  const length = range.pageSize;
+  const start = ((range.pageNumber - 1) * range.pageSize) + 1;
+  const selected = discussion.messages.slice(start, start + length);
+  if (range.sort==="Newest") {
+    selected.reverse();
+  }
+  return wireDiscussion(discussion, selected, range);
 }

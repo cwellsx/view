@@ -144,10 +144,6 @@ function isResourceWord(resourceType: ResourceType, word: string): word is Resou
 // from https://github.com/valeriangalliat/markdown-it-anchor/blob/master/index.js
 const slugify = (s: string) => encodeURIComponent(String(s).trim().toLowerCase().replace(/\s+/g, '-'))
 
-function getIdName(idName: IdName): string {
-  return `/${idName.id}/${slugify(idName.name)}`;
-}
-
 function getQuery(resource: Resource, name: string): string | undefined {
   if (!resource.queries) {
     return undefined;
@@ -161,10 +157,6 @@ function toNumber(s: string): number | undefined {
   return (typeof rc === "number") ? rc : undefined;
 }
 
-export function getOptionsValues<T, K extends keyof T>(options: T, keys: K[]): T[K][] {
-  return keys.map(key => options[key]);
-}
-
 /*
   Extract the what? value
 */
@@ -173,12 +165,12 @@ function isWhatKey(what: IdName | Key): what is Key {
   return (what as Key).key !== undefined;
 }
 
-export function getResourceId(resource: Resource): number | undefined {
-  return (resource.what && !isWhatKey(resource.what)) ? resource.what.id : undefined;
+function getResourceId(resource: Resource): IdName | undefined {
+  return (resource.what && !isWhatKey(resource.what)) ? resource.what : undefined;
 }
 
-export function getResourceKey(resource: Resource): string | undefined {
-  return (resource.what && isWhatKey(resource.what)) ? resource.what.key : undefined;
+function getResourceKey(resource: Resource): Key | undefined {
+  return (resource.what && isWhatKey(resource.what)) ? resource.what : undefined;
 }
 
 /*
@@ -219,49 +211,17 @@ function splitQueries(queries: string): [string, string | undefined][] {
   });
 }
 
-interface SplitUrl {
-  path: string[];
-  queries: [string, string | undefined][];
-};
-
-export function splitLocation(location: Location): SplitUrl | ParserError {
-  let { pathname, search } = location;
+function makeResource(location: Location): Resource | ParserError {
+  // split the input parameters
+  const { pathname, search } = location;
   if (search && (search[0] !== "?")) {
     return { error: "Expected search to start with `?`" };
   }
   if (pathname[0] !== "/") {
     return { error: "Expected pathname to start with `/`" };
   }
-  const path = pathname.substring(1).split("/");
-  const queries = (search) ? splitQueries(search.substring(1)) : [];
-  return { path, queries };
-}
-
-export function splitUrl(url: string): SplitUrl | ParserError {
-  if (url[0] !== "/") {
-    return { error: "Expected URL to start with `/`" };
-  }
-
-  const splitHash = url.indexOf("#");
-  if (splitHash !== -1) {
-    url = url.substring(0, splitHash);
-  }
-
-  const splitQuery = url.indexOf("?");
-  const query = (splitQuery !== -1) ? url.substring(splitQuery) : "";
-  if (splitQuery !== -1) {
-    url = url.substring(0, splitQuery);
-  }
-
-  return splitLocation({ pathname: url, search: query });
-}
-
-export function getResource(split: SplitUrl | ParserError): Resource | ParserError {
-  // the URL is already split by splitUrl or splitLocation
-  if (isParserError(split)) {
-    return split;
-  }
-  const { path, queries } = split;
+  const path: string[] = pathname.substring(1).split("/");
+  const queries: [string, string | undefined][] = (search) ? splitQueries(search.substring(1)) : [];
 
   // get the ResourceType
   if (!path.length) {
@@ -319,6 +279,30 @@ export function getResource(split: SplitUrl | ParserError): Resource | ParserErr
   return { resourceType: resourceType, word, what, queries };
 }
 
+function ensureResource(either: Resource | Location): Resource | ParserError {
+  return isLocation(either) ? makeResource(either) : either;
+}
+
+export function getResource(url: string): Resource | ParserError {
+  if (url[0] !== "/") {
+    return { error: "Expected URL to start with `/`" };
+  }
+
+  const splitHash = url.indexOf("#");
+  if (splitHash !== -1) {
+    url = url.substring(0, splitHash);
+  }
+
+  const splitQuery = url.indexOf("?");
+  const query = (splitQuery !== -1) ? url.substring(splitQuery) : "";
+  if (splitQuery !== -1) {
+    url = url.substring(0, splitQuery);
+  }
+
+  const location: Location = { pathname: url, search: query };
+  return makeResource(location);
+}
+
 /*
   Simple routes for each of the various ResourceType values
 */
@@ -348,17 +332,17 @@ export type UserTabType = "Profile" | "EditSettings" | "Activity";
 export function getUserUrl(userId: IdName, userTabType: UserTabType): string {
   switch (userTabType) {
     case "Profile":
-      return getResourceUrl({ resourceType: "User", what: userId }) + "?tab=profile";
+      return getResourceUrl({ resourceType: "User", what: userId, queries: [["tab", "profile"]] });
     case "EditSettings":
-      return getResourceUrl({ resourceType: "User" }) + "/edit" + getIdName(userId);
+      return getResourceUrl({ resourceType: "User", word: "edit", what: userId });
     case "Activity":
-      return getResourceUrl({ resourceType: "User", what: userId }) + "?tab=activity";
+      return getResourceUrl({ resourceType: "User", what: userId, queries: [["tab", "activity"]] });
     default:
       throw new Error();
   }
 }
 
-export interface UserOptions { userId: number, userTabType: UserTabType };
+export interface UserOptions { user: IdName, userTabType: UserTabType };
 
 function getUserTabType(resource: Resource): UserTabType | ParserError {
   if (resource.word === "edit") {
@@ -376,44 +360,41 @@ function getUserTabType(resource: Resource): UserTabType | ParserError {
   }
 }
 
-export function getUserOptions(location: Location): UserOptions | ParserError {
-  const split = getResource(splitLocation(location));
-  if (isParserError(split)) {
-    return split;
+export function getUserOptions(either: Resource | Location): UserOptions | ParserError {
+  const resource = ensureResource((either));
+  if (isParserError(resource)) {
+    return resource;
   }
-  const resource: Resource = split;
-  const userId = getResourceId(resource);
-  if (!userId) {
+  const user = getResourceId(resource);
+  if (!user) {
     return { error: "Expected a numeric userId" };
   }
   const userTabType = getUserTabType(resource);
   if (isParserError(userTabType)) {
     return userTabType;
   }
-  if (resource.word === "edit") {
-    return { userId, userTabType: "EditSettings" };
-  }
-  return { userId, userTabType };
+  return { user, userTabType };
 }
 
 /*
   Image page just has a numeric ID
 */
 
-export function getImageId(location: Location): { imageId: number } | ParserError {
-  const split = getResource(splitLocation(location));
-  if (isParserError(split)) {
-    return split;
+export interface ImageOptions { image: IdName };
+
+export function getImageOptions(either: Resource | Location): ImageOptions | ParserError {
+  const resource = ensureResource((either));
+  if (isParserError(resource)) {
+    return resource;
   }
-  const resource: Resource = split;
   if (resource.resourceType !== "Image") {
     return { error: "Expected an Image page type" };
   }
-  const imageId = getResourceId(resource);
-  if (!imageId) {
-    return { error: "Expected a numeric userId" };
+  const image = getResourceId(resource);
+  if (!image) {
+    return { error: "Expected a numeric imageId" };
   }
-  return { imageId };
+  return { image };
 }
 
 /*
@@ -421,7 +402,6 @@ export function getImageId(location: Location): { imageId: number } | ParserErro
 */
 
 export type DiscussionsSort = "Active" | "Newest";
-export type DiscussionSort = "Oldest" | "Newest";
 export type PageSize = 15 | 30 | 50;
 
 const discussionsSort = new Pairs<DiscussionsSort, string>([
@@ -459,12 +439,8 @@ export function getDiscussionsUrl(options: DiscussionsOptions): string {
   return getResourceUrl(getDiscussionsResource(options));
 }
 
-function ensurePageId(either: Resource | Location): Resource | ParserError {
-  return isLocation(either) ? getResource(splitLocation(either)) : either;
-}
-
 export function getDiscussionsOptions(either: Resource | Location): DiscussionsOptions | ParserError {
-  const resource = ensurePageId((either));
+  const resource = ensureResource((either));
   if (isParserError(resource)) {
     return resource;
   }
@@ -475,5 +451,56 @@ export function getDiscussionsOptions(either: Resource | Location): DiscussionsO
     sort: sort ? discussionsSort.find1(sort) : undefined,
     pagesize: pagesize ? pageSizes.find1(pagesize) : undefined,
     page: page ? toNumber(page) : undefined,
+  };
+}
+
+
+/*
+  Discussion page has two tabs
+*/
+
+export type DiscussionSort = "Oldest" | "Newest";
+
+const discussionSort = new Pairs<DiscussionSort, string>([
+  ["Oldest", "oldest"],
+  ["Newest", "newest"]
+]);
+
+export interface DiscussionOptions {
+  discussion: IdName;
+  sort?: DiscussionSort;
+  page?: number; //1-based
+}
+
+export function getDiscussionResource(options: DiscussionOptions): Resource {
+  const queries: [string, string | undefined][] = [];
+  if (options.sort) {
+    queries.push(["sort", discussionSort.find0(options.sort)!]);
+  }
+  if (options.page) {
+    queries.push(["page", "" + options.page]);
+  }
+  return { resourceType: "Discussion", what: options.discussion, queries };
+}
+
+export function getDiscussionUrl(options: DiscussionOptions): string {
+  return getResourceUrl(getDiscussionResource(options));
+}
+
+export function getDiscussionOptions(either: Resource | Location): DiscussionOptions | ParserError {
+  const resource = ensureResource((either));
+  if (isParserError(resource)) {
+    return resource;
+  }
+  const discussion = getResourceId(resource);
+  if (!discussion) {
+    return { error: "Expected a numeric discussionId" };
+  }
+  const sort = getQuery(resource, "sort");
+  const page = getQuery(resource, "page");
+  return {
+    discussion,
+    sort: sort ? discussionSort.find1(sort) : undefined,
+    page: page ? toNumber(page) : undefined
   };
 }

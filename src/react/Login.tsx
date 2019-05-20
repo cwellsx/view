@@ -22,7 +22,7 @@ export const Login: React.FunctionComponent = () => {
     event.preventDefault();
   };
 
-  const main = (
+  const content = (
     <React.Fragment>
       <p>This will be a login page, with user name and password.</p>
       <p>For this prototype, just press the button to simulate a login.</p>
@@ -42,7 +42,7 @@ export const Login: React.FunctionComponent = () => {
       <p>This is a prototype of the UI, without a server: so any data you enter isn't permanently stored anywhere.</p>
     </React.Fragment>
   );
-  const layout: Layout = { main };
-  return renderLayout("Login", layout);
+  const layout: Layout = { main: { content, title: "Login" } };
+  return renderLayout(layout);
 }
 

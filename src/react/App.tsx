@@ -7,7 +7,6 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import { route, UserTabType, getImageId, getUserOptions, isParserError } from "../shared/request";
 import * as R from "../shared/request";
 import { AppContext, AppContextProps } from './AppContext';
 import { config } from "../config"
@@ -44,12 +43,13 @@ const AppRoutes: React.FunctionComponent = () => {
       <Topbar />
       <ReactRouter.Switch>
         <ReactRouter.Route exact path="/index" component={SiteMap} />
-        <ReactRouter.Route exact path={route.login} component={Login} />
-        <ReactRouter.Route exact path={route.siteMap} component={SiteMap} />
-        <ReactRouter.Route exact path={route.discussions} component={Discussions} />
-        <ReactRouter.Route exact path={route.users} component={Users} />
-        <ReactRouter.Route path={route.users} component={User} />
-        <ReactRouter.Route path={route.images} component={Image} />
+        <ReactRouter.Route exact path={R.route.login} component={Login} />
+        <ReactRouter.Route exact path={R.route.siteMap} component={SiteMap} />
+        <ReactRouter.Route exact path={R.route.discussions} component={Discussions} />
+        <ReactRouter.Route exact path={R.route.users} component={Users} />
+        <ReactRouter.Route path={R.route.users} component={User} />
+        <ReactRouter.Route path={R.route.images} component={Image} />
+        <ReactRouter.Route path={R.route.discussions} component={Discussion} />
         <ReactRouter.Route component={NoMatch} />
       </ReactRouter.Switch>
     </React.Fragment>
@@ -117,7 +117,6 @@ type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
 */
 
 function useGetLayout<TData, TParam = void>(
-  title: string,
   getData: (param: TParam) => Promise<TData>,
   getContents: (data: TData, param: TParam) => Layout,
   param: TParam)
@@ -132,7 +131,7 @@ function useGetLayout<TData, TParam = void>(
         setData(fetched);
         setParam(param);
       });
-  }, [title, getData, getContents, param]);
+  }, [getData, getContents, param]);
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
@@ -140,7 +139,7 @@ function useGetLayout<TData, TParam = void>(
     ? getContents(data, param) // render the data
     : loadingContents; // else no data yet to render
 
-  return renderLayout(title, layout);
+  return renderLayout(layout);
 }
 
 // passed as param to useGetLayout when TParam is void
@@ -181,20 +180,23 @@ function useGet<TData, TParam>(getData: (param: TParam) => Promise<TData>, param
   There's a different function for each "route" -- i.e. for each type of URL -- i.e. each type of page data and layout.
 */
 
-export const SiteMap: React.FunctionComponent = () => {
+const SiteMap: React.FunctionComponent = () => {
 
   return useGetLayout<I.SiteMap>(
-    "Site Map",
     IO.getSiteMap,
     Page.SiteMap,
     isVoid
   );
 }
 
-export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+/*
+  Image
+*/
 
-  const parsed = getImageId(props.location);
-  if (isParserError(parsed)) {
+const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+
+  const parsed = R.getImageOptions(props.location);
+  if (R.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
 
@@ -202,55 +204,57 @@ export const Image: React.FunctionComponent<RouteComponentProps> = (props: Route
   // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />` instead
   // of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
   // So far as I can tell from testing, what really matters is the array of dependencies passed to useEffects.
-  return <ImageId imageId={parsed.imageId} />;
+  return <ImageId imageId={parsed.image.id} />;
 }
 
 interface ImageIdProps { imageId: number };
-export const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
+const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
 
   // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
 
   return useGetLayout<I.Image, number>(
-    "Image",
     IO.getImage,
     Page.Image,
     props.imageId
   );
 }
 
-export const Users: React.FunctionComponent = () => {
+/*
+  Users
+*/
+
+const Users: React.FunctionComponent = () => {
   return useGetLayout<I.UserSummaryEx[]>(
-    "Users",
     IO.getUsers,
     Page.Users,
     isVoid
   );
 }
 
-export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+/*
+  User
+*/
+
+const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const appContext: AppContextProps = React.useContext(AppContext);
-  try {
-    const parsed = getUserOptions(props.location);
-    if (isParserError(parsed)) {
-      return noMatch(props, parsed.error);
-    }
-    const { userId, userTabType } = parsed;
-    const isActivity: boolean = userTabType === "Activity";
-    const canEdit: boolean = appContext.me ? (appContext.me.idName.id === userId) : false;
-    if (!canEdit && (userTabType === "EditSettings")) {
-      return noMatch(props, "You cannot edit another user's profile");
-    }
-    return isActivity
-      ? <UserActivity userId={userId} canEdit={canEdit} />
-      : <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} />;
-  } catch (e) {
-    console.error(e.message);
-    return noMatch(props, e.message);
+  const parsed = R.getUserOptions(props.location);
+  if (R.isParserError(parsed)) {
+    return noMatch(props, parsed.error);
   }
+  const { user, userTabType } = parsed;
+  const userId = user.id;
+  const isActivity: boolean = userTabType === "Activity";
+  const canEdit: boolean = appContext.me ? (appContext.me.idName.id === userId) : false;
+  if (!canEdit && (userTabType === "EditSettings")) {
+    return noMatch(props, "You cannot edit another user's profile");
+  }
+  return isActivity
+    ? <UserActivity userId={userId} canEdit={canEdit} />
+    : <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} />;
 }
 
-interface UserProfileProps { userId: number, userTabType: UserTabType, canEdit: boolean };
-export const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfileProps) => {
+interface UserProfileProps { userId: number, userTabType: R.UserTabType, canEdit: boolean };
+const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfileProps) => {
 
   const { userId, userTabType, canEdit } = props;
 
@@ -262,11 +266,11 @@ export const UserProfile: React.FunctionComponent<UserProfileProps> = (props: Us
 
   const data: I.User | undefined = useGet(IO.getUser, userId);
   const layout = (!data) ? loadingContents : Page.User({ data, userTabType }, canEdit, userId);
-  return renderLayout("User", layout);
+  return renderLayout(layout);
 }
 
 interface UserActivityProps { userId: number, canEdit: boolean };
-export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
+const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
 
   const { userId, canEdit } = props;
 
@@ -277,10 +281,14 @@ export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: 
   // so again we use `useGet` here instead of `useGetLayout` to better control how we invoke the "get layout" function
   const data: I.UserActivity | undefined = useGet(IO.getUserActivity, userId);
   const layout = (!data) ? loadingContents : Page.User(data, canEdit, userId);
-  return renderLayout("User", layout);
+  return renderLayout(layout);
 }
 
-export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+/*
+  Discussions
+*/
+
+const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options
   const options = R.getDiscussionsOptions(props.location);
   if (R.isParserError(options)) {
@@ -291,20 +299,52 @@ export const Discussions: React.FunctionComponent<RouteComponentProps> = (props:
   return <DiscussionsOptions sort={options.sort} pagesize={options.pagesize} page={options.page} />;
 }
 
-export const DiscussionsOptions: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
+const DiscussionsOptions: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
 
   const { sort, pagesize, page } = props;
   const options: R.DiscussionsOptions = React.useMemo(() => { return { sort, pagesize, page }; }, [sort, pagesize, page])
 
   return useGetLayout<I.Discussions, R.DiscussionsOptions>(
-    "All " + config.strQuestions,
     IO.getDiscussions,
     Page.Discussions,
     options
   );
 }
 
-export const NoMatch: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+/*
+  Discussion
+*/
+
+const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+
+  const parsed = R.getDiscussionOptions(props.location);
+  if (R.isParserError(parsed)) {
+    return noMatch(props, parsed.error);
+  }
+
+  return <DiscussionId discussion={parsed.discussion} sort={parsed.sort} />;
+}
+
+const DiscussionId: React.FunctionComponent<R.DiscussionOptions> = (props: R.DiscussionOptions) => {
+
+  const { sort, discussion } = props;
+  const options: R.DiscussionOptions = React.useMemo(
+    () => { return { sort, discussion: {id:discussion.id,name:discussion.name} }; },
+    [sort, discussion.id, discussion.name])
+
+  return useGetLayout<I.Discussion, R.DiscussionOptions>(
+    IO.getDiscussion,
+    Page.Discussion,
+    options
+  );
+}
+
+
+/*
+  NoMatch
+*/
+
+const NoMatch: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   return noMatch(props);
 }
 
