@@ -1,9 +1,8 @@
 import { IdName } from "../data/id";
 import { UserSummary } from "../data/user";
 import { TagId } from "../data/tag";
-import { DiscussionSummary, Discussions, DiscussionsMeta } from "../data/discussion";
+import { DiscussionSummary, Discussions, DiscussionsRange, DiscussionRange, Message } from "../data/discussion";
 import { Discussion } from "../data/discussion";
-import { getExerpt } from "./exerpt";
 
 // slightly more compact form in which it's sent from server
 export interface WireDiscussions {
@@ -17,7 +16,7 @@ export interface WireDiscussions {
     dateTime: string,
     nAnswers: number
   }[];
-  meta: DiscussionsMeta;
+  range: DiscussionsRange;
 }
 
 export function unwireDiscussions(input: WireDiscussions): Discussions {
@@ -39,23 +38,28 @@ export function unwireDiscussions(input: WireDiscussions): Discussions {
     };
   });
 
-  return { summaries, meta: input.meta };
+  return { summaries, range: input.range };
 }
 
 // slightly more compact form in which it's sent from server
 
+export interface WireMessage {
+  userId: number; // + users
+  markdown: string;
+  dateTime: string;
+}
+
+export interface WireDiscussionMeta {
+  idName: IdName;
+  tag: TagId;
+}
+
 export interface WireDiscussion {
   users: UserSummary[];
-  meta: {
-    idName: IdName;
-    tag: TagId;
-  };
-  messages: {
-    userId: number; // + users
-    markdown: string;
-    dateTime: string;
-    exerpt?: string;
-  }[];
+  meta: WireDiscussionMeta;
+  first: WireMessage;
+  range: DiscussionRange;
+  messages: WireMessage[];
 }
 
 export function unwireDiscussion(input: WireDiscussion): Discussion {
@@ -63,21 +67,24 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
     input.users.map(user => [user.idName.id, user])
   );
 
-  const { meta, messages } = input;
+  const { meta, range, first, messages } = input;
+
+  function unwireMessage(wire: WireMessage): Message {
+    return {
+      userSummary: users.get(wire.userId)!,
+      markdown: wire.markdown,
+      dateTime: wire.dateTime
+    };
+  }
 
   return {
     meta: {
       idName: meta.idName,
       tag: meta.tag,
-      owner: users.get(messages[0].userId)!
+      owner: users.get(first.userId)!
     },
-    messages: messages.map(wire => {
-      return {
-        userSummary: users.get(wire.userId)!,
-        markdown: wire.markdown,
-        dateTime: wire.dateTime,
-        exerpt: wire.exerpt ? wire.exerpt : getExerpt(wire.markdown)
-      };
-    })
+    first: unwireMessage(first),
+    range: range,
+    messages: messages.map(unwireMessage)
   };
 }

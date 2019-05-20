@@ -33,6 +33,10 @@
   padding: 0.75rem 0.5rem
 }
 
+.column-text .content .element.first {
+  border-bottom: none;
+}
+
 .column-text.grid {
   max-width: 71.5em;
 }
@@ -76,7 +80,7 @@
 .tab-head {
   font-size: 12px;
   line-height: 1;
-  height: 40px;
+  height: 41px;
   border-bottom: 1px solid rgb(228, 230, 232);
   clear: both;
 }
@@ -85,12 +89,27 @@
   margin: 1.5rem 0 0 1.5rem;
 }
 
+.tab-head .slug {
+  float: right;
+  margin-top: 3px;
+}
+.tab-head .slug h1 {
+  font-size: 17px;
+  font-weight: bold;
+  margin: 0 8px;
+}
+.tab-head .slug > * {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .tabbed {
   margin: 1.5rem 0 0 1.5rem;
 }
 
 .tabs {
   float: left;
+  width: 100%;
 }
 
 .tabs > a {
@@ -103,6 +122,14 @@
   position: relative;
   box-sizing: border-box;
   margin-right: 8px;
+}
+
+.subtabs h2 {
+  display: inline;
+}
+
+.subtabs .tabs > a {
+  float: right;
 }
 
 .tab-head:after, .tabs::after {

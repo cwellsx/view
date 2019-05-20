@@ -1,5 +1,5 @@
 import * as I from "../data";
-import { WireDiscussions, unwireDiscussions } from "../shared/wire"
+import { WireDiscussions, unwireDiscussions, WireDiscussion, unwireDiscussion } from "../shared/wire"
 import * as Post from "../shared/post";
 import { Resource, getResourceUrl, requestResource } from "../shared/request";
 import * as R from "../shared/request";
@@ -8,6 +8,7 @@ import { config } from "../config"
 import { SimpleResponse, mockFetch } from "../io/mock";
 
 function get(resource: Resource, body?: object): Promise<SimpleResponse> {
+  const url = getResourceUrl(resource);
   if (!config.serverless) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
     const init: RequestInit = {
@@ -22,10 +23,9 @@ function get(resource: Resource, body?: object): Promise<SimpleResponse> {
       };
     }
 
-    const url = getResourceUrl(resource);
     return fetch(url, init);
   } else {
-    return mockFetch(resource);
+    return mockFetch(url);
   }
 }
 
@@ -70,6 +70,21 @@ export async function getDiscussions(options: R.DiscussionsOptions): Promise<I.D
   const rc: Promise<I.Discussions> = new Promise<I.Discussions>((resolve, reject) => {
     wirePromise.then((wire: WireDiscussions) => {
       const wanted: I.Discussions = unwireDiscussions(wire);
+      resolve(wanted);
+    })
+    wirePromise.catch(error => {
+      reject(error);
+    });
+  });
+  return rc;
+}
+
+export async function getDiscussion(options: R.DiscussionOptions): Promise<I.Discussion> {
+  const url = R.getDiscussionResource(options);
+  const wirePromise: Promise<WireDiscussion> = getT<WireDiscussion>(url);
+  const rc: Promise<I.Discussion> = new Promise<I.Discussion>((resolve, reject) => {
+    wirePromise.then((wire: WireDiscussion) => {
+      const wanted: I.Discussion = unwireDiscussion(wire);
       resolve(wanted);
     })
     wirePromise.catch(error => {

@@ -1,8 +1,9 @@
 import React from 'react';
 import * as I from "../data";
-import { KeyedItem, Layout, Tab, Tabs } from './PageLayout';
+import { KeyedItem, Layout, Tab, Tabs, SubTabs } from './PageLayout';
 import * as Summaries from "./Components";
 import { getUserUrl, UserTabType, getDiscussionsUrl, PageSize } from "../shared/request";
+import * as R from "../shared/request";
 import './Pages.css';
 import { ReactComponent as LocationIcon } from "../icons/material/ic_location_on_24px.svg";
 import { config } from '../config';
@@ -19,7 +20,7 @@ import { NavLink } from 'react-router-dom';
 */
 
 export function SiteMap(data: I.SiteMap): Layout {
-  const contents: KeyedItem[] = [];
+  const content: KeyedItem[] = [];
 
   /*
     visitors can see:
@@ -35,7 +36,7 @@ export function SiteMap(data: I.SiteMap): Layout {
   */
 
   // render the images
-  data.images.forEach(x => contents.push(Summaries.getImageSummary(x)));
+  data.images.forEach(x => content.push(Summaries.getImageSummary(x)));
 
   const features = (
     <React.Fragment>
@@ -60,9 +61,9 @@ export function SiteMap(data: I.SiteMap): Layout {
     </React.Fragment>
   );
 
-  contents.push({ element: features, key: "Feature" });
+  content.push({ element: features, key: "Feature" });
 
-  return { main: contents };
+  return { main: { title: "Site Map", content } };
 }
 
 /*
@@ -113,7 +114,7 @@ export function Image(data: I.Image): Layout {
   const right = !data.layers ? undefined :
     { element: renderLayers(data.layers, 0), width: data.layersWidth, showButtonLabel: "Show Layers", visible: true };
   return {
-    main: images,
+    main: { content: images, title: data.summary.idName.name },
     width: "Full",
     right
   };
@@ -131,7 +132,7 @@ export function Users(data: I.UserSummaryEx[]): Layout {
       })}
     </div>;
   return {
-    main: users,
+    main: { content: users, title: "Users" },
     width: "Grid"
   };
 }
@@ -155,12 +156,19 @@ export function User(
   const userTabType: UserTabType = !isUserProfile(props) ? "Activity" : props.userTabType;
 
   // build the gravatars
-  const { userName, gravatar } = Summaries.getUserSummary(summary, { title: false, size: "huge" });
+  const gravatar = Summaries.getUserSummary(summary, { title: false, size: "huge" }).gravatar;
   const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
   const selected = canEdit
     ? ((userTabType === "Profile") ? 0 : (userTabType === "EditSettings") ? 1 : 2)
     : ((userTabType === "Profile") ? 0 : 1);
   const idName: I.IdName = summary.idName;
+
+  const slug = (
+    <React.Fragment>
+      <h1>{idName.name}</h1>
+      {gravatarSmall}
+    </React.Fragment>
+  );
 
   const profile: Tab = {
     navlink: { href: getUserUrl(idName, "Profile"), text: "Profile" },
@@ -215,7 +223,8 @@ export function User(
 
     const rc: Tab = {
       navlink: { href: getUserUrl(idName, "EditSettings"), text: "Edit" },
-      content: getSettingsContent()
+      content: getSettingsContent(),
+      slug
     };
     return rc;
   }
@@ -223,26 +232,12 @@ export function User(
 
   const activity: Tab = {
     navlink: { href: getUserUrl(idName, "Activity"), text: "Activity" },
-    content: <p>Where</p>
-  };
-  const header = {
-    first: (
-      <React.Fragment>
-        {gravatar}
-        <h1>{userName}</h1>
-      </React.Fragment>
-    ),
-    next: (
-      <React.Fragment>
-        <h1>{userName}</h1>
-        {gravatarSmall}
-      </React.Fragment>
-    )
+    content: <p>Where</p>,
+    slug
   };
   const tabs: Tabs = {
-    style: "Profile",
-    header,
     selected,
+    title: idName.name,
     tabbed: canEdit ? [profile, settings!, activity] : [profile, activity]
   };
   return {
@@ -255,10 +250,10 @@ export function User(
 */
 
 export function Discussions(data: I.Discussions): Layout {
-  const { meta, summaries } = data;
+  const { range, summaries } = data;
 
   // https://blog.abelotech.com/posts/number-currency-formatting-javascript/
-  const numQuestions = meta.nTotal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + config.strQuestions.toLowerCase();
+  const numQuestions = range.nTotal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + config.strQuestions.toLowerCase();
 
   const subtitle = (
     <React.Fragment>
@@ -266,28 +261,28 @@ export function Discussions(data: I.Discussions): Layout {
         <div className="count">{numQuestions}</div>
         <div className="sort">
           <NavLink to={getDiscussionsUrl({ sort: "Newest" })}
-            className={meta.sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
+            className={range.sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
           <NavLink to={getDiscussionsUrl({ sort: "Active" })}
-            className={meta.sort === "Active" ? "selected" : undefined}>Active</NavLink>
+            className={range.sort === "Active" ? "selected" : undefined}>Active</NavLink>
         </div>
       </div>
     </React.Fragment>
   );
 
-  const nPages = Math.floor(meta.nTotal / meta.pageSize) + ((meta.nTotal % meta.pageSize) ? 1 : 0);
-  const sort = meta.sort;
+  const nPages = Math.floor(range.nTotal / range.pageSize) + ((range.nTotal % range.pageSize) ? 1 : 0);
+  const sort = range.sort;
   const footer = (
     <React.Fragment>
       <div className="footer">
         <div className="index">
-          {Summaries.getPageNavLinks(meta.pageNumber, nPages, (page) => getDiscussionsUrl({ page, sort }))}
+          {Summaries.getPageNavLinks(range.pageNumber, nPages, (page) => getDiscussionsUrl({ page, sort }))}
         </div>
         <div className="size">
           {Summaries.getNavLinks(
             [15, 30, 50].map(n => { return { text: "" + n, n }; }),
             (n: number) => getDiscussionsUrl({ pagesize: n as PageSize }),
             (n: number) => `show ${n} items per page`,
-            meta.pageSize,
+            range.pageSize,
             false
           )}
           <span className="dots">per page</span>
@@ -299,7 +294,29 @@ export function Discussions(data: I.Discussions): Layout {
   const elements = summaries.map(summary => Summaries.getDiscussionSummary(summary));
   elements.push({ element: footer, key: "footer" });
   return {
-    main: elements,
-    subtitle
+    main: { content: elements, title: "All " + config.strQuestions, subtitle },
+  };
+}
+
+
+/*
+  Discussions
+*/
+
+export function Discussion(data: I.Discussion): Layout {
+  const { meta, first, range, messages } = data;
+  const subTabs: SubTabs | undefined = (!messages.length) ? undefined : {
+    text: (messages.length === 1) ? "1 Answer" : `${messages.length} Answers`,
+    selected: (data.range.sort === "Newest") ? 0 : 1,
+    tabs: [
+      { text: "newest", href: R.getDiscussionUrl({ discussion: meta.idName, sort: "Newest" }) },
+      { text: "oldest", href: R.getDiscussionUrl({ discussion: meta.idName, sort: "Oldest" }) }
+    ]
+  };
+  const content: KeyedItem[] = [];
+  content.push(Summaries.getFirstMessage(first, meta.tag));
+  messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
+  return {
+    main: { content, title: meta.idName.name, subTabs }
   };
 }

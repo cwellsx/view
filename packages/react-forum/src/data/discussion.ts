@@ -1,13 +1,12 @@
 import { IdName } from "./id";
 import { UserSummary } from "./user";
 import { TagId } from "./tag";
-import { DiscussionsSort } from "../shared/request";
+import { DiscussionsSort, DiscussionSort } from "../shared/request";
 
 export interface Message {
   userSummary: UserSummary;
   markdown: string;
   dateTime: string;
-  exerpt: string;
 }
 
 export interface Discussion {
@@ -16,7 +15,16 @@ export interface Discussion {
     tag: TagId;
     owner: UserSummary; // equals the user of the first message
   };
+  first: Message;
+  range: DiscussionRange;
   messages: Message[];
+}
+
+export interface DiscussionRange {
+  nTotal: number;
+  sort: DiscussionSort;
+  pageSize: number;
+  pageNumber: number; // 1-based
 }
 
 /*
@@ -36,7 +44,7 @@ export interface DiscussionSummary {
   nAnswers: number;
 }
 
-export interface DiscussionsMeta {
+export interface DiscussionsRange {
   nTotal: number;
   sort: DiscussionsSort;
   pageSize: number;
@@ -44,6 +52,6 @@ export interface DiscussionsMeta {
 }
 
 export interface Discussions {
-  meta: DiscussionsMeta;
+  range: DiscussionsRange;
   summaries: DiscussionSummary[];
 }

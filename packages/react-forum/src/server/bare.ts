@@ -1,4 +1,5 @@
 import * as I from "../data";
+import {WireMessage, WireDiscussionMeta} from "../shared/wire";
 
 /*
   This defines 'bare' data formats i.e. the format in which data is stored on disk before it's loaded.
@@ -29,16 +30,10 @@ export interface BareUser {
   favourites: I.FavouriteId[];
 }
 
-export interface BareMessage {
-  userId: number;
-  markdown: string;
-  dateTime: string;
-}
+export type BareMessage = WireMessage;
+export type BareDiscussionMeta = WireDiscussionMeta;
 
 export interface BareDiscussion {
-  meta: {
-    idName: I.IdName;
-    tag: I.TagId;
-  };
+  meta: BareDiscussionMeta;
   messages: BareMessage[];
 }

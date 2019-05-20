@@ -1,48 +1,74 @@
 import * as DB from "./database";
-import * as P from "../shared/request";
+import * as R from "../shared/request";
 import * as Session from "./session";
 import { UserSummary } from "../data";
 
-export function mockServer(resource: P.Resource, userIdLogin: number): object | undefined {
-  console.log(`mockServer getting ${P.getResourceUrl(resource)}`);
+export function mockServer(url: string, userIdLogin: number): object | undefined {
+  const parsed = R.getResource(url);
+  if (R.isParserError(parsed)) {
+    // should return 400 Bad Request
+    return undefined;
+  }
+  const resource: R.Resource = parsed;
+  console.log(`mockServer getting ${R.getResourceUrl(resource)}`);
+
   if (resource.resourceType === "SiteMap") {
     return DB.getSiteMap();
   }
+
   if (resource.resourceType === "Login") {
     return loginUser();
   }
+
   if (resource.resourceType === "Image") {
-    const requested = P.getResourceId(resource);
-    if (!requested) {
+    const requested = R.getImageOptions(resource);
+    if (R.isParserError(requested)) {
       // should return 400 Bad Request
       return undefined;
     }
-    return DB.getImage(requested);
+    const { image } = requested;
+    return DB.getImage(image.id);
   }
+
   if (resource.resourceType === "User") {
     if (!resource.what) {
       return DB.getUserSummaries();
     } else {
-      const requested = P.getResourceId(resource);
-      if (!requested) {
+      const requested = R.getUserOptions(resource);
+      if (R.isParserError(requested)) {
         // should return 404 Not Found
         return undefined;
-      } else {
-        return DB.getUser(requested, userIdLogin);
       }
+      const { user } = requested;
+      return DB.getUser(user.id, userIdLogin);
     }
   }
+
   if (resource.resourceType === "Discussion") {
     if (!resource.what) {
-      const options = P.getDiscussionsOptions(resource);
-      if (P.isParserError(options)) {
+      const options = R.getDiscussionsOptions(resource);
+      if (R.isParserError(options)) {
         // should return 400 Bad Request
         return undefined;
       }
       Session.getSetDiscussionsOptions(userIdLogin, options);
       return DB.getDiscussions(options);
+    } else {
+      const options = R.getDiscussionOptions(resource);
+      if (R.isParserError(options)) {
+        // should return 400 Bad Request
+        return undefined;
+      }
+      Session.getSetDiscussionOptions(userIdLogin, options);
+      const discussion = DB.getDiscussion(options);
+      if (!discussion) {
+        // should return 404 Not Found
+        return undefined;
+      }
+      return discussion;
     }
   }
+
   return undefined;
 }
 

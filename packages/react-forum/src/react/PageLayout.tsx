@@ -25,62 +25,92 @@ interface RightContent {
 export interface Tab {
   navlink: { href: string, text: string }; // becomes a Navlink instance
   content: ReadonlyArray<KeyedItem> | React.ReactElement;
+  slug?: React.ReactElement;
 }
 
 export interface Tabs {
-  style: "Discussion" | "List" | "Profile";
-  header?: { first: React.ReactElement, next: React.ReactElement }; // required when style === "Profile"
+  title: string; // sets document.title only ... the <h1> is in the tabbed content
   selected: number; // index into tabbed
   tabbed: Tab[];
 }
 
-function isTabs(content: MainContent): content is Tabs {
-  return (content as Tabs).tabbed !== undefined;
+export interface SubTabs {
+  text: string;
+  selected: number; // index into tabbed
+  tabs: { href: string, text: string }[]; // becomes a Navlink instance
 }
 
-type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | Tabs | string;
+function isTabs(main: Tabs | any): main is Tabs {
+  return (main as Tabs).tabbed !== undefined;
+}
+
+type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
 
 export interface Layout {
-  main: MainContent;
+  main: Tabs | {
+    title: string;
+    subtitle?: React.ReactElement;
+    content: MainContent;
+    subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
+  };
   width?: "Full" | "Grid";
   right?: RightContent;
-  subtitle?: React.ReactElement;
 };
 
 /*
   Implementation details
 */
 
-export const loadingContents = { main: "Loading..." };
+export const loadingContents: Layout = { main: { title: "Loading...", content: "..." } };
 
 function setTitle(title: string): void {
   document.title = `${title} - ${config.appname}`;
 }
 
-function renderMainColumn(main: MainContent) {
-  if (Array.isArray(main)) {
-    return (
-      main.map((x) =>
-        <div className="element" key={x.key}>
-          {x.element}
-        </div>
-      )
-    );
-  }
-  if (!isTabs(main)) {
-    return (
-      <div className="element">
-        {main}
+function renderSubTabs(subTabs: SubTabs) {
+  return (
+    <div className="tab-head subtabs" key="subMenu">
+      <div className="tabs">
+        <h2>{subTabs.text}</h2>
+        {subTabs.tabs.map((tab, index) =>
+          <NavLink to={tab.href} key={"" + index}
+            className={(index === subTabs.selected) ? "selected" : undefined}>
+            {tab.text}
+          </NavLink>
+        )}
       </div>
-    );
-  }
-  return renderTabs(main);
+    </div>
+  );
 }
 
-function renderTabs(main: Tabs) {
-  const style = main.style;
-  const isProfile = (style === "Profile");
-  const className = (!isProfile) ? "tab-head" : "tab-head profile";
+function renderMainContent(mainContent: MainContent, subTabs?: SubTabs) {
+  if (Array.isArray(mainContent)) {
+    return (
+      mainContent.map((x, index) => {
+        const subMenu = ((index === 1) && subTabs) ? renderSubTabs(subTabs) : undefined;
+        const className = ((index === 0) && subTabs) ? "element first" : "element";
+        return (
+          <React.Fragment key={"" + index}>
+            {subMenu}
+            <div className={className} key={x.key}>
+              {x.element}
+            </div>
+          </React.Fragment>
+        );
+      })
+    );
+  }
+  return (
+    <div className="element">
+      {mainContent}
+    </div>
+  );
+}
+
+function renderTabs(main: Tabs, isTop: boolean) {
+  const className = (!isTop) ? "tab-head" : "tab-head profile";
+  const slug = main.tabbed[main.selected].slug;
+  const slugDiv = !slug ? undefined : <div className="slug">{slug}</div>;
   return (
     <React.Fragment>
       <div className={className}>
@@ -92,6 +122,7 @@ function renderTabs(main: Tabs) {
               className={(index === main.selected) ? "selected" : undefined}>
               {tab.navlink.text}
             </NavLink>)}
+          {slugDiv}
         </div>
       </div>
       <div className="tabbed">
@@ -165,24 +196,27 @@ function renderRightColumn(right?: RightContent) {
   return { rightColumn, rightButton };
 }
 
-function switchLayout(contents: Layout, title: string) {
-  const mainColumn = renderMainColumn(contents.main);
-  const { rightColumn, rightButton } = renderRightColumn(contents.right);
+function switchLayout(layout: Layout) {
+  const { rightColumn, rightButton } = renderRightColumn(layout.right);
 
-  const className = !contents.width
+  const className = !layout.width
     ? "column-text"
-    : (contents.width === "Grid")
+    : (layout.width === "Grid")
       ? "column-text grid"
       : "column-wide";
 
-  if (isTabs(contents.main) && (contents.main.style === "Profile")) {
+  if (isTabs(layout.main)) {
     // tabs are located above the header and the header is inside the first tab
+    setTitle(layout.main.title);
     return (
       <div className={className}>
-        {mainColumn}
+        {renderTabs(layout.main, true)}
       </div>
     );
   }
+
+  const mainColumn = renderMainContent(layout.main.content, layout.main.subTabs);
+  setTitle(layout.main.title);
 
   switch (className) {
     case "column-text":
@@ -192,8 +226,8 @@ function switchLayout(contents: Layout, title: string) {
           <div className={className}>
             {rightButton}
             <div className="header">
-              <h1>{title}</h1>
-              {contents.subtitle}
+              <h1>{layout.main.title}</h1>
+              {layout.main.subtitle}
             </div>
             <div className="content">
               {mainColumn}
@@ -217,9 +251,8 @@ function switchLayout(contents: Layout, title: string) {
   }
 }
 
-export const renderLayout = (title: string, layout: Layout): React.ReactElement => {
-  setTitle(title);
-  const contents = switchLayout(layout, title);
+export function renderLayout(layout: Layout): React.ReactElement {
+  const contents = switchLayout(layout);
   return (
     <div className="all-columns">
       {contents}

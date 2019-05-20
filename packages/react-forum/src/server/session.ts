@@ -11,6 +11,9 @@ interface SessionState {
   discussions?: {
     sort?: R.DiscussionsSort;
     pagesize?: R.PageSize;
+  },
+  discussion?: {
+    sort?: R.DiscussionSort;
   }
 }
 
@@ -49,6 +52,28 @@ export function getSetDiscussionsOptions(userId: number, options: R.DiscussionsO
     }
     if (old.pagesize) {
       options.pagesize = old.pagesize;
+    }
+  }
+};
+
+export function getSetDiscussionOptions(userId: number, options: R.DiscussionOptions) {
+  const sessionState = getOrSet(userId);
+  // write any new explicitly-set options to the session state
+  if (options.sort) {
+    let stored = sessionState.discussion;
+    if (!stored) {
+      stored = {};
+      sessionState.discussion = stored;
+    }
+    if (options.sort) {
+      stored.sort = options.sort;
+    }
+  }
+  // get any old options from the session state
+  const old = sessionState.discussion;
+  if (old) {
+    if (old.sort) {
+      options.sort = old.sort;
     }
   }
 };

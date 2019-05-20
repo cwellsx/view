@@ -52,18 +52,19 @@
   padding-bottom: 5px;
 }
 
-.discussion-summary .user-info {
+.discussion-summary .user-info,
+.message .user-info {
   padding: 5px 6px 7px 7px;
   float: right;
   width: 200px;
 }
 
-.discussion-summary .topic {
-  padding: 5px 6px 7px 7px;
+.topic {
   float: left;
+  padding: 5px 6px 7px 7px;
 }
 
-.discussion-summary .topic > * {
+.topic > * {
   padding: 5px 6px 7px 7px;
   display: inline-block;
   font-size: 12px;
@@ -77,6 +78,10 @@
 .discussion-summary {
   overflow: hidden;
   display: flex;
+}
+
+.message {
+  overflow: hidden;
 }
 
 .discussion-summary .stats {
