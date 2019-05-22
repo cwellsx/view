@@ -32,13 +32,18 @@ export function getUserSummary(summary: I.UserSummary, option: { title: boolean,
   // https://en.gravatar.com/site/implement/images/
   const src = `https://www.gravatar.com/avatar/${summary.gravatarHash}?s=${size * 2}&d=identicon&r=PG`;
   const img = <img src={src} alt={summary.idName.name} width={size} height={size} />;
-  const gravatar = <NavLink to={href} title={option.title ? summary.idName.name : undefined} className="gravatar">{img}</NavLink>;
+  const title = option.title ? summary.idName.name : undefined;
+  const gravatar = <NavLink to={href} title={title} className="gravatar">{img}</NavLink>;
   return { userName, gravatar, key: href };
+}
+
+function getWhen(when: string) {
+  return <div className="when">{when}</div>;
 }
 
 export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: string): ReactElement {
   const { userName, gravatar, key } = getUserSummary(summary, { title: false, size });
-  const showWhen = !when ? undefined : <div className="when">{when}</div>;
+  const showWhen = !when ? undefined : getWhen(when);
   return (
     <div className="user-info" key={key}>
       {showWhen}
@@ -67,22 +72,33 @@ function toLocaleString(date: Date): string {
   return `${month} ${date.getDate()}${year} at ${date.getHours()}:${minutes}`;
 }
 
-export function getDiscussionSummary(summary: I.DiscussionSummary): KeyedItem {
+export function getTag(tag: I.TagId, count?: number) {
+  const suffix = (count && (count !== 1)) ? ` x ${count}` : undefined;
+  const text = I.getTagIdText(tag);
+  return <div className="topic" key={text}><span>{text}</span>{suffix}</div>;
+}
+
+export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolean = false): KeyedItem {
   const href = getResourceUrl({ resourceType: "Discussion", what: summary.idName });
   const when = toLocaleString(new Date(summary.messageSummary.dateTime));
   const tag = summary.tag;
+  const stats = short ? undefined : (
+    <div className="stats">
+      <div className="answers">
+        <strong>{summary.nAnswers}</strong> {(summary.nAnswers === 1) ? "answer" : "answers"}
+      </div>
+    </div>
+  );
+  const signature = short ? <div className="user-info">{getWhen(when)}</div> :
+    getUserInfo(summary.messageSummary.userSummary, "small", when);
   const element: React.ReactElement = (
     <div className="discussion-summary">
-      <div className="stats">
-        <div className="answers">
-          <strong>{summary.nAnswers}</strong> {(summary.nAnswers === 1) ? "answer" : "answers"}
-        </div>
-      </div>
+      {stats}
       <div className="summary">
         <h3><NavLink to={href}>{summary.idName.name}</NavLink></h3>
         <div className="excerpt">{summary.messageSummary.messageExerpt}</div>
-        <div className="topic"><span>{I.getTagIdText(tag)}</span></div>
-        {getUserInfo(summary.messageSummary.userSummary, "small", when)}
+        {getTag(tag)}
+        {signature}
       </div>
     </div>
   );
@@ -137,7 +153,9 @@ export function getNavLinks(
   });
 }
 
-export function getPageNavLinks(current: number, max: number, href: (page: number) => string): React.ReactElement[] {
+export function getPageNavLinks(current: number, nTotal: number, pageSize: number, href: (page: number) => string)
+  : React.ReactElement[] {
+  const max = Math.floor(nTotal / pageSize) + ((nTotal % pageSize) ? 1 : 0);
   const wanted = getPageNumbers(current, max);
   return getNavLinks(wanted, href, n => "go to page " + n, current, true);
 }

@@ -15,45 +15,57 @@ export interface KeyedItem {
   key: string;
 }
 
+// shown in the main column of the page, either a single element, or an array of elements shown as a list
+type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
+
+// optional content shown in a column to the right of the page; if present the right column can be shown or hidden
 interface RightContent {
   element: React.ReactElement,
   width: string,
-  showButtonLabel: string,
+  showButtonLabel: string, // label on the button which is used to show or hide the column
   visible: boolean
 }
 
+// used e.g. for the user profile page, which has "Profile", "Edit", and "Activity" tabs
 export interface Tab {
   navlink: { href: string, text: string }; // becomes a Navlink instance
-  content: ReadonlyArray<KeyedItem> | React.ReactElement;
+  content: MainContent;
+  subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
   slug?: React.ReactElement;
 }
-
 export interface Tabs {
   title: string; // sets document.title only ... the <h1> is in the tabbed content
   selected: number; // index into tabbed
   tabbed: Tab[];
 }
 
+// used e.g. for a discussion page, where you can sort the answers in either direction
+// the "subtabs" are displays as tabs, below the first element (e.g. below the question which stared the discussion)
+// or a "subtitle" is inserted into the heading above the first element, e.g. to display buttons on the discussions list
 export interface SubTabs {
   text: string;
   selected: number; // index into tabbed
   tabs: { href: string, text: string }[]; // becomes a Navlink instance
 }
 
-function isTabs(main: Tabs | any): main is Tabs {
-  return (main as Tabs).tabbed !== undefined;
-}
+// specifies the width of the main column
+type Width = "Full" | // wide screen, no title, e.g. for images
+  "Grid" | // semi-wide grid e.g. for the lists of tags and user names, which are displayed as a grid
+  "Closed" | // semi-narrow text where horizontal rule touches vertical, e.g. for lists and site map
+  "Open"; // semi-narrow text where horizontal rule doesn't touch vertical, e.g. for messages in a discussion
 
-type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
-
-export interface Layout {
+  function isTabs(main: Tabs | any): main is Tabs {
+    return (main as Tabs).tabbed !== undefined;
+  }
+  
+  export interface Layout {
   main: Tabs | {
     title: string;
     subtitle?: React.ReactElement;
     content: MainContent;
     subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
   };
-  width?: "Full" | "Grid";
+  width: Width;
   right?: RightContent;
 };
 
@@ -61,7 +73,7 @@ export interface Layout {
   Implementation details
 */
 
-export const loadingContents: Layout = { main: { title: "Loading...", content: "..." } };
+export const loadingContents: Layout = { main: { title: "Loading...", content: "..." }, width: "Closed" };
 
 function setTitle(title: string): void {
   document.title = `${title} - ${config.appname}`;
@@ -72,21 +84,23 @@ function renderSubTabs(subTabs: SubTabs) {
     <div className="tab-head subtabs" key="subMenu">
       <div className="tabs">
         <h2>{subTabs.text}</h2>
-        {subTabs.tabs.map((tab, index) =>
-          <NavLink to={tab.href} key={"" + index}
-            className={(index === subTabs.selected) ? "selected" : undefined}>
-            {tab.text}
-          </NavLink>
-        )}
+        <div>
+          {subTabs.tabs.map((tab, index) =>
+            <NavLink to={tab.href} key={"" + index}
+              className={(index === subTabs.selected) ? "selected" : undefined}>
+              {tab.text}
+            </NavLink>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function renderMainContent(mainContent: MainContent, subTabs?: SubTabs) {
-  if (Array.isArray(mainContent)) {
+function renderContent(content: MainContent, subTabs?: SubTabs) {
+  if (Array.isArray(content)) {
     return (
-      mainContent.map((x, index) => {
+      content.map((x, index) => {
         const subMenu = ((index === 1) && subTabs) ? renderSubTabs(subTabs) : undefined;
         const className = ((index === 0) && subTabs) ? "element first" : "element";
         return (
@@ -102,7 +116,7 @@ function renderMainContent(mainContent: MainContent, subTabs?: SubTabs) {
   }
   return (
     <div className="element">
-      {mainContent}
+      {content}
     </div>
   );
 }
@@ -129,7 +143,7 @@ function renderTabs(main: Tabs, isTop: boolean) {
         {main.tabbed.map((tab, index) => {
           return (
             <div className={(index !== main.selected) ? "hidden" : undefined} key={"" + index}>
-              {tab.content}
+              {renderContent(tab.content, tab.subTabs)}
             </div>
           );
         })
@@ -175,7 +189,8 @@ function renderRightColumn(right?: RightContent) {
   }
 
   const rightButton = (
-    <button className={className("column-right-button", !right.visible)} type="button" onClick={handleShowDiv} ref={refButton}>
+    <button className={className("column-right-button", !right.visible)}
+      type="button" onClick={handleShowDiv} ref={refButton}>
       {right.showButtonLabel}
     </button>
   );
@@ -199,11 +214,16 @@ function renderRightColumn(right?: RightContent) {
 function switchLayout(layout: Layout) {
   const { rightColumn, rightButton } = renderRightColumn(layout.right);
 
-  const className = !layout.width
-    ? "column-text"
-    : (layout.width === "Grid")
-      ? "column-text grid"
-      : "column-wide";
+  function getClassName(width: Width): string {
+    switch (width) {
+      case "Full": return "column-wide";
+      case "Grid": return "column-text grid";
+      case "Closed": return "column-text closed";
+      case "Open": return "column-text open";
+      default: throw new Error("not implemented");
+    }
+  }
+  const className = getClassName(layout.width);
 
   if (isTabs(layout.main)) {
     // tabs are located above the header and the header is inside the first tab
@@ -215,39 +235,35 @@ function switchLayout(layout: Layout) {
     );
   }
 
-  const mainColumn = renderMainContent(layout.main.content, layout.main.subTabs);
+  const mainColumn = renderContent(layout.main.content, layout.main.subTabs);
   setTitle(layout.main.title);
 
-  switch (className) {
-    case "column-text":
-    case "column-text grid":
-      return (
-        <React.Fragment>
-          <div className={className}>
-            {rightButton}
-            <div className="header">
-              <h1>{layout.main.title}</h1>
-              {layout.main.subtitle}
-            </div>
-            <div className="content">
-              {mainColumn}
-            </div>
+  if (layout.width !== "Full") {
+    return (
+      <React.Fragment>
+        <div className={className}>
+          {rightButton}
+          <div className="header">
+            <h1>{layout.main.title}</h1>
+            {layout.main.subtitle}
           </div>
-          {rightColumn}
-        </React.Fragment>
-      );
-    case "column-wide":
-      return (
-        <React.Fragment>
-          <div className="column-wide">
-            {rightButton}
+          <div className="content">
             {mainColumn}
           </div>
-          {rightColumn}
-        </React.Fragment>
-      );
-    default:
-      throw new Error();
+        </div>
+        {rightColumn}
+      </React.Fragment>
+    );
+  } else {
+    return (
+      <React.Fragment>
+        <div className={className}>
+          {rightButton}
+          {mainColumn}
+        </div>
+        {rightColumn}
+      </React.Fragment>
+    );
   }
 }
 

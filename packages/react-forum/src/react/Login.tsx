@@ -42,7 +42,7 @@ export const Login: React.FunctionComponent = () => {
       <p>This is a prototype of the UI, without a server: so any data you enter isn't permanently stored anywhere.</p>
     </React.Fragment>
   );
-  const layout: Layout = { main: { content, title: "Login" } };
+  const layout: Layout = { main: { content, title: "Login" }, width: "Closed" };
   return renderLayout(layout);
 }
 

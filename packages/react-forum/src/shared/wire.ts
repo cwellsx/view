@@ -1,11 +1,17 @@
 import { IdName } from "../data/id";
 import { UserSummary } from "../data/user";
 import { TagId } from "../data/tag";
-import { DiscussionSummary, Discussions, DiscussionsRange, DiscussionRange, Message } from "../data/discussion";
-import { Discussion } from "../data/discussion";
+import { Discussions, DiscussionSummary } from "../data/discussion";
+import { Discussion, Message } from "../data/discussion";
+import { UserActivity } from "../data/userActivity";
+import { DiscussionsRange, DiscussionRange, ActivityRange } from "../data/range";
 
-// slightly more compact form in which it's sent from server
-export interface WireDiscussions {
+/*
+  This defines slightly more compact forms for various types of data, in which the data is sent from the server.
+  It just ensures that only one instance of each UserSummary is sent, even when several messages are from the same user.
+*/
+
+export interface WireSummaries {
   users: UserSummary[];
   discussions: {
     idName: IdName, // discussion ID
@@ -16,10 +22,9 @@ export interface WireDiscussions {
     dateTime: string,
     nAnswers: number
   }[];
-  range: DiscussionsRange;
 }
 
-export function unwireDiscussions(input: WireDiscussions): Discussions {
+function unwireSummaries(input: WireSummaries): DiscussionSummary[] {
   // create a Map of the users
   const users: Map<number, UserSummary> = new Map<number, UserSummary>(
     input.users.map(user => [user.idName.id, user])
@@ -38,12 +43,26 @@ export function unwireDiscussions(input: WireDiscussions): Discussions {
     };
   });
 
-  return { summaries, range: input.range };
+  return summaries;
 }
 
-// slightly more compact form in which it's sent from server
+/*
+  WireDiscussions <-> Discussions
+*/
+
+export type WireDiscussions = WireSummaries & { range: DiscussionsRange };
+
+export function unwireDiscussions(input: WireDiscussions): Discussions {
+  const summaries = unwireSummaries(input);
+  return { range: input.range, summaries };
+}
+
+/*
+  WireDiscussion <-> Discussion
+*/
 
 export interface WireMessage {
+  messageId: number;
   userId: number; // + users
   markdown: string;
   dateTime: string;
@@ -87,4 +106,17 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
     range: range,
     messages: messages.map(unwireMessage)
   };
+}
+
+/*
+  WireUserActivity <-> UserActivity
+*/
+
+export type WireUserActivity = WireSummaries & { range: ActivityRange, favourites: [TagId, number][] };
+
+export function unwireUserActivity(input: WireUserActivity): UserActivity {
+  const summaries = unwireSummaries(input);
+  const summary: UserSummary = input.users[0];
+  const range = input.range;
+  return { summary, summaries, favourites: input.favourites, range };
 }

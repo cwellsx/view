@@ -1,4 +1,4 @@
-import { BareDiscussion } from "../../src/server/bare";
+import { BareDiscussion, BareMessage } from "../../src/server/bare";
 import { Tag } from "../../src/data/Tag";
 
 /*
@@ -78,7 +78,7 @@ export function readDiscussions(text: string, nUsers: number, tags: Tag[]): obje
       return undefined;
     }
     const tag: Tag = random_tag();
-    const messages = [];
+    const messages: BareMessage[] = [];
     const n = random_1to10();
     for (let i = 0; i < n; ++i) {
       const userId = random_userId();
@@ -88,7 +88,7 @@ export function readDiscussions(text: string, nUsers: number, tags: Tag[]): obje
       }
       const markdown = text.join("\r\n\r\n");
       const dateTime = random_date();
-      messages.push({ userId, markdown, dateTime });
+      messages.push({ userId, markdown, dateTime, messageId: 0 });
     }
     messages.sort((x, y) => new Date(x.dateTime).getTime() - new Date(y.dateTime).getTime());
     return {
@@ -96,7 +96,8 @@ export function readDiscussions(text: string, nUsers: number, tags: Tag[]): obje
         idName: { id: discussionId, name: title },
         tag
       },
-      messages
+      first: messages[0],
+      messages: messages.slice(1)
     }
   };
 
@@ -108,6 +109,12 @@ export function readDiscussions(text: string, nUsers: number, tags: Tag[]): obje
     }
     rc.push(discussion);
   }
+
+  const messagesDates: [Date, BareMessage][] = [];
+  rc.forEach(
+    discussion => discussion.messages.forEach(message => messagesDates.push([new Date(message.dateTime), message])));
+  messagesDates.sort((x, y) => x[0].getTime() - y[0].getTime());
+  messagesDates.forEach((pair, index) => { pair[1].messageId = index + 1; });
 
   return rc;
 }

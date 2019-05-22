@@ -319,8 +319,8 @@ export const route = {
   Called from /src/io/index to contruct a Resource from input parameters, suitable for a request to the server
 */
 
-export function requestResource(resourceType: ResourceType, id: number): Resource {
-  return { resourceType, what: { id, name: "unknown" } };
+export function requestIdName(id: number): IdName {
+  return { id, name: "unknown" };
 }
 
 /*
@@ -329,14 +329,19 @@ export function requestResource(resourceType: ResourceType, id: number): Resourc
 
 export type UserTabType = "Profile" | "EditSettings" | "Activity";
 
-export function getUserUrl(userId: IdName, userTabType: UserTabType): string {
+export function getUserUrl(user: IdName, userTabType: UserTabType): string {
+  return getResourceUrl(getUserResource({ user, userTabType }));
+}
+
+export function getUserResource(options: UserOptions): Resource {
+  const { user, userTabType } = options;
   switch (userTabType) {
     case "Profile":
-      return getResourceUrl({ resourceType: "User", what: userId, queries: [["tab", "profile"]] });
+      return { resourceType: "User", what: user, queries: [["tab", "profile"]] };
     case "EditSettings":
-      return getResourceUrl({ resourceType: "User", word: "edit", what: userId });
+      return { resourceType: "User", word: "edit", what: user };
     case "Activity":
-      return getResourceUrl({ resourceType: "User", what: userId, queries: [["tab", "activity"]] });
+      return { resourceType: "User", what: user, queries: [["tab", "activity"]] };
     default:
       throw new Error();
   }
@@ -374,6 +379,54 @@ export function getUserOptions(either: Resource | Location): UserOptions | Parse
     return userTabType;
   }
   return { user, userTabType };
+}
+
+export type ActivitySort = "Oldest" | "Newest";
+export interface UserActivityOptions {
+  user: IdName;
+  userTabType: "Activity";
+  sort?: ActivitySort;
+  page?: number; //1-based
+};
+
+export function getUserActivityOptions(either: Resource | Location): UserActivityOptions | ParserError {
+  const resource = ensureResource((either));
+  if (isParserError(resource)) {
+    return resource;
+  }
+  const userOptions = getUserOptions(resource);
+  if (isParserError(userOptions)) {
+    return userOptions;
+  }
+  const { user, userTabType } = userOptions;
+  if (userTabType!=="Activity") {
+    return {error: `Unexpected userTabType=${userTabType}`}
+  }
+  function getActivityoptions(resource: Resource) {
+    const sort = getQuery(resource, "sort");
+    const page = getQuery(resource, "page");
+    return {
+      sort: sort ? discussionSort.find1(sort) : undefined,
+      page: page ? toNumber(page) : undefined
+    };
+  }
+  const { sort, page } = getActivityoptions(resource);
+  return { user, sort, userTabType, page };
+}
+
+export function getUserActivityResource(options: UserActivityOptions): Resource {
+  const resource: Resource = getUserResource(options);
+  if (options.sort) {
+    resource.queries!.push(["sort", discussionSort.find0(options.sort)!]);
+  }
+  if (options.page) {
+    resource.queries!.push(["page", "" + options.page]);
+  }
+  return resource;
+}
+
+export function getUserActivityUrl(options: UserActivityOptions): string {
+  return getResourceUrl(getUserActivityResource(options));
 }
 
 /*

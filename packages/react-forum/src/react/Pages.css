@@ -50,9 +50,26 @@ div.all-users {
 }
 
 div.all-users > .user-info {
-  /*min-width: 250px;*/
   flex: 1 1 25%;
   width: auto;
+}
+
+/* tags -- similar to users */
+
+div.tags {
+  flex-wrap: wrap;
+  display: grid;
+  grid-gap: 8px;
+  grid-template-columns: repeat( auto-fill, minmax(150px, 1fr) );
+}
+
+div.tags > .topic {
+  flex: 1 1 25%;
+  width: auto;
+}
+
+div.tags {
+  margin-bottom: 2em;
 }
 
 /* styles on user profile tabs */

@@ -27,7 +27,7 @@ export interface BareUser {
   gravatarHash: string;
   // TODO: add some authentication or credential data somewhere e.g. here
   profile: I.UserProfile
-  favourites: I.FavouriteId[];
+  favourites: I.TagId[];
 }
 
 export type BareMessage = WireMessage;
@@ -35,5 +35,6 @@ export type BareDiscussionMeta = WireDiscussionMeta;
 
 export interface BareDiscussion {
   meta: BareDiscussionMeta;
+  first: BareMessage;
   messages: BareMessage[];
 }

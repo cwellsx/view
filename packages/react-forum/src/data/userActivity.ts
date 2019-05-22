@@ -1,16 +1,12 @@
-import { IdName } from "./id";
-import { ResourceType } from "../shared/request";
+import { TagId } from "./tag";
 import { UserSummary } from "./user";
 import { DiscussionSummary } from "./discussion";
-
-export interface FavouriteId {
-  resourceType: ResourceType;
-  idName: IdName;
-}
+import { ActivityRange } from "./range";
 
 // UserActivity is fetched separately because it's potentially long
 export interface UserActivity {
   summary: UserSummary;
-  messages: DiscussionSummary[];
-  favourites: FavouriteId[];
+  range: ActivityRange;
+  summaries: DiscussionSummary[];
+  favourites: [TagId, number][];
 }
