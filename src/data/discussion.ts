@@ -1,7 +1,7 @@
 import { IdName } from "./id";
 import { UserSummary } from "./user";
 import { TagId } from "./tag";
-import { DiscussionsSort, DiscussionSort } from "../shared/request";
+import { DiscussionsRange, DiscussionRange } from "./range";
 
 export interface Message {
   userSummary: UserSummary;
@@ -20,13 +20,6 @@ export interface Discussion {
   messages: Message[];
 }
 
-export interface DiscussionRange {
-  nTotal: number;
-  sort: DiscussionSort;
-  pageSize: number;
-  pageNumber: number; // 1-based
-}
-
 /*
   Summaries
 */
@@ -42,13 +35,6 @@ export interface DiscussionSummary {
   tag: TagId;
   messageSummary: MessageSummary;
   nAnswers: number;
-}
-
-export interface DiscussionsRange {
-  nTotal: number;
-  sort: DiscussionsSort;
-  pageSize: number;
-  pageNumber: number; // 1-based
 }
 
 export interface Discussions {

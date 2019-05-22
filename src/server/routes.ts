@@ -39,8 +39,23 @@ export function mockServer(url: string, userIdLogin: number): object | undefined
         // should return 404 Not Found
         return undefined;
       }
-      const { user } = requested;
-      return DB.getUser(user.id, userIdLogin);
+      const { user, userTabType } = requested;
+      switch (userTabType) {
+        case "Profile":
+        case "EditSettings":
+          return DB.getUser(user.id, userIdLogin);
+        case "Activity":
+          // the UserActivityOptions also carries DiscussionsOptions
+          const options = R.getUserActivityOptions(resource);
+          if (R.isParserError(options)) {
+            // should return 400 Bad Request
+            return undefined;
+          }
+          return DB.getUserActivity(options);
+        default:
+          // should return 500 Internal Server Error
+          return undefined;
+      }
     }
   }
 

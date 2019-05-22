@@ -16,13 +16,17 @@ export const Topbar: React.FunctionComponent = () => {
     <div className="topbar" >
       <div className="container">
         <ul className="icons">
-          <li className="icon"><NavLink to={route.siteMap} title="Site Map"><Search viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+          <li className="icon"><NavLink to={route.siteMap} title="Site Map">
+            <Search viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
           {appContext.me ?
             (
               <React.Fragment>
-                <li className="icon"><NavLink to={route.discussions} title="Discussions"><Message viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
-                <li className="icon"><NavLink to={route.users} title="Users"><UserProfile viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
-                <li className="icon"><NavLink to="/index" title="Notifications"><Mail viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+                <li className="icon"><NavLink to={route.discussions} title="Discussions">
+                  <Message viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+                <li className="icon"><NavLink to={route.users} title="Users">
+                  <UserProfile viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
+                <li className="icon"><NavLink to="/index" title="Notifications">
+                  <Mail viewBox="0 0 16 16" width="20" height="20" /></NavLink></li>
                 <li className="icon">{getUserSummary(appContext.me, { title: true, size: "small" }).gravatar}</li>
               </React.Fragment>
             ) :

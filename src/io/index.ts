@@ -1,14 +1,14 @@
 import * as I from "../data";
-import { WireDiscussions, unwireDiscussions, WireDiscussion, unwireDiscussion } from "../shared/wire"
+import * as W from "../shared/wire"
 import * as Post from "../shared/post";
-import { Resource, getResourceUrl, requestResource } from "../shared/request";
+// import { Resource, getResourceUrl, requestResource } from "../shared/request";
 import * as R from "../shared/request";
 import { config } from "../config"
 // only used for the mock
 import { SimpleResponse, mockFetch } from "../io/mock";
 
-function get(resource: Resource, body?: object): Promise<SimpleResponse> {
-  const url = getResourceUrl(resource);
+function get(resource: R.Resource, body?: object): Promise<SimpleResponse> {
+  const url = R.getResourceUrl(resource);
   if (!config.serverless) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
     const init: RequestInit = {
@@ -30,7 +30,7 @@ function get(resource: Resource, body?: object): Promise<SimpleResponse> {
 }
 
 // https://stackoverflow.com/questions/41103360/how-to-use-fetch-in-typescript
-function getT<T>(resource: Resource, body?: object): Promise<T> {
+function getT<T>(resource: R.Resource, body?: object): Promise<T> {
   return get(resource, body)
     .then(response => {
       if (!response.ok) {
@@ -45,7 +45,7 @@ export async function getSiteMap(): Promise<I.SiteMap> {
 }
 
 export async function getImage(id: number): Promise<I.Image> {
-  return getT<I.Image>(requestResource("Image", id));
+  return getT<I.Image>({ resourceType: "Image", what: R.requestIdName(id) });
 }
 
 export async function login(data: Post.Login): Promise<I.UserSummary> {
@@ -57,39 +57,36 @@ export async function getUsers(): Promise<I.UserSummaryEx[]> {
 }
 
 export async function getUser(id: number): Promise<I.User> {
-  return getT<I.User>(requestResource("User", id));
+  return getT<I.User>({ resourceType: "User", what: R.requestIdName(id) });
 }
 
-export async function getUserActivity(id: number): Promise<I.UserActivity> {
-  throw new Error("not yet implemented");
+function convertPromise<TWire,TData>(promise: Promise<TWire>, convert: (wire: TWire) => TData): Promise<TData> {
+  const rc: Promise<TData> = new Promise<TData>((resolve, reject) => {
+    promise.then((wire: TWire) => {
+      const wanted: TData = convert(wire);
+      resolve(wanted);
+    })
+    promise.catch(error => {
+      reject(error);
+    });
+  });
+  return rc;
+}
+
+export async function getUserActivity(options: R.UserActivityOptions): Promise<I.UserActivity> {
+  const resource = R.getUserActivityResource(options)
+  const wirePromise: Promise<W.WireUserActivity> = getT<W.WireUserActivity>(resource);
+  return convertPromise(wirePromise, W.unwireUserActivity);
 }
 
 export async function getDiscussions(options: R.DiscussionsOptions): Promise<I.Discussions> {
-  const url = R.getDiscussionsResource(options);
-  const wirePromise: Promise<WireDiscussions> = getT<WireDiscussions>(url);
-  const rc: Promise<I.Discussions> = new Promise<I.Discussions>((resolve, reject) => {
-    wirePromise.then((wire: WireDiscussions) => {
-      const wanted: I.Discussions = unwireDiscussions(wire);
-      resolve(wanted);
-    })
-    wirePromise.catch(error => {
-      reject(error);
-    });
-  });
-  return rc;
+  const resource = R.getDiscussionsResource(options);
+  const wirePromise: Promise<W.WireDiscussions> = getT<W.WireDiscussions>(resource);
+  return convertPromise(wirePromise, W.unwireDiscussions);
 }
 
 export async function getDiscussion(options: R.DiscussionOptions): Promise<I.Discussion> {
-  const url = R.getDiscussionResource(options);
-  const wirePromise: Promise<WireDiscussion> = getT<WireDiscussion>(url);
-  const rc: Promise<I.Discussion> = new Promise<I.Discussion>((resolve, reject) => {
-    wirePromise.then((wire: WireDiscussion) => {
-      const wanted: I.Discussion = unwireDiscussion(wire);
-      resolve(wanted);
-    })
-    wirePromise.catch(error => {
-      reject(error);
-    });
-  });
-  return rc;
+  const resource = R.getDiscussionResource(options);
+  const wirePromise: Promise<W.WireDiscussion> = getT<W.WireDiscussion>(resource);
+  return convertPromise(wirePromise, W.unwireDiscussion);
 }

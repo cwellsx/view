@@ -200,7 +200,7 @@ const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteCompone
     return noMatch(props, parsed.error);
   }
 
-  // see https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook-after-an-ear
+  // see https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook
   // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />` instead
   // of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
   // So far as I can tell from testing, what really matters is the array of dependencies passed to useEffects.
@@ -248,9 +248,16 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
   if (!canEdit && (userTabType === "EditSettings")) {
     return noMatch(props, "You cannot edit another user's profile");
   }
-  return isActivity
-    ? <UserActivity userId={userId} canEdit={canEdit} />
-    : <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} />;
+  if (!isActivity) {
+    return <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} />;
+  }
+  // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
+  const options = R.getUserActivityOptions(props.location);
+  if (R.isParserError(options)) {
+    return noMatch(props, options.error);
+  }
+  return <UserActivity user={options.user} userTabType={options.userTabType} sort={options.sort} page={options.page}
+    canEdit={canEdit} />
 }
 
 interface UserProfileProps { userId: number, userTabType: R.UserTabType, canEdit: boolean };
@@ -269,18 +276,23 @@ const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfi
   return renderLayout(layout);
 }
 
-interface UserActivityProps { userId: number, canEdit: boolean };
+type UserActivityProps = R.UserActivityOptions & { canEdit: boolean };
 const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
 
-  const { userId, canEdit } = props;
+  const { user, userTabType, canEdit } = props;
+  const { sort, page } = props;
+
+  const options: R.UserActivityOptions = React.useMemo(
+    () => { return { user: { id: user.id, name: user.name }, userTabType, sort, page }; },
+    [user.id, user.name, userTabType, sort, page])
 
   // we want to do something a bit different here too --
   // i.e. we want to pass the canEdit value to the Page.User function
   // so that it knows whether to display the "Edit Settings" tab as an option
   // even though canEdit is not a parameter passed to the IO.getUserActivity function
   // so again we use `useGet` here instead of `useGetLayout` to better control how we invoke the "get layout" function
-  const data: I.UserActivity | undefined = useGet(IO.getUserActivity, userId);
-  const layout = (!data) ? loadingContents : Page.User(data, canEdit, userId);
+  const data: I.UserActivity | undefined = useGet(IO.getUserActivity, options);
+  const layout = (!data) ? loadingContents : Page.User(data, canEdit, user.id);
   return renderLayout(layout);
 }
 
@@ -302,7 +314,9 @@ const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteC
 const DiscussionsOptions: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
 
   const { sort, pagesize, page } = props;
-  const options: R.DiscussionsOptions = React.useMemo(() => { return { sort, pagesize, page }; }, [sort, pagesize, page])
+  const options: R.DiscussionsOptions = React.useMemo(
+    () => { return { sort, pagesize, page }; },
+    [sort, pagesize, page])
 
   return useGetLayout<I.Discussions, R.DiscussionsOptions>(
     IO.getDiscussions,
@@ -322,15 +336,15 @@ const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteCo
     return noMatch(props, parsed.error);
   }
 
-  return <DiscussionId discussion={parsed.discussion} sort={parsed.sort} />;
+  return <DiscussionId discussion={parsed.discussion} sort={parsed.sort} page={parsed.page} />;
 }
 
 const DiscussionId: React.FunctionComponent<R.DiscussionOptions> = (props: R.DiscussionOptions) => {
 
-  const { sort, discussion } = props;
+  const { sort, discussion, page } = props;
   const options: R.DiscussionOptions = React.useMemo(
-    () => { return { sort, discussion: {id:discussion.id,name:discussion.name} }; },
-    [sort, discussion.id, discussion.name])
+    () => { return { sort, page, discussion: { id: discussion.id, name: discussion.name } }; },
+    [sort, discussion.id, discussion.name, page])
 
   return useGetLayout<I.Discussion, R.DiscussionOptions>(
     IO.getDiscussion,

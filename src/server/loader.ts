@@ -1,4 +1,4 @@
-import { BareUser, BareDiscussion } from "./bare";
+import { BareUser, BareDiscussion, BareMessage } from "./bare";
 import * as I from "../data";
 
 /*
@@ -104,6 +104,12 @@ export function loadTags(): I.Tag[] {
 
 export function loadDiscussions(): Map<number, BareDiscussion> {
   const found = require("../server_data/discussions.json");
+  const sampleMessage: BareMessage = {
+    userId: 7,
+    markdown: "Maecenas dignissim et ante sit amet fermentum.",
+    dateTime: "Thu, 03 Jan 2019 22:35:05 GMT",
+    messageId: 1
+  };
   const sample: BareDiscussion = {
     meta: {
       idName: {
@@ -112,13 +118,8 @@ export function loadDiscussions(): Map<number, BareDiscussion> {
       },
       tag: { key: "foo" }
     },
-    messages: [
-      {
-        userId: 7,
-        markdown: "Maecenas dignissim et ante sit amet fermentum. Praesent iaculis eget est ut facilisis. Sed at mi felis. Fusce ullamcorper nec metus eu pretium. Vestibulum sit amet orci sollicitudin, suscipit sapien et, viverra neque. Duis arcu ex, faucibus a tortor sed, efficitur vehicula lectus. Donec lacinia eros at risus finibus, ac dictum ipsum scelerisque. Nam tincidunt mi consequat purus tristique, eu mattis libero dignissim. Suspendisse convallis nisl ut urna porta, efficitur faucibus enim laoreet.",
-        dateTime: "Thu, 03 Jan 2019 22:35:05 GMT"
-      }
-    ]
+    first: sampleMessage,
+    messages: [sampleMessage]
   };
   const loaded: BareDiscussion[] = assertTypeT(found, [sample]);
   return new Map<number, BareDiscussion>(loaded.map(x => [x.meta.idName.id, x]));

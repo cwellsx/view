@@ -28,17 +28,33 @@
   border-top: 1px solid rgb(214, 217, 220);
 }
 
-.column-text .content .element {
+.column-text .content .element,
+.tabbed .element {
   border-bottom: 1px solid rgb(239, 240, 241);
-  padding: 0.75rem 0.5rem
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
-.column-text .content .element.first {
+.column-text.closed .content .element {
+  padding-left: 0.5rem
+}
+
+.column-text.open .content,
+.column-text.grid .content  {
+  padding-left: 1.5rem
+}
+
+.column-text .content .element.first,
+.tabbed .element.first {
   border-bottom: none;
 }
 
 .column-text.grid {
   max-width: 71.5em;
+}
+
+.element h2 {
+  margin-top: 0;
 }
 
 /* wide columns e.g. Images */
@@ -101,6 +117,8 @@
 .tab-head .slug > * {
   display: inline-block;
   vertical-align: middle;
+  float: none;
+  padding: 0;
 }
 
 .tabbed {
@@ -112,7 +130,7 @@
   width: 100%;
 }
 
-.tabs > a {
+.tabs a {
   display: block;
   float: left;
   padding: 13px 7px 14px;
@@ -128,8 +146,12 @@
   display: inline;
 }
 
-.subtabs .tabs > a {
+.subtabs .tabs > div {
   float: right;
+}
+
+.subtabs .tabs a:last-child {
+  margin-right: 0;
 }
 
 .tab-head:after, .tabs::after {
@@ -138,29 +160,29 @@
   clear: both;
 }
 
-.tabs > a.selected {
+.tabs a.selected {
   border-color: rgb(228, 230, 232);
   border-bottom-color: white;
 }
 
-.tabs > a:before {
+.tabs a:before {
   content: "";
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    right: -1px;
-    height: 2px;
-    background-color: transparent;
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 2px;
+  background-color: transparent;
 }
 
-.tabs > a.selected:before {
+.tabs a.selected:before {
   background-color: #2c5777;
 }
 
-.tabs > a:hover {
+.tabs a:hover {
   background-color: rgba(132,141,149,0.05);
 }
 
-.tabs > a.selected:hover {
+.tabs a.selected:hover {
   background-color: white;
 }

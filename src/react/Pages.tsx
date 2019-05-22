@@ -63,7 +63,7 @@ export function SiteMap(data: I.SiteMap): Layout {
 
   content.push({ element: features, key: "Feature" });
 
-  return { main: { title: "Site Map", content } };
+  return { main: { title: "Site Map", content }, width: "Closed" };
 }
 
 /*
@@ -85,7 +85,9 @@ function handleLayerChange(event: React.ChangeEvent<HTMLInputElement>) {
 
 function renderNode(node: I.LayerNode, alias: string): React.ReactElement {
   // https://stackoverflow.com/questions/26615779/react-checkbox-not-sending-onchange
-  return <label><input type="checkbox" defaultChecked={true} onChange={handleLayerChange} name={alias} />{node.name}</label>
+  return <label><input type="checkbox" defaultChecked={true} onChange={handleLayerChange} name={alias} />
+    {node.name}
+  </label>
 }
 
 function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement {
@@ -161,7 +163,7 @@ export function User(
   const selected = canEdit
     ? ((userTabType === "Profile") ? 0 : (userTabType === "EditSettings") ? 1 : 2)
     : ((userTabType === "Profile") ? 0 : 1);
-  const idName: I.IdName = summary.idName;
+  const { idName, location } = summary;
 
   const slug = (
     <React.Fragment>
@@ -176,8 +178,8 @@ export function User(
       <div className="user-profile profile">
         {gravatar}
         <div className="column">
-          <h1>{summary.idName.name}</h1>
-          {summary.location ? <p className="location"><LocationIcon viewBox="0 0 24 24" width="18" height="18" /> {summary.location}</p> : undefined}
+          <h1>{idName.name}</h1>
+          {location ? <p className="location"><LocationIcon width="18" height="18" /> {location}</p> : undefined}
           <div className="about">
             <p>About me</p>
           </div>
@@ -186,62 +188,91 @@ export function User(
     )
   };
 
-  function getSettings(): Tab {
-
-    function getSettingsContent() {
-      if (!isUserProfile(props)) {
-        return <p>To be supplied</p>;
-      }
-      const inputDisplayName = React.createRef<HTMLInputElement>();
-      const inputEmail = React.createRef<HTMLInputElement>();
-      const inputLocation = React.createRef<HTMLInputElement>();
-      const inputAbout = React.createRef<HTMLInputElement>();
-      const preferences: I.UserPreferences = props.data.preferences!;
-      const profile: I.UserProfile = props.data.profile;
-
-      return (
-        <div className="user-profile settings">
-          <h1>Edit</h1>
-          <h2>Public information</h2>
-          <div className="public">
-            {gravatar}
-            <div className="column">
-              <label>Display name</label>
-              <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={summary.idName.name} />
-              <label>Location (optional)</label>
-              <input type="text" ref={inputLocation} placeholder="optional" defaultValue={summary.location} />
-            </div>
-          </div>
-          <label>About me</label>
-          <input type="text" ref={inputAbout} placeholder="required" defaultValue={profile.aboutMe} />
-          <h2>Private settings</h2>
-          <label>Email</label>
-          <input type="text" ref={inputEmail} placeholder="required" defaultValue={preferences.email} />
-        </div>
-      );
+  function getSettingsContent(): React.ReactElement {
+    if (!canEdit || !isUserProfile(props)) {
+      return <p>To be supplied</p>;
     }
+    const inputDisplayName = React.createRef<HTMLInputElement>();
+    const inputEmail = React.createRef<HTMLInputElement>();
+    const inputLocation = React.createRef<HTMLInputElement>();
+    const inputAbout = React.createRef<HTMLInputElement>();
+    const preferences: I.UserPreferences = props.data.preferences!;
+    const profile: I.UserProfile = props.data.profile;
 
-    const rc: Tab = {
-      navlink: { href: getUserUrl(idName, "EditSettings"), text: "Edit" },
-      content: getSettingsContent(),
-      slug
-    };
-    return rc;
+    return (
+      <div className="user-profile settings">
+        <h1>Edit</h1>
+        <h2>Public information</h2>
+        <div className="public">
+          {gravatar}
+          <div className="column">
+            <label>Display name</label>
+            <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={summary.idName.name} />
+            <label>Location (optional)</label>
+            <input type="text" ref={inputLocation} placeholder="optional" defaultValue={summary.location} />
+          </div>
+        </div>
+        <label>About me</label>
+        <input type="text" ref={inputAbout} placeholder="required" defaultValue={profile.aboutMe} />
+        <h2>Private settings</h2>
+        <label>Email</label>
+        <input type="text" ref={inputEmail} placeholder="required" defaultValue={preferences.email} />
+      </div>
+    );
   }
-  const settings: Tab | undefined = canEdit ? getSettings() : undefined;
+
+  const settings: Tab = {
+    navlink: { href: getUserUrl(idName, "EditSettings"), text: "Edit" },
+    content: getSettingsContent(),
+    slug
+  };
+
+  function getActivityContent(): ReadonlyArray<KeyedItem> {
+    if (isUserProfile(props)) {
+      return [{ element: <p>To be supplied</p>, key: "none" }];
+    }
+    if (!props.summaries.length) {
+      return [{ element: <p>This user has not posted any messages.</p>, key: "none" }];
+    }
+    const tags = (
+      <React.Fragment>
+        <h2>{`${props.favourites.length} ${config.strTags}`}</h2>
+        <div className="tags">
+          {props.favourites.map(pair => Summaries.getTag(pair[0], pair[1]))}
+        </div>
+      </React.Fragment>
+    );
+    const first: KeyedItem = { element: tags, key: "tags" };
+    const next: KeyedItem[] = props.summaries.map(summary => Summaries.getDiscussionSummary(summary, true));
+    return [first].concat(next);
+  }
+
+  function getActivityUrl(user: I.IdName, sort: R.ActivitySort) {
+    return R.getUserActivityUrl({ user, userTabType: "Activity", sort })
+  }
+  const subTabs: SubTabs | undefined = (isUserProfile(props)) ? undefined : {
+    text: (props.summaries.length === 1) ? "1 Message" : `${props.summaries.length} Messages`,
+    selected: (props.range.sort === "Newest") ? 0 : 1,
+    tabs: [
+      { text: "newest", href: getActivityUrl(props.summary.idName, "Newest") },
+      { text: "oldest", href: getActivityUrl(props.summary.idName, "Oldest") }
+    ]
+  };
 
   const activity: Tab = {
     navlink: { href: getUserUrl(idName, "Activity"), text: "Activity" },
-    content: <p>Where</p>,
+    content: getActivityContent(),
+    subTabs,
     slug
   };
+
   const tabs: Tabs = {
     selected,
     title: idName.name,
     tabbed: canEdit ? [profile, settings!, activity] : [profile, activity]
   };
   return {
-    main: tabs
+    main: tabs, width: "Closed"
   };
 }
 
@@ -249,16 +280,19 @@ export function User(
   Discussions
 */
 
+function formatNumber(count: number, things: string) {
+  // https://blog.abelotech.com/posts/number-currency-formatting-javascript/
+  const rc = count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + things.toLowerCase();
+  return ((count === 1) && (things[things.length - 1] === "s")) ? rc.substring(0, rc.length - 1) : rc;
+}
+
 export function Discussions(data: I.Discussions): Layout {
   const { range, summaries } = data;
-
-  // https://blog.abelotech.com/posts/number-currency-formatting-javascript/
-  const numQuestions = range.nTotal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + config.strQuestions.toLowerCase();
 
   const subtitle = (
     <React.Fragment>
       <div className="subtitle">
-        <div className="count">{numQuestions}</div>
+        <div className="count">{formatNumber(range.nTotal, config.strQuestions)}</div>
         <div className="sort">
           <NavLink to={getDiscussionsUrl({ sort: "Newest" })}
             className={range.sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
@@ -269,13 +303,13 @@ export function Discussions(data: I.Discussions): Layout {
     </React.Fragment>
   );
 
-  const nPages = Math.floor(range.nTotal / range.pageSize) + ((range.nTotal % range.pageSize) ? 1 : 0);
   const sort = range.sort;
   const footer = (
     <React.Fragment>
       <div className="footer">
         <div className="index">
-          {Summaries.getPageNavLinks(range.pageNumber, nPages, (page) => getDiscussionsUrl({ page, sort }))}
+          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
+            (page) => getDiscussionsUrl({ page, sort }))}
         </div>
         <div className="size">
           {Summaries.getNavLinks(
@@ -295,28 +329,44 @@ export function Discussions(data: I.Discussions): Layout {
   elements.push({ element: footer, key: "footer" });
   return {
     main: { content: elements, title: "All " + config.strQuestions, subtitle },
+    width: "Closed"
   };
 }
 
-
 /*
-  Discussions
+  Discussion
 */
 
 export function Discussion(data: I.Discussion): Layout {
   const { meta, first, range, messages } = data;
-  const subTabs: SubTabs | undefined = (!messages.length) ? undefined : {
-    text: (messages.length === 1) ? "1 Answer" : `${messages.length} Answers`,
+  const { nTotal } = range;
+
+  const subTabs: SubTabs | undefined = (!nTotal) ? undefined : {
+    text: (nTotal === 1) ? "1 Answer" : `${nTotal} Answers`,
     selected: (data.range.sort === "Newest") ? 0 : 1,
     tabs: [
       { text: "newest", href: R.getDiscussionUrl({ discussion: meta.idName, sort: "Newest" }) },
       { text: "oldest", href: R.getDiscussionUrl({ discussion: meta.idName, sort: "Oldest" }) }
     ]
   };
+
   const content: KeyedItem[] = [];
   content.push(Summaries.getFirstMessage(first, meta.tag));
   messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
+  if (range.nTotal > range.pageSize) {
+    const footer = (
+      <div className="footer">
+        <div className="index">
+          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
+            (page) => R.getDiscussionUrl({ discussion: meta.idName, page, sort: range.sort }))}
+        </div>
+      </div>
+    );
+    content.push({ element: footer, key: "footer" });
+  }
+
   return {
-    main: { content, title: meta.idName.name, subTabs }
+    main: { content, title: meta.idName.name, subTabs },
+    width: "Open"
   };
 }
