@@ -4,6 +4,13 @@ import { IdName } from "../data/id";
 
 /*
   Class in which to count each TagId per user
+
+  This is more complicated than it might be because,as an extended feature,
+  TagId might be Tag or it might be a reference to another resource.
+
+  If we only supported Tag and not TagId then this whole class might be replaced by a simple Map<string, number> --
+  the logic in this class is to serialize a TagId to a string which can be used as the key of a Map in the `add` method,
+  and in the `read`1` methd to deserialise a string back to a TagId.
 */
 
 export class TagIdCounts {
@@ -52,16 +59,5 @@ export class TagIdCounts {
       return { resourceType, what: { id, name } };
     }
   }
-  // static getName(resourceType: ResourceType, id: number): string {
-  //   switch (resourceType) {
-  //     case "Image":
-  //       const foundImage = allImages.find(image => image.summary.idName.id === id);
-  //       return (foundImage) ? foundImage.summary.idName.name : `?image#${id}`;
-  //     default:
-  //       break;
-  //   }
-  //   // optionally alter this in future to support using other resource types as tagIds
-  //   return `${resourceType}-${id}`;
-  // }
 }
 

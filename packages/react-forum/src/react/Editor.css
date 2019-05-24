@@ -1,0 +1,17 @@
+.wmd-preview {
+  padding: 10px 0;
+  border-top: 1px dotted #c8ccd0;
+  border-bottom: 1px dotted #c8ccd0;
+  clear: both;
+  width: 100%;
+}
+
+form.editor {
+  width: 100%;
+  padding: 0;
+  border: none;
+}
+
+.wmd-input, .wmd-preview {
+  background-color: white;
+}

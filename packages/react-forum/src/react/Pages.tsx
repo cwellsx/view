@@ -8,7 +8,7 @@ import './Pages.css';
 import { ReactComponent as LocationIcon } from "../icons/material/ic_location_on_24px.svg";
 import { config } from '../config';
 import { NavLink } from 'react-router-dom';
-
+import { AnswerDiscussion } from "./Editor";
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
@@ -337,7 +337,7 @@ export function Discussions(data: I.Discussions): Layout {
   Discussion
 */
 
-export function Discussion(data: I.Discussion): Layout {
+export function Discussion(data: I.Discussion, param: R.DiscussionOptions, reload: () => void): Layout {
   const { meta, first, range, messages } = data;
   const { nTotal } = range;
 
@@ -364,6 +364,9 @@ export function Discussion(data: I.Discussion): Layout {
     );
     content.push({ element: footer, key: "footer" });
   }
+
+  const yourAnswer = <AnswerDiscussion discussionId={meta.idName.id} reload={reload} />;
+  content.push({ element: yourAnswer, key: "editor" });
 
   return {
     main: { content, title: meta.idName.name, subTabs },

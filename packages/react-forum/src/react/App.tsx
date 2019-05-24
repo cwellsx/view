@@ -118,12 +118,21 @@ type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
 
 function useGetLayout<TData, TParam = void>(
   getData: (param: TParam) => Promise<TData>,
-  getContents: (data: TData, param: TParam) => Layout,
+  getLayout: (data: TData, param: TParam, reload: () => void) => Layout,
   param: TParam)
   : React.ReactElement {
 
   const [prev, setParam] = React.useState<TParam | undefined>(undefined);
   const [data, setData] = React.useState<TData | undefined>(undefined);
+
+  // we pass the reload function to the getLayout function so that it can force a reload e.g. after
+  // posting a new message to the server. We force a reload because nothing has changed on the client --
+  // not even the URL -- but we want to fecth/refresh the data from the server.
+  // https://stackoverflow.com/questions/46240647/can-i-call-forceupdate-in-stateless-component
+  const [toggle, setToggle] = React.useState<boolean>(true);
+  function reload() {
+    setToggle(!toggle); // toggle the state to force render
+  }
 
   React.useEffect(() => {
     getData(param)
@@ -131,12 +140,12 @@ function useGetLayout<TData, TParam = void>(
         setData(fetched);
         setParam(param);
       });
-  }, [getData, getContents, param]);
+  }, [getData, getLayout, param, toggle]);
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
   const layout: Layout = (data) && (prev === param)
-    ? getContents(data, param) // render the data
+    ? getLayout(data, param, reload) // render the data
     : loadingContents; // else no data yet to render
 
   return renderLayout(layout);

@@ -5,6 +5,8 @@ import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity, WireM
 import { getExerpt } from "../shared/exerpt";
 import * as R from "../shared/request";
 import { TagIdCounts } from "./tagsDatabase";
+import { CurrentIds, FoundId } from "./currentIds";
+import * as Posted from "./posted";
 
 /*
   This is an in-RAM database
@@ -22,17 +24,40 @@ const allImages: I.Image[] = loadImages();
 const allTags: I.Tag[] = loadTags();
 
 const allDiscussions: Map<number, BareDiscussion> = loadDiscussions();
-// [discussionId, time]
-const { sortedDiscussionsNewest, sortedDiscussionsActive } = sortAllDiscussions(allDiscussions);
-// Map<number, BareMessage[]> and Map<number, number> and userTags: Map<number, TagIdCounts>
-const { userMessages, messageDiscussions, userTags } = sortAllMessages(allDiscussions);
+
+const {
+  sortedDiscussionsNewest,
+  sortedDiscussionsActive
+}: {
+  sortedDiscussionsNewest: [number, number][], // [discussionId, time]
+  sortedDiscussionsActive: [number, number][] // [discussionId, time]
+} = sortAllDiscussions(allDiscussions);
+
+const {
+  userMessages,
+  messageDiscussions,
+  userTags,
+  currentIds
+}: {
+  userMessages: Map<number, BareMessage[]>, // map userId to sorted array of messages
+  messageDiscussions: Map<number, number>, // map messageId to discussionId
+  userTags: Map<number, TagIdCounts>,
+  currentIds: CurrentIds
+} = sortAllMessages(allDiscussions);
+
+export function messageIdNext(): number {
+  return currentIds.messageId.next();
+}
 
 /*
   functions to sort and index data when it's first loaded from disk
 */
 
 function sortAllDiscussions(map: Map<number, BareDiscussion>)
-  : { sortedDiscussionsNewest: [number, number][], sortedDiscussionsActive: [number, number][] } {
+  : {
+    sortedDiscussionsNewest: [number, number][],
+    sortedDiscussionsActive: [number, number][]
+  } {
   const sortedDiscussionsNewest: [number, number][] = [];
   const sortedDiscussionsActive: [number, number][] = [];
 
@@ -58,7 +83,8 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
   : {
     userMessages: Map<number, BareMessage[]>,
     messageDiscussions: Map<number, number>,
-    userTags: Map<number, TagIdCounts>
+    userTags: Map<number, TagIdCounts>,
+    currentIds: CurrentIds
   } {
   const userMessages: Map<number, BareMessage[]> = new Map<number, BareMessage[]>();
   const messageDiscussions: Map<number, number> = new Map<number, number>();
@@ -71,8 +97,13 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
   });
 
   // get all messages (and all tags) from all discussions
+  const documentId: FoundId = new FoundId();
+  const messageId: FoundId = new FoundId();
+
   map.forEach(discussion => {
+    documentId.found(discussion.meta.idName.id)
     discussion.messages.forEach(message => {
+      messageId.found(message.messageId);
       messageDiscussions.set(message.messageId, discussion.meta.idName.id);
       userMessages.get(message.userId)!.push(message);
       userTags.get(message.userId)!.add(discussion.meta.tag);
@@ -85,7 +116,7 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
     pairs.sort((x, y) => x[1] - y[1]);
     userMessages.set(userId, pairs.map(pair => pair[0]));
   });
-  return { userMessages, messageDiscussions, userTags };
+  return { userMessages, messageDiscussions, userTags, currentIds: new CurrentIds(documentId, messageId) };
 }
 
 /*
@@ -267,4 +298,34 @@ export function getDiscussion(options: R.DiscussionOptions): WireDiscussion | un
     sortedMessages
   );
   return wireDiscussion(discussion, selected, range);
+}
+
+/*
+  POST function
+*/
+
+export function postNewMessage(posted: Posted.NewMessage): I.Message {
+  console.log("postNewMessage");
+  const { discussionId, message } = posted;
+  const discussion: BareDiscussion = allDiscussions.get(posted.discussionId)!;
+  // add to the discussion
+  discussion.messages.push(posted.message);
+  // this discussion is now the most active
+  function activate(active: [number, number]) {
+    // search backwards because it's likely to be more towards the end
+    for (let i = sortedDiscussionsActive.length - 1; i >= 0; --i) {
+      if (sortedDiscussionsActive[i][0] === active[0]) {
+        sortedDiscussionsActive.splice(i, 1);
+        sortedDiscussionsActive.unshift(active);
+        return;
+      }
+    }
+    console.log("error active discussion not found");
+  }
+  activate(getMessageTime(discussion, getMessageEnded));
+  // the user owns this message
+  userMessages.get(message.userId)!.push(message);
+  // the message is associated with this discussion
+  messageDiscussions.set(message.messageId, discussionId);
+  return { userSummary: getUserSummary(message.userId), markdown: message.markdown, dateTime: message.dateTime };
 }

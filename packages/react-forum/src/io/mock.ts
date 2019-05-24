@@ -1,5 +1,5 @@
 import { config } from "../config"
-import { mockServer, loginUser } from "../server/routes";
+import { routeOnGet, routeOnPost, loginUser } from "../server/routes";
 
 export { loginUser } from "../server/routes";
 
@@ -10,7 +10,7 @@ export interface SimpleResponse {
   json(): Promise<any>;
 }
 
-export function mockFetch(url: string): Promise<SimpleResponse> {
+export function mockFetch(url: string, init: RequestInit): Promise<SimpleResponse> {
   return new Promise<SimpleResponse>((resolve, reject) => {
     setTimeout(() => {
       if (config.loginfails) {
@@ -33,7 +33,8 @@ export function mockFetch(url: string): Promise<SimpleResponse> {
       // const me: I.UserSummary | undefined = React.useContext(AppContext).me;
       // const userId: number | undefined = me ? me.idName.id : undefined;
       const userId = loginUser().idName.id;
-      const json = mockServer(url, userId);
+      const isPost: boolean = init.method === "POST";
+      const json = !isPost ? routeOnGet(url, userId) : routeOnPost(url, userId, JSON.parse(init.body as string));
       if (!json) {
         // from inside setTimeout we must reject not throw
         // https://stackoverflow.com/questions/33445415/javascript-promises-reject-vs-throw
