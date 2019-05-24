@@ -5,3 +5,11 @@ export interface Login {
   userName: string,
   password: string
 }
+
+// there's a discussionId as well but it's carried in the URL
+export interface NewMessage {
+  markdown: string;
+}
+
+// these are the <component>/<verb> paris which may be stored in the `post` member of the `Resource` instance
+export type PostUrls = "answer/submit";

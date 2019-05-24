@@ -9,6 +9,8 @@
     "@types/react-dom": "16.8.4",
     "@types/react-router-dom": "^4.3.2",
     "normalize.css": "^8.0.1",
+    "pagedown": "^1.1.0",
+    "pagedown-editor": "^0.0.10",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.0",

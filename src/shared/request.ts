@@ -1,12 +1,15 @@
 import { IdName, Key } from "../data/id";
+import { PostUrls } from "./post";
 
 /*
   This interface is able to represent any URL which exists within the system.
 
-  I use it because I find it's difficult and not "type-safe" to work URL in string format
+  I use it because I find it's difficult and not "type-safe" to work with URLs in string format
   e.g. if the URL scheme (i.e. the routes supported by the system) changes or expands.
 
-  The Resource values defined in `route` represent the root pages for various types of data --
+  ---
+
+  The ResourceType and string values in `resourceTypes` array represent the root pages for various types of data --
   these typically show an index or list:
 
   - /login
@@ -19,6 +22,8 @@ import { IdName, Key } from "../data/id";
   depending on whether any images are defined in the `prebuild_data`.
 
   - /images
+
+  ---
 
   The system also supports the following URLs which are specific to different types of page.
 
@@ -65,11 +70,36 @@ import { IdName, Key } from "../data/id";
 
   ---
 
-  For any given data type (e.g. `User`) this module may export the following functions:
+  The URLs listed above are all for GET requests.
 
-  UserOptions
-  getUserUrl(options: UserOptions): string
-  getUserOptions(url: string): UserOptions
+  The strategy for POST requests is ...
+
+  - <resourceId><component><verb>
+
+  ... for example ...
+
+  - /discussions/1/answer/submit
+
+  This is a bit inconsistent, compare with `/users/edit/<id>/<name>` -- why isn't that `/users/<id>/edit/settings`?
+
+  Anyway, the supported <component><verb> pairs are as follows.
+
+  - /discussions/<id>/answer/submit
+
+  A difference between GET and POST is that in a POST the `name` portion of the IdName is not included.
+
+  ---
+
+  For any given data type or subclass (e.g. `User`) this module may export the following functions:
+
+  - UserOptions
+  - getUserResource(options: UserOptions): Resource
+  - getUserOptions(either: Resource | Location): UserOptions
+
+  This module also supports the following more general conversion
+
+  - getResourceUrl(resource: Resource): string
+  - getResource(url: string): Resource | ParserError
 */
 
 export type ResourceType = "SiteMap" | "Login" | "Discussion" | "User" | "Image" | "Feature";
@@ -80,6 +110,7 @@ export interface Resource {
   resourceType: ResourceType;
   word?: ResourceWord;
   what?: IdName | Key;
+  post?: PostUrls;
   queries?: [string, string | undefined][];
 }
 
@@ -165,7 +196,7 @@ function isWhatKey(what: IdName | Key): what is Key {
   return (what as Key).key !== undefined;
 }
 
-function getResourceId(resource: Resource): IdName | undefined {
+export function getResourceId(resource: Resource): IdName | undefined {
   return (resource.what && !isWhatKey(resource.what)) ? resource.what : undefined;
 }
 
@@ -177,7 +208,7 @@ function getResourceKey(resource: Resource): Key | undefined {
   Convert a Resource to a URL
 */
 
-export function getResourceUrl(resource: Resource): string {
+function resourceToUrl(resource: Resource, isPost: boolean): string {
   const root = resourceTypes.find0(resource.resourceType);
   if (!root) {
     throw new Error(`Undefined PageType: '${resource.resourceType}'`);
@@ -190,13 +221,24 @@ export function getResourceUrl(resource: Resource): string {
     if (isWhatKey(resource.what)) {
       url += `/${resource.what.key}`;
     } else {
-      url += `/${resource.what.id}/${slugify(resource.what.name)}`;
+      url += (!isPost) ? `/${resource.what.id}/${slugify(resource.what.name)}` : `/${resource.what.id}`;
     }
+  }
+  if (resource.post) {
+    url += `/${resource.post}`;
   }
   if (resource.queries && resource.queries.length) {
     url += "?" + resource.queries.map(pair => pair[1] ? pair[0] + "=" + pair[1] : pair[0]).join("&");
   }
   return url;
+}
+
+export function getResourceUrl(resource: Resource): string {
+  return resourceToUrl(resource, false);
+}
+
+export function postResourceUrl(resource: Resource): string {
+  return resourceToUrl(resource, true);
 }
 
 /*
@@ -211,7 +253,7 @@ function splitQueries(queries: string): [string, string | undefined][] {
   });
 }
 
-function makeResource(location: Location): Resource | ParserError {
+function makeResource(location: Location, isPost: boolean): Resource | ParserError {
   // split the input parameters
   const { pathname, search } = location;
   if (search && (search[0] !== "?")) {
@@ -247,43 +289,56 @@ function makeResource(location: Location): Resource | ParserError {
   }
   const word = getWord(resourceType);
 
-  // get whatever
-  let what = undefined;
+  // get `what`
+  let what: IdName | Key | undefined = undefined;
   if (path.length) {
     switch (resourceType) {
       case "User":
       case "Discussion":
       case "Image":
+        // if isPost then expect only the `id` portion of the IdName
+        if (path.length < (isPost ? 1 : 2)) {
+          return { error: `Too few elements in the path` };
+        }
         // expect an IdName
-        const id = toNumber(path[0]);
-        if (!id) {
-          return { error: `Expected ${path[0]} to be a numeric ID` };
+        const id = path.shift()!;
+        if (!toNumber(id)) {
+          return { error: `Expected ${id} to be a numeric ID` };
         }
-        if (path.length > 2) {
-          return { error: `Unexpected extra elements in the path` };
-        }
-        const name = (path.length === 2) ? path[1] : "";
-        what = { id, name };
+        const name = isPost ? "" : path.shift()!;
+        what = { id: toNumber(id)!, name };
         break;
       case "Feature":
-        if (path.length !== 1) {
+        if (path.length < 1) {
           return { error: `Unexpected extra elements in the path` };
         }
-        what = { key: path[0] };
+        what = { key: path.shift()! };
         break;
       default:
         return { error: `Unexpected extra elements in the path` };
     }
   }
 
-  return { resourceType: resourceType, word, what, queries };
+  // get 'post'
+  let post: PostUrls | undefined = undefined;
+  if (path.length) {
+    if (path.length !== 2) {
+      return { error: `Unexpected extra elements in the path` };
+    }
+    const joined = path.join("/");
+    // hope this string is one of the PostUrls ... a test will notice soon enough if it isn't
+    post = joined as PostUrls;
+  }
+
+  return { resourceType: resourceType, word, what, post, queries };
 }
 
 function ensureResource(either: Resource | Location): Resource | ParserError {
-  return isLocation(either) ? makeResource(either) : either;
+  // isPost is false because ensureResource is called from the various getXXXOptions methods which are all GET not POST
+  return isLocation(either) ? makeResource(either, false) : either;
 }
 
-export function getResource(url: string): Resource | ParserError {
+export function getResource(url: string, isPost: boolean): Resource | ParserError {
   if (url[0] !== "/") {
     return { error: "Expected URL to start with `/`" };
   }
@@ -300,7 +355,7 @@ export function getResource(url: string): Resource | ParserError {
   }
 
   const location: Location = { pathname: url, search: query };
-  return makeResource(location);
+  return makeResource(location, isPost);
 }
 
 /*
@@ -399,8 +454,8 @@ export function getUserActivityOptions(either: Resource | Location): UserActivit
     return userOptions;
   }
   const { user, userTabType } = userOptions;
-  if (userTabType!=="Activity") {
-    return {error: `Unexpected userTabType=${userTabType}`}
+  if (userTabType !== "Activity") {
+    return { error: `Unexpected userTabType=${userTabType}` }
   }
   function getActivityoptions(resource: Resource) {
     const sort = getQuery(resource, "sort");
