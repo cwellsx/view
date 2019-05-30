@@ -103,3 +103,7 @@ export async function newMessage(discussionId: number, data: Post.NewMessage): P
     { resourceType: "Discussion", what: R.requestIdName(discussionId), post: "answer/submit" }, data);
 }
 
+export async function newDiscussion(data: Post.NewDiscussion): Promise<I.IdName> {
+  return getT<I.IdName>({ resourceType: "Discussion", word: "new" }, data);
+}
+

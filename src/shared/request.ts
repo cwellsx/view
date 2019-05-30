@@ -39,6 +39,7 @@ import { PostUrls } from "./post";
   - /discussions?sort=active
   - /discussions?sort=newest
   - /discussions/tagged/<key>
+  - /discussions/new
 
   ... other valid query parameters for the lists of discussions are:
 
@@ -104,7 +105,7 @@ import { PostUrls } from "./post";
 
 export type ResourceType = "SiteMap" | "Login" | "Discussion" | "User" | "Image" | "Feature";
 
-export type ResourceWord = "tagged" | "edit";
+export type ResourceWord = "tagged" | "edit" | "new";
 
 export interface Resource {
   resourceType: ResourceType;
@@ -164,7 +165,7 @@ const resourceTypes = new Pairs<ResourceType, string>([
 
 const resourceWords = new Pairs<ResourceType, ResourceWord[]>([
   ["User", ["edit"]],
-  ["Discussion", ["tagged"]]
+  ["Discussion", ["tagged", "new"]]
 ]);
 
 function isResourceWord(resourceType: ResourceType, word: string): word is ResourceWord {
@@ -368,6 +369,7 @@ export const route = {
   discussions: getResourceUrl({ resourceType: "Discussion" }),
   users: getResourceUrl({ resourceType: "User" }),
   images: getResourceUrl({ resourceType: "Image" }),
+  newDiscussion: getResourceUrl({ resourceType: "Discussion", word: "new" })
 }
 
 /*

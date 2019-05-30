@@ -1,3 +1,5 @@
+import { TagId } from "../data/tag"
+
 // the interfaces in this module declare the type of data posted to the server
 // and used as input parameters in the functions of the ../io/index module.
 
@@ -9,6 +11,12 @@ export interface Login {
 // there's a discussionId as well but it's carried in the URL
 export interface NewMessage {
   markdown: string;
+}
+
+export interface NewDiscussion {
+  title: string;
+  markdown: string;
+  tag: TagId;
 }
 
 // these are the <component>/<verb> paris which may be stored in the `post` member of the `Resource` instance

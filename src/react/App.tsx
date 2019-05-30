@@ -12,6 +12,7 @@ import { AppContext, AppContextProps } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
 import { ErrorMessage } from "./ErrorMessage";
+import { NewDiscussion as NewDiscussionElement } from "./Editor";
 
 /*
   This defines the App's routes
@@ -46,6 +47,7 @@ const AppRoutes: React.FunctionComponent = () => {
         <ReactRouter.Route exact path={R.route.login} component={Login} />
         <ReactRouter.Route exact path={R.route.siteMap} component={SiteMap} />
         <ReactRouter.Route exact path={R.route.discussions} component={Discussions} />
+        <ReactRouter.Route exact path={R.route.newDiscussion} component={NewDiscussion} />
         <ReactRouter.Route exact path={R.route.users} component={Users} />
         <ReactRouter.Route path={R.route.users} component={User} />
         <ReactRouter.Route path={R.route.images} component={Image} />
@@ -241,7 +243,7 @@ const Users: React.FunctionComponent = () => {
 }
 
 /*
-  User
+  User (with 2 or 3 different tabs)
 */
 
 const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
@@ -317,10 +319,10 @@ const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteC
   }
   // split options into its components instead of passing whole options
   // otherwise the eslint "react-hooks/exhaustive-deps" rule wil complain when we use useMemo
-  return <DiscussionsOptions sort={options.sort} pagesize={options.pagesize} page={options.page} />;
+  return <DiscussionsList sort={options.sort} pagesize={options.pagesize} page={options.page} />;
 }
 
-const DiscussionsOptions: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
+const DiscussionsList: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
 
   const { sort, pagesize, page } = props;
   const options: R.DiscussionsOptions = React.useMemo(
@@ -335,7 +337,7 @@ const DiscussionsOptions: React.FunctionComponent<R.DiscussionsOptions> = (props
 }
 
 /*
-  Discussion
+  Discussion (id)
 */
 
 const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
@@ -362,9 +364,24 @@ const DiscussionId: React.FunctionComponent<R.DiscussionOptions> = (props: R.Dis
   );
 }
 
+/*
+  Discussion (new)
+*/
+
+const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+
+  // this is unusual because we don't need to fetch data before rendering this element
+  const content = <NewDiscussionElement history={props.history} />;
+  const title = config.strNewQuestion;
+  const layout: Layout = {
+    main: { content, title },
+    width: "None"
+  };
+  return renderLayout(layout);
+}
 
 /*
-  NoMatch
+NoMatch
 */
 
 const NoMatch: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
