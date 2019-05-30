@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderLayout, Layout } from './PageLayout';
+import { useLayout, Layout } from './PageLayout';
 import * as I from "../data";
 import * as IO from "../io";
 import { ErrorMessage } from "./ErrorMessage";
@@ -43,6 +43,6 @@ export const Login: React.FunctionComponent = () => {
     </React.Fragment>
   );
   const layout: Layout = { main: { content, title: "Login" }, width: "Open" };
-  return renderLayout(layout);
+  return useLayout(layout);
 }
 

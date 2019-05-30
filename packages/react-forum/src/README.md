@@ -1,7 +1,7 @@
 This `src` directory contains all (and only)
 the content which is rendered in the browser.
 
-See also the [`/server`](../server) directory, which contains
+See also the as-yet-non-existent [`/server`](../server) directory, which contains
 the content which is only executed on the server.
 
 This `src` directory includes the following subdirectories.

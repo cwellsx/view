@@ -1,44 +1,96 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is forum/discussion software, written using React.js and TypeScript.
 
-## Available Scripts
+## See it, try it
 
-In the project directory, you can run:
+A copy of this software is running at `https://url-to-be-supplied.example.com` --
+where you can see how it behaves and what it looks like.
 
-### `npm start`
+## Source code
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+I hope you like the source code:
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+- React seems to me to be a great way to write a whole application
 
-### `npm test`
+  - Nice tools
+    - VS Code's integration with TypeScript
+    - Seamless integration between editing the source and browsing the result
+  - Organize the implementation any way you like
+  - Minimal overhead, no "framework" to learn to fit into
+  - A wealth of 3rd-party components
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  Also an adequate way to write a highly-interactive component
 
-### `npm run build`
+- Using it with TypeScript instead of JavaScript seems to me ideal -- for example,
+  having TypeScript interfaces to define the format of data shared between components
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  - Shared between client and server
+  - Used in the APIs of any reusable/shared components
+  
+  Having strongly-typed code helps refactoring
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+All the source code exists in two subdirectories:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- [`/src`](./src)
+- [`/prebuild_data`](./prebuild_data)
 
-### `npm run eject`
+## Why
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+I write this because it's one thing to read about a tool, and another thing to use it to write something.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The React API documentation shows isolated components implemented using half-a-dozen lines of code --
+whereas this let me experience:
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- How to implement an application
+  -- [`./src/react/App.tsx`](./src/react/App.tsx)
+- How to implement something like a "master page template"
+  -- i.e. where different pages may share similar but configurable, reusable layouts
+- How to implement a highly interactive component
+  -- [`./src/react/EditorTags.*`](./src/react/EDITORTAGS.md)
+- How to implement a Single Page Application
+  -- by including the data, and perhaps a "mock" version of the server, in the code that's run inside the browser.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+The current size of this project is ...
 
-## Learn More
+```
+C:\Users\Christopher\Source\Repos\react-forum\src>rots --ext .css .md .ts .tsx
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│ Language                Code       Comment         Blank         Lines         Files │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│ CSS                      603            17           145           765             7 │
+│ MarkDown                 294             0            93           387             6 │
+│ TypeScript              1583           344           339          2266            29 │
+│ TypeScript JSX          1662           393           325          2380            12 │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│ Total                   4142           754           902          5798            54 │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## No license
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Copyright 2019 Christopher Wells
+
+This software can not be copied and/or distributed without the express permission of Christopher Wells.
+
+You may review this software on your computer and try it.
+
+You may not:
+
+- Transfer it to other people
+- Modify it
+- Use it on a live web site
+
+Do contact me if you'd like to license or develop it further.
+
+https://github.com/cwellsx/react-forum
+
+## Change log
+
+This software is unreleased or pre-release, so the formal [change log](./CHANGELOG.md) has not been started.
+
+There is a [To Do](./TDODO.md) list, which lists some of the obvious features that are yet to be developed,
+to make this a product instead of a React demo and a proof-of-concept.
+
+## How to build
+
+"This project was bootstrapped with Create React App" so see
+the [CRA-README.md](./CRA-README.md) (renamed from `README.md`).

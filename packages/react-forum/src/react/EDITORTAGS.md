@@ -1,6 +1,6 @@
-# [EditorTags](./EditorTags.tsx)
+# `EditorTags`
 
-This component lets you select (edit) the tags associated with a topic.
+The [`EditorTags`](./EditorTags.tsx) component lets you select (edit) the tags associated with a topic.
 
 ## Appearance and behaviour
 
@@ -157,4 +157,4 @@ That seems like even more of a kluge, though -- making it "semi-controlled" inst
 seems neater.
 
 The `inputValue` element also still exists as an alement of the `RenderedState` data,
-but it's write-only -- i.e. it's up-to-date (and a opy of what was written into the DOM element, but nobody reads it.
+but it's write-only -- i.e. it's up-to-date (and a opy of what was written into the DOM element), but nobody reads it.
