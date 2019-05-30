@@ -1,7 +1,7 @@
 import React from 'react';
 import "./PageLayout.css"
 import { config } from "../config"
-import { ReactComponent as Close } from "../icons/misc/Close_12x_16x.svg";
+import { ReactComponent as Close } from "../icons/material/baseline-close-24px.svg";
 import { NavLink } from 'react-router-dom';
 
 /*
@@ -52,13 +52,14 @@ export interface SubTabs {
 type Width = "Full" | // wide screen, no title, e.g. for images
   "Grid" | // semi-wide grid e.g. for the lists of tags and user names, which are displayed as a grid
   "Closed" | // semi-narrow text where horizontal rule touches vertical, e.g. for lists and site map
-  "Open"; // semi-narrow text where horizontal rule doesn't touch vertical, e.g. for messages in a discussion
+  "Open" | // like "Closed" except horizontal rule doesn't touch vertical, e.g. for messages in a discussion
+  "None"; // like "Closed" except no horizontal rule, e.g. for new discussion
 
-  function isTabs(main: Tabs | any): main is Tabs {
-    return (main as Tabs).tabbed !== undefined;
-  }
-  
-  export interface Layout {
+function isTabs(main: Tabs | any): main is Tabs {
+  return (main as Tabs).tabbed !== undefined;
+}
+
+export interface Layout {
   main: Tabs | {
     title: string;
     subtitle?: React.ReactElement;
@@ -114,11 +115,7 @@ function renderContent(content: MainContent, subTabs?: SubTabs) {
       })
     );
   }
-  return (
-    <div className="element">
-      {content}
-    </div>
-  );
+  return  content;
 }
 
 function renderTabs(main: Tabs, isTop: boolean) {
@@ -197,7 +194,7 @@ function renderRightColumn(right?: RightContent) {
 
   const closeButton = (
     <button className="column-close-button" type="button" onClick={handleHideDiv} title="Close">
-      <Close viewBox="0 0 16 16" width="16" height="16" />
+      <Close width="16" height="16" />
     </button>
   );
 
@@ -220,6 +217,7 @@ function switchLayout(layout: Layout) {
       case "Grid": return "column-text grid";
       case "Closed": return "column-text closed";
       case "Open": return "column-text open";
+      case "None": return "column-text none";
       default: throw new Error("not implemented");
     }
   }
@@ -238,14 +236,15 @@ function switchLayout(layout: Layout) {
   const mainColumn = renderContent(layout.main.content, layout.main.subTabs);
   setTitle(layout.main.title);
 
+  const title = layout.main.subtitle ? layout.main.subtitle : <h1>{layout.main.title}</h1>;
+
   if (layout.width !== "Full") {
     return (
       <React.Fragment>
         <div className={className}>
           {rightButton}
           <div className="header">
-            <h1>{layout.main.title}</h1>
-            {layout.main.subtitle}
+            {title}
           </div>
           <div className="content">
             {mainColumn}

@@ -138,28 +138,33 @@ div.tags {
 
 /* styles on discussions banner */
 
-.subtitle,
-.footer {
+.minigrid {
   display: flex;
-  align-items: center;
+  /* align-items: center; */
 }
 
-.subtitle .count,
-.footer .index {
-  font-size: 17px;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: auto;
-  margin-right: 12px;
-}
-
-.subtitle .sort,
-.footer .index {
+.minigrid > * {
   display: flex;
   padding-left: 12px;
 }
 
-.subtitle .sort a {
+.minigrid > :first-child {
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: auto;
+  margin-right: 12px;
+  padding-left: 0;
+}
+
+.minigrid .count {
+  font-size: 17px;
+}
+
+.minigrid h1 {
+  margin-top: 0;
+}
+
+.minigrid .sort a {
   font-size: 13px;
   padding: 0.8em;
   border: 1px solid rgb(118, 128, 138);
@@ -167,44 +172,49 @@ div.tags {
   margin-bottom: -1px;
 }
 
-.footer a,
-.footer span {
+.minigrid .sort a:last-child {
+  margin-right: 0;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.minigrid .sort a:first-child {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.minigrid .sort .selected {
+  background-color: rgba(174, 192, 209, 0.25);
+}
+
+.minigrid .page a,
+.minigrid .page span {
   font-size: 12px;
   padding: 4px 8px;
   border: 1px solid rgb(228, 230, 232);
-  margin-right: -1px;
   margin-bottom: -1px;
   border-radius: 3px;
   margin-right: 4px;
   color: rgb(132, 141, 149);
 }
 
-.footer span.dots {
+.minigrid .page.dots {
   border-color: transparent;
-}
-
-.subtitle .sort a:last-child {
-  margin-right: 0;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-}
-
-.subtitle .sort a:first-child {
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
 }
 
 .footer {
   margin: 38px 0 20px;
+  padding-left: 16px;
 }
 
-.subtitle .sort .selected {
-  background-color: rgba(174, 192, 209, 0.25);
+.minigrid.footer, .minigrid.subtitle {
+  align-items: center;
 }
 
-.footer .selected,
-.footer a:hover {
-  background-color: rgb(44, 87, 119);
-  color: white;
+.minigrid > .link {
+  display: block;
 }
 
+.minigrid .linkbutton {
+  display: inline-flex;
+}

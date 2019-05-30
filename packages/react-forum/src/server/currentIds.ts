@@ -28,10 +28,10 @@ class Current {
 }
 
 export class CurrentIds {
-  documentId: Current;
+  discussionId: Current;
   messageId: Current;
-  constructor(documentId: FoundId, messageId: FoundId) {
-    this.documentId = new Current(documentId);
+  constructor(discussionId: FoundId, messageId: FoundId) {
+    this.discussionId = new Current(discussionId);
     this.messageId = new Current(messageId);
   }
 }

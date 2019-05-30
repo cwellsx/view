@@ -4,7 +4,7 @@ import * as Session from "./session";
 import { UserSummary } from "../data";
 import * as Post from "../shared/post";
 import * as Posted from "./posted";
-import { BareUser, BareDiscussion, BareMessage } from "./bare";
+import { BareDiscussionMeta, BareMessage } from "./bare";
 
 /*
   This unwraps and dispatches data received from the client.
@@ -107,7 +107,6 @@ export function loginUser(): UserSummary {
 }
 
 export function routeOnPost(url: string, userId: number, json: any): object | undefined {
-  console.log(`routeOnPost(${url})`);
   // parse the URL
   const parsed = R.getResource(url, true);
   if (R.isParserError(parsed)) {
@@ -120,24 +119,31 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
 
   const dateTime: string = (new Date()).toUTCString();
 
+  // convert from resource: Resource plus json: any to Posted.Any
   function getPosted(resource: R.Resource): Posted.Any | R.ParserError {
     switch (resource.resourceType) {
       case "Discussion": {
-        const requested = R.getResourceId(resource);
-        if (!requested) {
-          // should return 400 Bad Request
-          return { error: "Expected a numeric ID" };
+        if (resource.post === "answer/submit") {
+          const requested = R.getResourceId(resource);
+          if (!requested) {
+            // should return 400 Bad Request
+            return { error: "Expected a numeric ID" };
+          }
+          const discussionId = requested.id;
+          const data = json as Post.NewMessage;
+          const messageId = DB.messageIdNext();
+          const message: BareMessage = { messageId, userId, markdown: data.markdown, dateTime };
+          return { kind: "NewMessage", discussionId, message };
         }
-        const discussionId = requested.id;
-        const data = json as Post.NewMessage;
-        switch (resource.post) {
-          case "answer/submit":
-            const messageId = DB.messageIdNext();
-            const message: BareMessage = { messageId, userId, markdown: data.markdown, dateTime };
-            return { kind: "NewMessage", discussionId, message };
-          default:
-            return { error: "Unexpected component+verb" };
+        if (resource.word === "new") {
+          const data = json as Post.NewDiscussion;
+          const discussionId = DB.discussionIdNext();
+          const meta: BareDiscussionMeta = { idName: { id: discussionId, name: data.title }, tag: data.tag };
+          const messageId = DB.messageIdNext();
+          const message: BareMessage = { messageId, userId, markdown: data.markdown, dateTime };
+          return { kind: "NewDiscussion", meta, first: message };
         }
+        return { error: "Unexpected Discussion post" };
       }
       default:
         return { error: "Unexpected resource type" };
@@ -154,6 +160,8 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
   switch (posted.kind) {
     case "NewMessage":
       return DB.postNewMessage(posted);
+    case "NewDiscussion":
+      return DB.postNewDiscussion(posted);
     default:
       return { error: "Unexpected post type" };
   }

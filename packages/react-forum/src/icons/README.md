@@ -1,7 +1,6 @@
 These folders contains files from the Microsoft Visual Studio 2015 Image Library:
 
 - `margin`
-- `misc`
 - `topbar`
 
 This folder contains files from https://material.io/tools/icons/ for example

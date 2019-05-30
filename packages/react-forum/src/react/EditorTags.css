@@ -1,0 +1,42 @@
+.tag-editor {
+  border: 1px solid rgb(187, 192, 196);
+  border-radius: 3px;
+}
+
+.tag-editor input {
+  width: fit-content;
+}
+
+.tag-editor .tag {
+  display: inline-flex;
+  padding: 0 4px;
+  margin: 2px;
+  background-color: rgb(225, 236, 244);
+  color: rgb(44, 87, 119);
+  border: 1px solid transparent;
+  border-radius: 3px;
+  line-height: 1.84;
+  font-size: 12px;
+}
+
+.tag-editor .tag a {
+  border: 0px solid;
+  border-radius: 3px;
+}
+
+.tag-editor .tag a:hover {
+  background-color: rgb(44, 87, 119);
+}
+
+.tag-editor .tag a:hover svg {
+  color: white;
+  fill: white;
+}
+
+.tag-editor .tag > a {
+  display: flex;
+  align-content: center;
+  align-self: center;
+  padding: 1px;
+  margin: 0 -1px 0 4px;
+}

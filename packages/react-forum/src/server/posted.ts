@@ -1,7 +1,7 @@
-import { BareMessage } from "./bare";
+import { BareMessage, BareDiscussionMeta } from "./bare";
 
 /*
-  These are the types of data posted y users which may be stored on disk.
+  These are the types of data posted by users which may be stored on disk.
   They're a "discriminated union" of types so they can be easily reloaded.
 
   See also:
@@ -16,4 +16,10 @@ export interface NewMessage {
   message: BareMessage
 }
 
-export type Any = NewMessage;
+export interface NewDiscussion {
+  kind: "NewDiscussion",
+  meta: BareDiscussionMeta,
+  first: BareMessage
+}
+
+export type Any = NewMessage | NewDiscussion;

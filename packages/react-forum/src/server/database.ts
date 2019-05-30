@@ -48,6 +48,9 @@ const {
 export function messageIdNext(): number {
   return currentIds.messageId.next();
 }
+export function discussionIdNext(): number {
+  return currentIds.discussionId.next();
+}
 
 /*
   functions to sort and index data when it's first loaded from disk
@@ -66,8 +69,8 @@ function sortAllDiscussions(map: Map<number, BareDiscussion>)
   }
 
   map.forEach((discussion) => {
-    sortedDiscussionsNewest.push(getMessageTime(discussion, getMessageStarted));
-    sortedDiscussionsActive.push(getMessageTime(discussion, getMessageEnded));
+    sortedDiscussionsNewest.push(getDiscussionTime(discussion, getMessageStarted));
+    sortedDiscussionsActive.push(getDiscussionTime(discussion, getMessageEnded));
     discussion.messages.forEach(message => {
       if (!allUsers.get(message.userId)) {
         throw new Error(`Unknown userId ${message.userId}`);
@@ -97,11 +100,11 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
   });
 
   // get all messages (and all tags) from all discussions
-  const documentId: FoundId = new FoundId();
+  const discussionId: FoundId = new FoundId();
   const messageId: FoundId = new FoundId();
 
   map.forEach(discussion => {
-    documentId.found(discussion.meta.idName.id)
+    discussionId.found(discussion.meta.idName.id)
     discussion.messages.forEach(message => {
       messageId.found(message.messageId);
       messageDiscussions.set(message.messageId, discussion.meta.idName.id);
@@ -112,16 +115,20 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
 
   // sort messages by date (instead of sorted by discussion)
   userMessages.forEach((value, userId) => {
-    const pairs: [WireMessage, number][] = value.map(message => [message, new Date(message.dateTime).getTime()]);
+    const pairs: [WireMessage, number][] = value.map(message => [message, getMessageTime(message)]);
     pairs.sort((x, y) => x[1] - y[1]);
     userMessages.set(userId, pairs.map(pair => pair[0]));
   });
-  return { userMessages, messageDiscussions, userTags, currentIds: new CurrentIds(documentId, messageId) };
+  return { userMessages, messageDiscussions, userTags, currentIds: new CurrentIds(discussionId, messageId) };
 }
 
 /*
   helper functions
 */
+
+function getMessageTime(message: BareMessage): number {
+  return new Date(message.dateTime).getTime();
+}
 
 function getUserSummaryFrom(userId: number, data: BareUser): I.UserSummary {
   return {
@@ -145,8 +152,8 @@ function getMessageEnded(discussion: BareDiscussion): BareMessage {
 
 type GetMessage = (x: BareDiscussion) => BareMessage;
 
-function getMessageTime(discussion: BareDiscussion, getMessage: GetMessage): [number, number] {
-  return [discussion.meta.idName.id, new Date(getMessage(discussion).dateTime).getTime()];
+function getDiscussionTime(discussion: BareDiscussion, getMessage: GetMessage): [number, number] {
+  return [discussion.meta.idName.id, getMessageTime(getMessage(discussion))];
 }
 
 function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): WireSummaries {
@@ -305,7 +312,6 @@ export function getDiscussion(options: R.DiscussionOptions): WireDiscussion | un
 */
 
 export function postNewMessage(posted: Posted.NewMessage): I.Message {
-  console.log("postNewMessage");
   const { discussionId, message } = posted;
   const discussion: BareDiscussion = allDiscussions.get(posted.discussionId)!;
   // add to the discussion
@@ -322,10 +328,25 @@ export function postNewMessage(posted: Posted.NewMessage): I.Message {
     }
     console.log("error active discussion not found");
   }
-  activate(getMessageTime(discussion, getMessageEnded));
+  activate(getDiscussionTime(discussion, getMessageEnded));
   // the user owns this message
   userMessages.get(message.userId)!.push(message);
   // the message is associated with this discussion
   messageDiscussions.set(message.messageId, discussionId);
   return { userSummary: getUserSummary(message.userId), markdown: message.markdown, dateTime: message.dateTime };
+}
+
+export function postNewDiscussion(posted: Posted.NewDiscussion): I.IdName {
+  const {meta,first:message} = posted;
+  // new discussion
+  const discussion: BareDiscussion = { meta,first:message,messages:[]};
+  allDiscussions.set(meta.idName.id,discussion);
+  const active = getDiscussionTime(discussion, getMessageStarted);
+  sortedDiscussionsNewest.unshift(active);
+  sortedDiscussionsActive.unshift(active);
+  // the user owns this message
+  userMessages.get(message.userId)!.push(message);
+  // the message is associated with this discussion
+  messageDiscussions.set(message.messageId, meta.idName.id);
+  return meta.idName;
 }

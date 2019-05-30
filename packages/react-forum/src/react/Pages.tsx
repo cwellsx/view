@@ -2,12 +2,12 @@ import React from 'react';
 import * as I from "../data";
 import { KeyedItem, Layout, Tab, Tabs, SubTabs } from './PageLayout';
 import * as Summaries from "./Components";
-import { getUserUrl, UserTabType, getDiscussionsUrl, PageSize } from "../shared/request";
+import { getUserUrl, UserTabType, getDiscussionsUrl, PageSize, route } from "../shared/request";
 import * as R from "../shared/request";
 import './Pages.css';
 import { ReactComponent as LocationIcon } from "../icons/material/ic_location_on_24px.svg";
 import { config } from '../config';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { AnswerDiscussion } from "./Editor";
 
 /*
@@ -288,10 +288,17 @@ function formatNumber(count: number, things: string) {
 
 export function Discussions(data: I.Discussions): Layout {
   const { range, summaries } = data;
+  const title = "All " + config.strQuestions;
 
   const subtitle = (
     <React.Fragment>
-      <div className="subtitle">
+      <div className="minigrid">
+        <h1>{title}</h1>
+        <div className="link">
+          <Link to={route.newDiscussion} className="linkbutton">{config.strNewQuestionButton}</Link>
+        </div>
+      </div>
+      <div className="minigrid subtitle">
         <div className="count">{formatNumber(range.nTotal, config.strQuestions)}</div>
         <div className="sort">
           <NavLink to={getDiscussionsUrl({ sort: "Newest" })}
@@ -306,12 +313,12 @@ export function Discussions(data: I.Discussions): Layout {
   const sort = range.sort;
   const footer = (
     <React.Fragment>
-      <div className="footer">
-        <div className="index">
+      <div className="minigrid footer">
+        <div className="page">
           {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
             (page) => getDiscussionsUrl({ page, sort }))}
         </div>
-        <div className="size">
+        <div className="page">
           {Summaries.getNavLinks(
             [15, 30, 50].map(n => { return { text: "" + n, n }; }),
             (n: number) => getDiscussionsUrl({ pagesize: n as PageSize }),
@@ -328,7 +335,7 @@ export function Discussions(data: I.Discussions): Layout {
   const elements = summaries.map(summary => Summaries.getDiscussionSummary(summary));
   elements.push({ element: footer, key: "footer" });
   return {
-    main: { content: elements, title: "All " + config.strQuestions, subtitle },
+    main: { content: elements, title, subtitle },
     width: "Closed"
   };
 }

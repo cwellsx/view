@@ -1,9 +1,9 @@
 .wmd-preview {
-  padding: 10px 0;
-  border-top: 1px dotted #c8ccd0;
-  border-bottom: 1px dotted #c8ccd0;
+  padding: 0;
   clear: both;
   width: 100%;
+  border-top: 1px solid rgb(214, 217, 220);
+  border-bottom: 1px solid rgb(214, 217, 220);
 }
 
 form.editor {
@@ -14,4 +14,9 @@ form.editor {
 
 .wmd-input, .wmd-preview {
   background-color: white;
+}
+
+.element .wmd-preview {
+  border-top: none;
+  border-bottom: none;
 }

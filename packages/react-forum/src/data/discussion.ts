@@ -24,6 +24,7 @@ export interface Discussion {
   Summaries
 */
 
+// like Message except only an exerpt
 export interface MessageSummary {
   userSummary: UserSummary;
   messageExerpt: string;

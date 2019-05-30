@@ -35,11 +35,16 @@
   padding-bottom: 0.75rem;
 }
 
+.column-text.none .content .element {
+  border: none;
+}
+
 .column-text.closed .content .element {
   padding-left: 0.5rem
 }
 
 .column-text.open .content,
+.column-text.none .content,
 .column-text.grid .content  {
   padding-left: 1.5rem
 }
@@ -53,8 +58,16 @@
   max-width: 71.5em;
 }
 
+/* tweak style of tags in elements (see also App.css) */
+
 .element h2 {
   margin-top: 0;
+}
+
+.element label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 4px;
 }
 
 /* wide columns e.g. Images */
