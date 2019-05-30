@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ReactRouter from 'react-router-dom';
-import { renderLayout, Layout, loadingContents } from './PageLayout';
+import { useLayout, Layout, loadingContents } from './PageLayout';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
 import './App.css';
@@ -150,7 +150,7 @@ function useGetLayout<TData, TParam = void>(
     ? getLayout(data, param, reload) // render the data
     : loadingContents; // else no data yet to render
 
-  return renderLayout(layout);
+  return useLayout(layout);
 }
 
 // passed as param to useGetLayout when TParam is void
@@ -284,7 +284,7 @@ const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfi
 
   const data: I.User | undefined = useGet(IO.getUser, userId);
   const layout = (!data) ? loadingContents : Page.User({ data, userTabType }, canEdit, userId);
-  return renderLayout(layout);
+  return useLayout(layout);
 }
 
 type UserActivityProps = R.UserActivityOptions & { canEdit: boolean };
@@ -304,7 +304,7 @@ const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserAct
   // so again we use `useGet` here instead of `useGetLayout` to better control how we invoke the "get layout" function
   const data: I.UserActivity | undefined = useGet(IO.getUserActivity, options);
   const layout = (!data) ? loadingContents : Page.User(data, canEdit, user.id);
-  return renderLayout(layout);
+  return useLayout(layout);
 }
 
 /*
@@ -377,7 +377,7 @@ const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: Rout
     main: { content, title },
     width: "None"
   };
-  return renderLayout(layout);
+  return useLayout(layout);
 }
 
 /*
