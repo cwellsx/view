@@ -1,7 +1,7 @@
 import React from 'react';
 import "./PageLayout.css"
 import { config } from "../config"
-import { ReactComponent as Close } from "../icons/material/baseline-close-24px.svg";
+import * as Icon from "../icons";
 import { NavLink } from 'react-router-dom';
 
 /*
@@ -194,7 +194,7 @@ function renderRightColumn(right?: RightContent) {
 
   const closeButton = (
     <button className="column-close-button" type="button" onClick={handleHideDiv} title="Close">
-      <Close width="16" height="16" />
+      <Icon.Close width="16" height="16" />
     </button>
   );
 

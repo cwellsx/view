@@ -5,7 +5,7 @@ import * as Summaries from "./Components";
 import { getUserUrl, UserTabType, getDiscussionsUrl, PageSize, route } from "../shared/request";
 import * as R from "../shared/request";
 import './Pages.css';
-import { ReactComponent as LocationIcon } from "../icons/material/ic_location_on_24px.svg";
+import * as Icon from "../icons";
 import { config } from '../config';
 import { NavLink, Link } from 'react-router-dom';
 import { AnswerDiscussion } from "./Editor";
@@ -179,7 +179,7 @@ export function User(
         {gravatar}
         <div className="column">
           <h1>{idName.name}</h1>
-          {location ? <p className="location"><LocationIcon width="18" height="18" /> {location}</p> : undefined}
+          {location ? <p className="location"><Icon.Location width="24" height="24" /> {location}</p> : undefined}
           <div className="about">
             <p>About me</p>
           </div>
