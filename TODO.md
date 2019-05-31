@@ -12,6 +12,7 @@ The following are complete, or at least well-begun.
   - [x] Pages share a reusable, configurable, extensible common layout
   - [x] Pages share reusable common elements (simple components)
   - [x] Further components when needed for any more complex user interactions
+  - [x] Some UI details, including "tabs", the sort-order and paging of lists
 - [x] System architecture -- share data type definitions, between the React front-end and the server back-end
 - [x] Server architecture -- implement the server's data types, and data processing
 
@@ -62,3 +63,22 @@ But here is a list of some fundamental *architectural* components that I have ye
 - [ ] Email -- sending email might be necessary, if not for notifications then perhaps at least for password reset
 - [ ] Push notifications -- assuming a user's page should update automatically, using data pushed from the server,
   e.g. when another user posts a new message, I expect this would be implemented using Ajax and/or WebSocket.
+
+### More
+
+I'd like to do a little more before stopping, to make a good demo of the UI:
+
+- Display the `<input>` in EditorTabs -- hide its border and resize it based on its content
+- Encapsulate TagId within the server -- and, in the client, only show tags
+- Actually edit a user profile
+- Make the tags clickable, to support
+  - Question tagged [tag]
+  - Search questions for [user] tagged [tag]
+  - Edit tag information
+  - List of tags
+- Implement TagDictionary component for EditorTags
+- Save data in browser's local storage
+- Deploy to Heroku
+- Choose some demo tag definitions
+- Convert to markdown when rendering message text
+- Filter out dangerous markdown on the server

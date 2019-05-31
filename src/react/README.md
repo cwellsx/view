@@ -27,8 +27,8 @@ The most important files, and the sequence in which data is fetched and processe
 
 3. The custom hook does the following:
 
-   - Uses the `useEffect` hook -- but only once -- to invoke the I/O function
-   - Before the I/O function has completed, it passes `loadingContents` to the `renderLayout` function
+   - Uses the `useEffect` hook to invoke the I/O function -- but only once
+   - Before the I/O function has completed, it passes `loadingContents` to the `useLayout` function
    - After the I/O function has completed, it passes the data (fetched from the server) to the "Page" function
      (by pushing data into the `setState` function which causes a re-render)
 
@@ -38,7 +38,7 @@ The most important files, and the sequence in which data is fetched and processe
    - The `IO.getDiscussions` function returns data of type `Promise<I.Discussions>`.
    - The `Page.Discussions` function expects `data: I.Discussions` as its input parameter.
 
-### [`/src/io/index.tsx`](../io/index.tsx)
+### [`/src/io/index.ts`](../io/index.ts)
 
 4. The "IO" function fetches data from the server, and returns a `Promise<T>`.
 
@@ -53,7 +53,7 @@ The most important files, and the sequence in which data is fetched and processe
 5. The `useEffect` custom hooks passes the returned data as an input parameter to the "Page" function.
 
    The "Page" function creates React elements from the data (i.e. to display the data), 
-   and stores them in an interface named `Layout`.
+   and stores and returns them in an interface named `Layout`.
 
 ### [`/src/react/Components.tsx`](./Components.tsx)
 
@@ -62,30 +62,31 @@ The most important files, and the sequence in which data is fetched and processe
    These define various small, reusable components which may exist in various pages --
    e.g. the "gravatars" which are used as a signature for messages, for discussion summaries, on the user profile, etc.
 
-### [`/src/react/Pages.tsx`](./Pages.tsx) 
+### [`/src/react/PageLayout.tsx`](./PageLayout.tsx) 
 
 7. The `Layout` interface is defined in the `PageLayout` module.
-   It's the interface, the input data passed to that module's only exported function, which is named `useLayout`.
+   It acts as the module's public interface, because it's the input data passed to that module's only exported function,
+   which is named `useLayout`.
 
-   This acts as a "master page" to ensure that different pages have similar layout.
+   This module acts as a "master page" to ensure that different pages have similar layout.
 
 ### Summary
 
 In reverse chronological order, starting with the final step:
 
-1. Page layout -- rendered by the `PageLayout` module, using content element passed to it within the `Layout` interface
+1. Page layout -- rendered by the `PageLayout` module, using content elements passed to it within the `Layout` interface
 2. Page content -- rendered into a `Layout` instance by the `Page` module, using data passed to it from the custom hook
 
    Components are invoked as needed, as subroutines of the `Page` module
 
-3. Custom hook -- gets data promise from the server, then calls a Page function to convert that to a `Layout` instance,
-   and uses that to invoke the page layout
+3. Custom hook -- gets a data promise from the server, then calls a Page function to convert that to a `Layout`
+   instance, and uses that to invoke the page layout
 4. Routes defined in the App -- coordinate by defining, for each URL or "route", a correct pair of "I/O function" plus
    "Page function" to the custom hook.
 
 ## Almost all pages are defined in the `Pages.tsx` module
 
-The functions which renders each of the various pages are most all n the same [`Pages.tsx`](./Pages.tsx) module.
+The functions which renders each of the various pages are most all in the same [`Pages.tsx`](./Pages.tsx) module.
 
 They're not strictly React "function components" because they return a `Layout` interface, not just a `ReactElement`.
 

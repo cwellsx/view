@@ -1,7 +1,7 @@
 import * as DB from "./database";
 import * as R from "../shared/request";
 import * as Session from "./session";
-import { UserSummary } from "../data";
+import { Key, UserSummary } from "../data";
 import * as Post from "../shared/post";
 import * as Posted from "./posted";
 import { BareDiscussionMeta, BareMessage } from "./bare";
@@ -138,7 +138,8 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
         if (resource.word === "new") {
           const data = json as Post.NewDiscussion;
           const discussionId = DB.discussionIdNext();
-          const meta: BareDiscussionMeta = { idName: { id: discussionId, name: data.title }, tag: data.tag };
+          const tags: Key[] = data.tags.map(key => { return { key }; });
+          const meta: BareDiscussionMeta = { idName: { id: discussionId, name: data.title }, tags };
           const messageId = DB.messageIdNext();
           const message: BareMessage = { messageId, userId, markdown: data.markdown, dateTime };
           return { kind: "NewDiscussion", meta, first: message };

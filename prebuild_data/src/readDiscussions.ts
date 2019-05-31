@@ -13,7 +13,7 @@ import { Tag } from "../../src/data/Tag";
   - the number of messages per discussion
 */
 
-export function readDiscussions(text: string, nUsers: number, tags: Tag[]): object {
+export function readDiscussions(text: string, nUsers: number, tagKeys: string[], imageKeys: string[]): object {
   const lines = text.split(/\r?\n/);
   const input: string[][] = [];
 
@@ -31,7 +31,11 @@ export function readDiscussions(text: string, nUsers: number, tags: Tag[]): obje
 
   function random_userId(): number { return Math.floor(Math.random() * nUsers) + 1; };
   function random_1to10(): number { return Math.floor((Math.random() * 10) + 1); };
-  function random_tag(): Tag { return tags[Math.floor((Math.random() * tags.length))]; };
+  function random_string(strings: string[]): string { return strings[Math.floor((Math.random() * strings.length))]; };
+  function random_tag(): Tag {
+    const key = random_string((imageKeys.length && (Math.random() < 0.15)) ? imageKeys : tagKeys);
+    return { key };
+  };
   const startDate = new Date(2019, 0);
   function random_date(): string {
     const date = new Date(startDate.getTime() + (Math.random() * (Date.now() - startDate.getTime())));
@@ -94,7 +98,7 @@ export function readDiscussions(text: string, nUsers: number, tags: Tag[]): obje
     return {
       meta: {
         idName: { id: discussionId, name: title },
-        tag
+        tags: [tag]
       },
       first: messages[0],
       messages: messages.slice(1)

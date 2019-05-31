@@ -1,6 +1,7 @@
 import { ResourceType } from "../shared/request";
-import { TagId, isTagIdKey, getTagIdText } from "../data/tag";
+import { TagId, isTagIdKey, getTagText } from "./bare";
 import { IdName } from "../data/id";
+import { TagCount } from "../data/tag";
 
 /*
   Class in which to count each TagId per user
@@ -16,48 +17,47 @@ import { IdName } from "../data/id";
 export class TagIdCounts {
   readonly map: Map<string, number> = new Map<string, number>();
   cnstructor() { }
-  add(tag: TagId): void {
-    // leading " " ensures it can't overlap with a key, which is trimmed
-    const key = isTagIdKey(tag) ? tag.key : ` ${tag.resourceType}-${tag.what.id}`;
+  add(tagId: TagId): void {
+    // if this has a resource type then convert it to a string with an internal space (which a key can't have)
+    const key = isTagIdKey(tagId) ? tagId.key : `${tagId.what.id} ${tagId.resourceType}`;
     const count = this.map.get(key);
     this.map.set(key, count ? count + 1 : 1);
   }
-  read(images: IdName[]): [TagId, number][] {
-    const rc: [TagId, number][] = [];
+  read(images: IdName[]): TagCount[] {
+    const rc: TagCount[] = [];
     this.map.forEach((value, key) => {
-      if (key[0] !== " ") {
-        rc.push([{ key }, value]);
-      } else {
-        const tag = TagIdCounts.getTag(key, images);
-        rc.push([tag, value]);
-      }
-    });
-    rc.sort((x, y) => getTagIdText(x[0]).localeCompare(getTagIdText(y[0])));
-    return rc;
-  }
-  static getTag(key: string, images: IdName[]): TagId {
-    if (key[0] !== " ") {
-      return { key };
-    } else {
-      const split = key.substring(1).split("-");
-      const resourceType: ResourceType = split[0] as ResourceType;
-      const id: number = +split[1];
-
-      const getName = (resourceType: ResourceType, id: number): string => {
+      if (key.includes(" ")) {
+        // do the reverse of what `add(tagId: TagId)` did, above
+        const split = key.split(" ");
+        const id: number = +split[0];
+        if (!id) {
+          // shouldn't happen
+          console.error(`TagIdCounts.read -- unexpected key "${key}"`);
+          return;
+        }
+        const resourceType: ResourceType = split[1] as ResourceType;
         switch (resourceType) {
           case "Image":
             const foundImage = images.find(idName => idName.id === id);
-            return (foundImage) ? foundImage.name : `?image#${id}`;
-          default:
+            if (!foundImage) {
+              // shouldn't happen -- was the image deleted or something?
+              console.error(`TagIdCounts.read -- image not found "${key}"`);
+              return;
+            }
+            key = getTagText(foundImage.name);
             break;
+          default:
+            // shouldn't happen -- are we meant to be implementing support for using another resourceType as a TagId?
+            console.error(`TagIdCounts.read -- unexpected resourceType "${key}"`);
+            return;
         }
-        // optionally alter this in future to support using other resource types as tagIds
-        return `${resourceType}-${id}`;
-      }
 
-      const name = getName(resourceType, id);
-      return { resourceType, what: { id, name } };
-    }
+      }
+      rc.push({ key, count: value });
+
+    });
+    // return unsorted -- let the client sort it however it wants
+    return rc;
   }
 }
 

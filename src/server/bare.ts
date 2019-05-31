@@ -1,5 +1,6 @@
 import * as I from "../data";
-import {WireMessage, WireDiscussionMeta} from "../shared/wire";
+import { ResourceType } from "../shared/request";
+import { WireMessage, WireDiscussionMeta } from "../shared/wire";
 
 /*
   This defines 'bare' data formats i.e. the format in which data is stored on disk before it's loaded.
@@ -19,6 +20,28 @@ import {WireMessage, WireDiscussionMeta} from "../shared/wire";
   A "bare" format is intended for the server's storing of data on disk.
 */
 
+/*
+  When TagId is a Key then it identifies a Tag.
+
+  Otherwise it identifies e.g. an Image (or possibly some other type of content)
+
+  TagId is used instead of Key in a Discussion, so discussions can be associated with any content, e.g. tags or images.
+*/
+
+export type TagId = I.Key | {
+  resourceType: ResourceType;
+  what: I.IdName;
+};
+
+export function isTagIdKey(tag: TagId): tag is I.Key {
+  return (tag as I.Key).key !== undefined;
+}
+
+export function getTagText(title: string) {
+  // preserve only alphanumeric and whitespace, then convert all whitespace, then toLower
+  return title.replace(/[^A-Za-z0-9 ]/, "").replace(/ /g, "-").toLocaleLowerCase();
+}
+
 // if data for each user is stored in a separate (numbered) directory
 // then this defines the data which would be stored in each directory
 export interface BareUser {
@@ -26,8 +49,8 @@ export interface BareUser {
   email: string;
   gravatarHash: string;
   // TODO: add some authentication or credential data somewhere e.g. here
-  profile: I.UserProfile
-  favourites: I.TagId[];
+  profile: I.UserProfile;
+  favourites: TagId[];
 }
 
 export type BareMessage = WireMessage;

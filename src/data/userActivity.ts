@@ -1,4 +1,4 @@
-import { TagId } from "./tag";
+import { TagCount } from "./tag";
 import { UserSummary } from "./user";
 import { DiscussionSummary } from "./discussion";
 import { ActivityRange } from "./range";
@@ -8,5 +8,5 @@ export interface UserActivity {
   summary: UserSummary;
   range: ActivityRange;
   summaries: DiscussionSummary[];
-  favourites: [TagId, number][];
+  tagCounts: TagCount[];
 }

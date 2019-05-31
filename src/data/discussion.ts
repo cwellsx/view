@@ -1,6 +1,5 @@
-import { IdName } from "./id";
+import { IdName, Key } from "./id";
 import { UserSummary } from "./user";
-import { TagId } from "./tag";
 import { DiscussionsRange, DiscussionRange } from "./range";
 
 export interface Message {
@@ -12,7 +11,7 @@ export interface Message {
 export interface Discussion {
   meta: {
     idName: IdName;
-    tag: TagId;
+    tags: Key[];
     owner: UserSummary; // equals the user of the first message
   };
   first: Message;
@@ -33,7 +32,7 @@ export interface MessageSummary {
 
 export interface DiscussionSummary {
   idName: IdName;
-  tag: TagId;
+  tags: Key[];
   messageSummary: MessageSummary;
   nAnswers: number;
 }

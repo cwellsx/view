@@ -2,7 +2,7 @@
 
 - You can look at the [History of commits](https://github.com/cwellsx/react-forum/commits/master)
   to see what's added when.
-- The [To Do](./TDODO.md) list also summarises what's been done (but undated).
+- The [To Do](./TODO.md) list also summarises what's been done (but undated).
 
 ---
 

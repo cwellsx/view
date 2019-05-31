@@ -1,15 +1,15 @@
 This is forum/discussion software, written using React.js and TypeScript.
 
-## See it, try it
+## Try it and see
 
 A copy of this software is running at `https://url-to-be-supplied.example.com` --
-where you can see how it behaves and what it looks like.
+try that, to see how it behaves and what it looks like.
 
 ## Source code
 
-I hope you like the source code:
+I like the source code:
 
-- React seems to me to be a great way to write a whole application
+- React seems to me a great way to write a whole application:
 
   - Nice tools
     - VS Code's integration with TypeScript
@@ -18,27 +18,27 @@ I hope you like the source code:
   - Minimal overhead, no "framework" to learn to fit into
   - A wealth of 3rd-party components
 
-  Also an adequate way to write a highly-interactive component
+  It also seems an adequate way to write some highly-interactive components.
 
-- Using it with TypeScript instead of JavaScript seems to me ideal -- for example,
-  having TypeScript interfaces to define the format of data shared between components
+- Using it with TypeScript instead of JavaScript may be ideal -- for example,
+  having TypeScript interfaces to define the format of data shared between components:
 
   - Shared between client and server
   - Used in the APIs of any reusable/shared components
   
-  Having strongly-typed code helps refactoring
+  Having strong types helps with refactoring as well.
 
-All the source code exists in two subdirectories:
+The source code all exists in two subdirectories:
 
 - [`/src`](./src)
 - [`/prebuild_data`](./prebuild_data)
 
 ## Why
 
-I write this because it's one thing to read about a tool, and another thing to use it to write something.
+I write this because it's one thing to read about a tool, another thing to design an implementation and write it.
 
-The React API documentation shows isolated components implemented using half-a-dozen lines of code --
-whereas this let me experience:
+The React API documentation shows isolated sample components or fragments,
+each implemented using half-a-dozen lines of code -- whereas this let me experience:
 
 - How to implement an application
   -- [`./src/react/App.tsx`](./src/react/App.tsx)
@@ -87,7 +87,7 @@ https://github.com/cwellsx/react-forum
 
 This software is unreleased or pre-release, so the formal [change log](./CHANGELOG.md) has not been started.
 
-There is a [To Do](./TDODO.md) list, which lists some of the obvious features that are yet to be developed,
+There is a [To Do](./TODO.md) list, which lists some of the obvious features that are yet to be developed,
 to make this a product instead of a React demo and a proof-of-concept.
 
 ## How to build

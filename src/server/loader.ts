@@ -116,7 +116,7 @@ export function loadDiscussions(): Map<number, BareDiscussion> {
         id: 1,
         name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?"
       },
-      tag: { key: "foo" }
+      tags: [{ key: "foo" }]
     },
     first: sampleMessage,
     messages: [sampleMessage]
