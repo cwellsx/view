@@ -1,9 +1,9 @@
 import React from 'react';
 import './EditorTags.css';
+// this is to display a little 'x' SVG -- a Close icon which is displayed on each tag -- clicking it will delete the tag
+import * as Icon from "../icons";
 // this simply displays red text if non-empty text is passed to its errorMessage property
 import { ErrorMessage } from './ErrorMessage';
-// this is a little 'x' SVG -- a "close" icon -- which is displayed on each tag; clicking it will delete the tag
-import { ReactComponent as Close } from "../icons/material/baseline-close-24px.svg";
 
 const isLogging = false; // you could temporarily change this to enable logging, for debugging
 
@@ -239,6 +239,8 @@ class MutableState {
     const state: State = { buffer: this.buffer, selection: this.selection };
     const renderedState: RenderedState = renderState(state, this.context.assert, this.context.inputElement);
     logRenderedState("MutableState.getState returning", renderedState);
+    // do a callback to the parent to say what the current tags are
+    this.context.result(renderedState.elements.map(element => element.word));
     return renderedState;
   }
 
@@ -811,7 +813,7 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
     return <span className="tag" onClick={(e) => handleTagClick(index, e)}>
       {text}
       <a onClick={(e) => handleDeleteTag(index, e)} title="Remove tag">
-        <Close viewBox="0 0 24 24" width="12" height="12" />
+        <Icon.Close viewBox="0 0 24 24" width="12" height="12" />
       </a>
     </span>
   }

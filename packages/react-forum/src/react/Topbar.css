@@ -64,10 +64,6 @@
 
 /* color the SVGs by overriding their internal stylesheets */
 
-.icon-vs-bg {
-  fill:rgb(36, 39, 41) !important;
-}
-
-.icon-vs-fg, .icon-vs-out {
-  fill:rgb(159, 166, 173) !important;
+.topbar svg {
+  fill: rgb(159, 166, 173);
 }

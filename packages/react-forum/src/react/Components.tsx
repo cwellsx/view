@@ -72,6 +72,7 @@ function toLocaleString(date: Date): string {
   return `${month} ${date.getDate()}${year} at ${date.getHours()}:${minutes}`;
 }
 
+// called from getActivityContent (nested n User)
 export function getTagCount(tagCount: I.TagCount) {
   const { key, count } = tagCount;
   const suffix = (count && (count !== 1)) ? ` x ${count}` : undefined;
@@ -83,6 +84,8 @@ function getTag(tag: I.Key) {
   return <div className="topic" key={key}><span>{key}</span></div>;
 }
 
+// called from getDiscussionSummary
+// and getMessage (for each essage within discussion)
 function getTags(tags: I.Key[]) {
   return tags.map(getTag);;
 }
