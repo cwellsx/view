@@ -4,6 +4,7 @@ import { readImages } from "./readImages";
 import { readTopics } from "./readTopics";
 import { readDiscussions } from "./readDiscussions";
 import * as I from "../../src/data";
+import { getTagText } from "../../src/server/bare";
 
 /*
   This reads data from the `/prebuild_data/data` folders
@@ -47,7 +48,7 @@ function writeJson(o: object, outputFile: string): void {
 
 const inputImages = getInputDir("images");
 const outputImages = getOutputFile("images", ".ts");
-readImages(inputImages, outputImages, rootOutputDir);
+const imageNames: string[] = readImages(inputImages, outputImages, rootOutputDir);
 
 // topics as tags
 
@@ -68,7 +69,18 @@ writeJson(users, outputUsers);
 
 // discussions
 
+const tagKeys: string[] = [];
+topics.forEach(topic => tagKeys.push(getTagText(topic)));
+const imageKeys: string[] = [];
+imageNames.forEach(imageName => {
+  const key = getTagText(imageName);
+  if (tagKeys.includes(key) || imageKeys.includes(key)) {
+    throw new Error("Ambiguous topic key: " + key);
+  }
+  imageKeys.push(key);
+});
+
 const inputDiscussions = path.join(getInputDir("discussions"), "random.txt");
 const outputDiscussions = getOutputFile("discussions");
-const discussions = readDiscussions(fs.readFileSync(inputDiscussions, "utf8"), users.length, tags);
+const discussions = readDiscussions(fs.readFileSync(inputDiscussions, "utf8"), users.length, tagKeys, imageKeys);
 writeJson(discussions, outputDiscussions);

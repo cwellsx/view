@@ -109,7 +109,9 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
       messageId.found(message.messageId);
       messageDiscussions.set(message.messageId, discussion.meta.idName.id);
       userMessages.get(message.userId)!.push(message);
-      userTags.get(message.userId)!.add(discussion.meta.tag);
+      discussion.meta.tags.forEach(tag => {
+        userTags.get(message.userId)!.add(tag);
+      });
     })
   });
 
@@ -167,7 +169,7 @@ function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): Wir
     userIds.add(message.userId);
     rc.discussions.push({
       idName: discussion.meta.idName,
-      tag: discussion.meta.tag,
+      tags: discussion.meta.tags,
       userId: message.userId,
       messageExerpt: getExerpt(message.markdown),
       dateTime: message.dateTime,
@@ -266,8 +268,8 @@ export function getUserActivity(options: R.UserActivityOptions): WireUserActivit
     return [discussion, message];
   });
   const { users, discussions } = wireSummaries(discussionMessages);
-  const favourites = userTags.get(userId)!.read(allImages.map(image => image.summary.idName));
-  return { users, discussions, range, favourites };
+  const tagCounts = userTags.get(userId)!.read(allImages.map(image => image.summary.idName));
+  return { users, discussions, range, tagCounts };
 }
 
 export function getDiscussions(options: R.DiscussionsOptions): WireDiscussions {

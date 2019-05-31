@@ -72,16 +72,24 @@ function toLocaleString(date: Date): string {
   return `${month} ${date.getDate()}${year} at ${date.getHours()}:${minutes}`;
 }
 
-export function getTag(tag: I.TagId, count?: number) {
+export function getTagCount(tagCount: I.TagCount) {
+  const { key, count } = tagCount;
   const suffix = (count && (count !== 1)) ? ` x ${count}` : undefined;
-  const text = I.getTagIdText(tag);
-  return <div className="topic" key={text}><span>{text}</span>{suffix}</div>;
+  return <div className="topic" key={key}><span>{key}</span>{suffix}</div>;
+}
+
+function getTag(tag: I.Key) {
+  const { key } = tag;
+  return <div className="topic" key={key}><span>{key}</span></div>;
+}
+
+function getTags(tags: I.Key[]) {
+  return tags.map(getTag);;
 }
 
 export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolean = false): KeyedItem {
   const href = getResourceUrl({ resourceType: "Discussion", what: summary.idName });
   const when = toLocaleString(new Date(summary.messageSummary.dateTime));
-  const tag = summary.tag;
   const stats = short ? undefined : (
     <div className="stats">
       <div className="answers">
@@ -97,7 +105,7 @@ export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolea
       <div className="summary">
         <h3><NavLink to={href}>{summary.idName.name}</NavLink></h3>
         <div className="excerpt">{summary.messageSummary.messageExerpt}</div>
-        {getTag(tag)}
+        {getTags(summary.tags)}
         {signature}
       </div>
     </div>
@@ -160,9 +168,8 @@ export function getPageNavLinks(current: number, nTotal: number, pageSize: numbe
   return getNavLinks(wanted, href, n => "go to page " + n, current, true);
 }
 
-function getMessage(message: I.Message, index: number, tag?: I.TagId): KeyedItem {
-  const topic = (!tag) ? undefined
-    : <div className="topic"><span>{I.getTagIdText(tag)}</span></div>
+function getMessage(message: I.Message, index: number, tags?: I.Key[]): KeyedItem {
+  const topic = tags ? getTags(tags) : undefined; // only the first message in a discussion has associated tags
   const when = toLocaleString(new Date(message.dateTime));
   const element = (
     <React.Fragment>
@@ -178,8 +185,8 @@ function getMessage(message: I.Message, index: number, tag?: I.TagId): KeyedItem
   return { key: "" + index, element };
 }
 
-export function getFirstMessage(message: I.Message, tag: I.TagId): KeyedItem {
-  return getMessage(message, 0, tag);
+export function getFirstMessage(message: I.Message, tags: I.Key[]): KeyedItem {
+  return getMessage(message, 0, tags);
 }
 
 export function getNextMessage(message: I.Message, index: number): KeyedItem {

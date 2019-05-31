@@ -1,5 +1,4 @@
-import { IdName } from "./id";
-import { TagId } from "./tag";
+import { IdName, Key } from "./id";
 
 /*
   Copied from my specs:
@@ -25,7 +24,7 @@ export interface UserSummary {
 }
 
 export interface UserSummaryEx extends UserSummary {
-  tags?: TagId[];
+  tagss: Key[];
 }
 
 export interface UserProfile {

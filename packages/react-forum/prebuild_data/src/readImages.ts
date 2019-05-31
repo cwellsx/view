@@ -30,10 +30,11 @@ interface Json {
   "layersWidth": string
 };
 
-export function readImages(inputImages: string, outputImages: string, rootOutputDir: string): void {
+export function readImages(inputImages: string, outputImages: string, rootOutputDir: string): string[] {
   appendLine('import * as I from "../data";');
 
   const images: string[] = [];
+  const names: string[] = [];
 
   for (let i = 1; ; ++i) {
     const subdir = path.join(inputImages, "" + i);
@@ -79,9 +80,13 @@ const image${i}: I.Image = {
 
     // add to the list of defined images
     images.push(`image${i}`);
+
+    // remember the name
+    names.push(json.name);
   }
 
   appendLine(`export function loadImages(): I.Image[] { return [${images.join(", ")}]; }`);
 
   fs.writeFileSync(outputImages, output.join("\n"), "utf8");
+  return names;
 }

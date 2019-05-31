@@ -234,11 +234,12 @@ export function User(
     if (!props.summaries.length) {
       return [{ element: <p>This user has not posted any messages.</p>, key: "none" }];
     }
+    const tagCounts = props.tagCounts.sort((x, y) => x.key.localeCompare(y.key));
     const tags = (
       <React.Fragment>
-        <h2>{`${props.favourites.length} ${config.strTags}`}</h2>
+        <h2>{`${props.tagCounts.length} ${config.strTags}`}</h2>
         <div className="tags">
-          {props.favourites.map(pair => Summaries.getTag(pair[0], pair[1]))}
+          {tagCounts.map(Summaries.getTagCount)}
         </div>
       </React.Fragment>
     );
@@ -358,7 +359,7 @@ export function Discussion(data: I.Discussion, param: R.DiscussionOptions, reloa
   };
 
   const content: KeyedItem[] = [];
-  content.push(Summaries.getFirstMessage(first, meta.tag));
+  content.push(Summaries.getFirstMessage(first, meta.tags));
   messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
   if (range.nTotal > range.pageSize) {
     const footer = (

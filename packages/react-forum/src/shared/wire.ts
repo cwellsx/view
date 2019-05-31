@@ -1,6 +1,6 @@
-import { IdName } from "../data/id";
+import { IdName, Key } from "../data/id";
+import { TagCount } from "../data/tag";
 import { UserSummary } from "../data/user";
-import { TagId } from "../data/tag";
 import { Discussions, DiscussionSummary } from "../data/discussion";
 import { Discussion, Message } from "../data/discussion";
 import { UserActivity } from "../data/userActivity";
@@ -15,7 +15,7 @@ export interface WireSummaries {
   users: UserSummary[];
   discussions: {
     idName: IdName, // discussion ID
-    tag: TagId,
+    tags: Key[],
     userId: number, // + user ID
     // ownerId?: number, // plus ID of user who started the discussion, if this is a list of messages not of discussions
     messageExerpt: string,
@@ -33,7 +33,7 @@ function unwireSummaries(input: WireSummaries): DiscussionSummary[] {
   const summaries: DiscussionSummary[] = input.discussions.map(wire => {
     return {
       idName: wire.idName,
-      tag: wire.tag,
+      tags: wire.tags,
       messageSummary: {
         userSummary: users.get(wire.userId)!,
         messageExerpt: wire.messageExerpt,
@@ -70,7 +70,7 @@ export interface WireMessage {
 
 export interface WireDiscussionMeta {
   idName: IdName;
-  tag: TagId;
+  tags: Key[];
 }
 
 export interface WireDiscussion {
@@ -99,7 +99,7 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
   return {
     meta: {
       idName: meta.idName,
-      tag: meta.tag,
+      tags: meta.tags,
       owner: users.get(first.userId)!
     },
     first: unwireMessage(first),
@@ -112,11 +112,11 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
   WireUserActivity <-> UserActivity
 */
 
-export type WireUserActivity = WireSummaries & { range: ActivityRange, favourites: [TagId, number][] };
+export type WireUserActivity = WireSummaries & { range: ActivityRange, tagCounts: TagCount[] };
 
 export function unwireUserActivity(input: WireUserActivity): UserActivity {
   const summaries = unwireSummaries(input);
   const summary: UserSummary = input.users[0];
   const range = input.range;
-  return { summary, summaries, favourites: input.favourites, range };
+  return { summary, summaries, tagCounts: input.tagCounts, range };
 }

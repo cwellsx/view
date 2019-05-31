@@ -63,9 +63,8 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     const markdown = textareaRef.current!.value;
     const title = titleRef.current!.value;
-    const tag: I.TagId = { key: "foo" };
-    event.preventDefault();
-    IO.newDiscussion({ title, markdown, tag })
+     event.preventDefault();
+    IO.newDiscussion({ title, markdown, tags })
       .then((idName: I.IdName) => {
         // construct the URL of the newly-created discussion
         const url = R.getResourceUrl({ resourceType: "Discussion", what: idName });
