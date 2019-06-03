@@ -103,7 +103,7 @@ import { PostUrls } from "./post";
   - getResource(url: string): Resource | ParserError
 */
 
-export type ResourceType = "SiteMap" | "Login" | "Discussion" | "User" | "Image" | "Feature";
+export type ResourceType = "SiteMap" | "Login" | "Discussion" | "User" | "Image" | "Tag";
 
 export type ResourceWord = "tagged" | "edit" | "new";
 
@@ -160,7 +160,7 @@ const resourceTypes = new Pairs<ResourceType, string>([
   ["Discussion", "discussions"],
   ["User", "users"],
   ["Image", "images"],
-  ["Feature", "features"],
+  ["Tag", "tags"],
 ]);
 
 const resourceWords = new Pairs<ResourceType, ResourceWord[]>([
@@ -201,9 +201,9 @@ export function getResourceId(resource: Resource): IdName | undefined {
   return (resource.what && !isWhatKey(resource.what)) ? resource.what : undefined;
 }
 
-function getResourceKey(resource: Resource): Key | undefined {
-  return (resource.what && isWhatKey(resource.what)) ? resource.what : undefined;
-}
+// function getResourceKey(resource: Resource): Key | undefined {
+//   return (resource.what && isWhatKey(resource.what)) ? resource.what : undefined;
+// }
 
 /*
   Convert a Resource to a URL
@@ -309,7 +309,7 @@ function makeResource(location: Location, isPost: boolean): Resource | ParserErr
         const name = isPost ? "" : path.shift()!;
         what = { id: toNumber(id)!, name };
         break;
-      case "Feature":
+      case "Tag":
         if (path.length < 1) {
           return { error: `Unexpected extra elements in the path` };
         }

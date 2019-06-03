@@ -1,5 +1,5 @@
 import * as I from "../data";
-import { BareUser, BareDiscussion, BareMessage } from "./bare";
+import { BareTag, BareTagCount, getTagText, BareUser, BareDiscussion, BareMessage } from "./bare";
 import { loadUsers, loadImages, loadTags, loadDiscussions } from "./loader";
 import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity, WireMessage } from "../shared/wire";
 import { getExerpt } from "../shared/exerpt";
@@ -21,7 +21,7 @@ const allUsers: Map<number, BareUser> = loadUsers();
 
 const allImages: I.Image[] = loadImages();
 
-const allTags: I.Tag[] = loadTags();
+const allTags: BareTag[] = loadTags();
 
 const allDiscussions: Map<number, BareDiscussion> = loadDiscussions();
 
@@ -37,11 +37,13 @@ const {
   userMessages,
   messageDiscussions,
   userTags,
+  tagDiscussions,
   currentIds
 }: {
   userMessages: Map<number, BareMessage[]>, // map userId to sorted array of messages
   messageDiscussions: Map<number, number>, // map messageId to discussionId
   userTags: Map<number, TagIdCounts>,
+  tagDiscussions: Map<string, number[]>, // map key to array of discussionId
   currentIds: CurrentIds
 } = sortAllMessages(allDiscussions);
 
@@ -87,11 +89,13 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
     userMessages: Map<number, BareMessage[]>,
     messageDiscussions: Map<number, number>,
     userTags: Map<number, TagIdCounts>,
+    tagDiscussions: Map<string, number[]>,
     currentIds: CurrentIds
   } {
   const userMessages: Map<number, BareMessage[]> = new Map<number, BareMessage[]>();
   const messageDiscussions: Map<number, number> = new Map<number, number>();
   const userTags: Map<number, TagIdCounts> = new Map<number, TagIdCounts>();
+  const tagDiscussions: Map<string, number[]> = new Map<string, number[]>();
 
   // initialize the per-user maps
   allUsers.forEach((user, key) => {
@@ -99,18 +103,32 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
     userTags.set(key, new TagIdCounts());
   });
 
+  // initialize the per-tag map
+  allTags.forEach((tag) => {
+    tagDiscussions.set(getTagText(tag.title), []);
+  });
+  allImages.forEach((image) => {
+    tagDiscussions.set(getTagText(image.summary.idName.name), []);
+  });
+
   // get all messages (and all tags) from all discussions
-  const discussionId: FoundId = new FoundId();
-  const messageId: FoundId = new FoundId();
+  const discussionIds: FoundId = new FoundId();
+  const messageIds: FoundId = new FoundId();
 
   map.forEach(discussion => {
-    discussionId.found(discussion.meta.idName.id)
+    const discussionId = discussion.meta.idName.id;
+    discussionIds.found(discussionId)
     discussion.messages.forEach(message => {
-      messageId.found(message.messageId);
-      messageDiscussions.set(message.messageId, discussion.meta.idName.id);
+      messageIds.found(message.messageId);
+      messageDiscussions.set(message.messageId, discussionId);
       userMessages.get(message.userId)!.push(message);
       discussion.meta.tags.forEach(tag => {
         userTags.get(message.userId)!.add(tag);
+        if (!tagDiscussions.get(tag.key)) {
+          console.error(`Didn't find tag "${tag.key}" for discussion "${discussionId} -- ${tagDiscussions.size}`)
+          return;
+        }
+        tagDiscussions.get(tag.key)!.push(discussionId);
       });
     })
   });
@@ -121,7 +139,10 @@ function sortAllMessages(map: Map<number, BareDiscussion>)
     pairs.sort((x, y) => x[1] - y[1]);
     userMessages.set(userId, pairs.map(pair => pair[0]));
   });
-  return { userMessages, messageDiscussions, userTags, currentIds: new CurrentIds(discussionId, messageId) };
+  return {
+    userMessages, messageDiscussions, userTags, tagDiscussions,
+    currentIds: new CurrentIds(discussionIds, messageIds)
+  };
 }
 
 /*
@@ -211,6 +232,14 @@ function getRange<TSort, TElement>(
   return { range: { nTotal, sort, pageSize, pageNumber }, selected };
 }
 
+function getTagCounts(): (BareTag & { count: number })[] {
+  return allTags.map(tag => {
+    const count = tagDiscussions.get(tag.key)!.length;
+    const { title, key, summary, markdown } = tag;
+    return { title, key, summary, markdown, count };
+  });
+}
+
 /*
   GET functions
 */
@@ -218,7 +247,7 @@ function getRange<TSort, TElement>(
 export function getSiteMap(): I.SiteMap {
   return {
     images: allImages.map(image => image.summary),
-    tags: allTags.map(tag => { return { key: tag.key, summary: tag.summary }; })
+    tags: getTagCounts()
   };
 }
 
@@ -268,7 +297,9 @@ export function getUserActivity(options: R.UserActivityOptions): WireUserActivit
     return [discussion, message];
   });
   const { users, discussions } = wireSummaries(discussionMessages);
-  const tagCounts = userTags.get(userId)!.read(allImages.map(image => image.summary.idName));
+  const tagCounts: BareTagCount[] = userTags.get(userId)!.read(allImages.map(image => image.summary.idName));
+  // FIXME
+  // const tagCounts: I.TagCount[] = bareTagCounts
   return { users, discussions, range, tagCounts };
 }
 
@@ -309,6 +340,14 @@ export function getDiscussion(options: R.DiscussionOptions): WireDiscussion | un
   return wireDiscussion(discussion, selected, range);
 }
 
+export function getAllTags(): I.TagCount[] {
+  return getTagCounts().map(x => {
+    // remove the title
+    const { key, summary, markdown, count } = x;
+    return { key, summary, markdown, count };
+  });
+}
+
 /*
   POST function
 */
@@ -339,10 +378,10 @@ export function postNewMessage(posted: Posted.NewMessage): I.Message {
 }
 
 export function postNewDiscussion(posted: Posted.NewDiscussion): I.IdName {
-  const {meta,first:message} = posted;
+  const { meta, first: message } = posted;
   // new discussion
-  const discussion: BareDiscussion = { meta,first:message,messages:[]};
-  allDiscussions.set(meta.idName.id,discussion);
+  const discussion: BareDiscussion = { meta, first: message, messages: [] };
+  allDiscussions.set(meta.idName.id, discussion);
   const active = getDiscussionTime(discussion, getMessageStarted);
   sortedDiscussionsNewest.unshift(active);
   sortedDiscussionsActive.unshift(active);

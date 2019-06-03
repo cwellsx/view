@@ -1,7 +1,7 @@
 import { ImageSummary } from "./image";
-import { TagSummary } from "./tag";
+import { TagCount } from "./tag";
 
 export interface SiteMap {
   images: ReadonlyArray<ImageSummary>,
-  tags: ReadonlyArray<TagSummary>
+  tags: ReadonlyArray<TagCount & { title: string }>
 }

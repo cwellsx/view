@@ -5,7 +5,21 @@ import * as Icon from "../icons";
 // this simply displays red text if non-empty text is passed to its errorMessage property
 import { ErrorMessage } from './ErrorMessage';
 
-const isLogging = false; // you could temporarily change this to enable logging, for debugging
+// these are the properties of an existing tag, used or displayed by the TagDictionary
+interface TagCount {
+  key: string,
+  summary?: string,
+  count: number
+}
+// this defines the properties which you pass to the EditorTags functional component
+interface EditorTagsProps {
+  // the input/original tags to be edited (or an empty array if there are none)
+  inputTags: string[],
+  // the results are pushed back to the parent via this callback
+  result: (outputTags: string[]) => void,
+  // a function to fetch all existing tags from the server (for tag dictionary lookup)
+  getAllTags: () => Promise<TagCount[]>
+};
 
 /*
   This source file is long and has the following sections -- see also [EditorTags](./EDITORTAGS.md)
@@ -22,6 +36,7 @@ const isLogging = false; // you could temporarily change this to enable logging,
     - InputElement
     - InputState
     - MutableState
+    - TagDictionary
 
   - The reducer
     - action types
@@ -33,6 +48,8 @@ const isLogging = false; // you could temporarily change this to enable logging,
     - getInputIndex
     - getElementStart and getWordStart
     - assertElements and assertWords
+    - getTextWidth
+    - handleFocus
   
   - Functions which construct the RenderedState
     - renderState
@@ -54,11 +71,20 @@ const isLogging = false; // you could temporarily change this to enable logging,
     - handleTagClick
     - handleChange
     - handleKeyDown
+    - handleHintResult
 
   - Tag is a FunctionComponent to render each tag
 
   - The return statement which yields the JSX.Element from this function component
+
+  # Other function components to display the drop-down hints
+
+  - ShowHints
+  - ShowHint
 */
+
+// you could temporarily change this to enable logging, for debugging
+const isLogging = true;
 
 /*
   All the type definitions
@@ -74,6 +100,7 @@ interface Context {
   inputElement: InputElement;
   assert: Assert;
   result: ParentCallback;
+  tagDictionary?: TagDictionary;
 };
 
 // this is like the input data from which the RenderedState is calculated
@@ -102,6 +129,8 @@ interface RenderedState {
   readonly elements: ReadonlyArray<RenderedElement>;
   // the current ("semi-controlled") value of the <input> element
   readonly inputValue: string;
+  // the hints associated with the inputValue, taken from the TagDictionary
+  hints: TagCount[];
 }
 
 // this wraps the current state of the <input> control
@@ -158,6 +187,8 @@ class InputElement {
     // set the value before the selection, otherwise the selection might be invalid
     this.inputElement.value = value;
     this.inputElement.setSelectionRange(start, end);
+    const width = getTextWidth(value + "0");
+    this.inputElement.style.width = `${width}px`;
   }
 
   toJSON(): string {
@@ -231,13 +262,14 @@ class MutableState {
     const { inputIndex } = getInputIndex(elements, context.assert);
     const { value, selectionStart, selectionEnd } = context.inputElement;
     this.replaceElement(inputIndex, value, { start: selectionStart, end: selectionEnd });
-    log("MutableState", { selection: this.selection, buffer: this.buffer });
+    log("MutableState", { selection: this.selection, buffer: this.buffer, words: this.words });
   }
 
   // called when the event handler has finished mutating this MutableState
   getState(): RenderedState {
     const state: State = { buffer: this.buffer, selection: this.selection };
-    const renderedState: RenderedState = renderState(state, this.context.assert, this.context.inputElement);
+    const { assert, inputElement, tagDictionary } = this.context;
+    const renderedState: RenderedState = renderState(state, assert, inputElement, tagDictionary);
     logRenderedState("MutableState.getState returning", renderedState);
     // do a callback to the parent to say what the current tags are
     this.context.result(renderedState.elements.map(element => element.word));
@@ -246,9 +278,10 @@ class MutableState {
 
   replaceElement(index: number, newValue: string, selection?: { start: number, end: number }): void {
     this.invariant();
-    // const elements = this.elements;
+
     const editingWord: string = this.words[index];
-    const nWords = this.words.length;
+    // a special case is when the input element is empty and the last word -- then it's beyond the end of the buffer
+    const nWords = this.words.length - ((this.words[this.words.length - 1] === "") ? 1 : 0);
 
     // if the new word matches the existing word then the replace will do nothing
     if (editingWord === newValue) {
@@ -257,7 +290,6 @@ class MutableState {
     const wordStart = getWordStart(this.words, index, this.context.assert);
 
     // possibly insert or delete whitespace before or after the word being added or deleted
-    // a special case is when the input element is empty and the last word -- then it's beyond the end of the buffer
 
     // if we delete the whole word and this isn't the last word then also delete the space after this word
     const deleteSpaceAfter = newValue === "" && index < nWords - 1;
@@ -347,19 +379,60 @@ class MutableState {
   }
 };
 
+// we want to display a maximum of 6 hints
+const maxHints = 6;
+
+// this is a class to lookup hints for existing tags which match the current input value
+class TagDictionary {
+  // the current implementation repeatedly iterates the whole dictionary
+  // if that's slow (because the dictionary is large) in future we could partition the dictionary by letter
+  private readonly tags: TagCount[];
+  constructor(tags: TagCount[]) {
+    this.tags = tags;
+  }
+  getHints(inputValue: string, elements: RenderedElement[]): TagCount[] {
+    if (!inputValue.length) {
+      return [];
+    }
+    // don't want what we already have i.e. what matches other tags
+    const unwanted: string[] = elements.filter(x => x.type === "tag").map(x => x.word);
+    // we'll select tags in the following priority:
+    // 1. Tags where the inputValue matches the beginning of the tag
+    // 2. If #1 returns too many tags, then prefer tags with a higher count because they're the more popular/more likely
+    // 3. If #1 doesn't return enough tags, then find tags where the inputValue matches within the tag
+    // 4. If #3 returns too many tags, then prefer tags with a higher count
+    const findTags = (start: boolean, max: number): TagCount[] => {
+      const found = (this.tags.filter(tag => start
+        ? tag.key.startsWith(inputValue)
+        : tag.key.substring(1).includes(inputValue))).filter(x => !unwanted.includes(x.key));
+      // higher counts first, else alphabetic
+      found.sort((x, y) => (x.count === y.count) ? x.key.localeCompare(y.key) : y.count - x.count);
+      return found.slice(0, max);
+    }
+    const found = findTags(true, maxHints);
+    return (found.length === maxHints) ? found : found.concat(findTags(false, maxHints - found.length));
+  }
+  toJSON(): string {
+    // not worth logging all the elements
+    return `${this.tags.length} elements`;
+  }
+}
+
 /*
   The reducer
 */
 
 interface ActionEditorClick { type: "EditorClick", context: Context };
+interface ActionHintResult { type: "HintResult", context: Context, hint: string, inputIndex: number };
 interface ActionDeleteTag { type: "DeleteTag", context: Context, index: number };
 interface ActionTagClick { type: "TagClick", context: Context, index: number };
 interface ActionKeyDown { type: "KeyDown", context: Context, key: string, shiftKey: boolean };
 interface ActionChange { type: "Change", context: Context };
 
-type Action = ActionEditorClick | ActionDeleteTag | ActionTagClick | ActionKeyDown | ActionChange;
+type Action = ActionEditorClick | ActionHintResult | ActionDeleteTag | ActionTagClick | ActionKeyDown | ActionChange;
 
 function isEditorClick(action: Action): action is ActionEditorClick { return action.type === "EditorClick"; }
+function isHintResult(action: Action): action is ActionHintResult { return action.type === "HintResult"; }
 function isDeleteTag(action: Action): action is ActionDeleteTag { return action.type === "DeleteTag"; }
 function isTagClick(action: Action): action is ActionTagClick { return action.type === "TagClick"; }
 function isKeyDown(action: Action): action is ActionKeyDown { return action.type === "KeyDown"; }
@@ -389,6 +462,15 @@ function reducer(state: RenderedState, action: Action): RenderedState {
     // click on the <div> => set focus on the <input> within the <div>
     inputElement.focus();
     const mutableState: MutableState = getMutableState();
+    mutableState.setSelectionBoth(mutableState.atBufferEnd());
+    return mutableState.getState();
+  }
+
+  if (isHintResult(action)) {
+    // click on a hint => set focus on the <input>
+    inputElement.focus();
+    const mutableState: MutableState = getMutableState();
+    mutableState.replaceElement(action.inputIndex, action.hint);
     mutableState.setSelectionBoth(mutableState.atBufferEnd());
     return mutableState.getState();
   }
@@ -501,8 +583,8 @@ function stringSplice(text: string, start: number, deleteCount: number, insert: 
   return after;
 }
 
-function log(title: string, o: object): void {
-  if (!isLogging) {
+function log(title: string, o: object, force?: boolean): void {
+  if (!isLogging && !force) {
     return;
   }
   const json = JSON.stringify(o, null, 2);
@@ -567,12 +649,62 @@ function assertWords(words: ReadonlyArray<string>, buffer: string, assert: Asser
   }
 }
 
+function getTextWidth(text: string) {
+  // https://stackoverflow.com/a/21015393/49942
+  const getContext = (): CanvasRenderingContext2D | undefined => {
+    if (!(getTextWidth as any).canvas) {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      if (!context) {
+        return undefined;
+      }
+      context.font = '14px Arial, "Helvetica Neue", Helvetica, sans-serif';
+      (getTextWidth as any).canvas = canvas;
+      (getTextWidth as any).context = context;
+    }
+    return ((getTextWidth as any).context) as CanvasRenderingContext2D;
+  }
+  const context = getContext();
+  if (!context) {
+    return 20;
+  }
+  return context.measureText(text).width;
+}
+
+function handleFocus(e: React.FocusEvent<HTMLElement>, hasFocus: boolean) {
+  // see [Simulating `:focus-within`](./EDITORTAGS.md#simulating-focus-within)
+  function isElement(related: EventTarget | HTMLElement): related is HTMLElement {
+    return (related as HTMLElement).tagName !== undefined;
+  }
+  // read it
+  const target = e.target;
+  const relatedTarget = e.relatedTarget;
+  const related: HTMLElement | undefined = (relatedTarget && isElement(relatedTarget)) ? relatedTarget : undefined;
+  const relatedName = (!relatedTarget) ? "!target" : (!related) ? "!element" : related.tagName;
+  const relatedClass = (!related) ? "" : related.className;
+  // log it
+  const activeElement = document.activeElement;
+  const targetName = target.tagName;
+  const activeElementName = (activeElement) ? activeElement.tagName : "!activeElement";
+  log("handleFocus", { hasFocus, targetName, activeElementName, relatedName, relatedClass }, true);
+  // calculate it
+  hasFocus = hasFocus || (relatedClass === "hint");
+  // write the result
+  const div = document.getElementById("tag-both")!;
+  if (hasFocus) {
+    div.className = "focussed";
+  } else {
+    div.className = "";
+  }
+}
+
 /*
   Functions which construct the RenderedState
 */
 
 // this function calculates the Rendered value given a State value
-function renderState(state: State, assert: Assert, inputElement?: InputElement): RenderedState {
+function renderState(state: State, assert: Assert, inputElement?: InputElement, tagDictionary?: TagDictionary)
+  : RenderedState {
   const elements: RenderedElement[] = [];
   let editing: number | undefined = undefined;
   let inputValue: string = "";
@@ -663,7 +795,9 @@ function renderState(state: State, assert: Assert, inputElement?: InputElement):
 
   assertElements(elements, state.buffer, assert);
 
-  const renderedState: RenderedState = { state, elements, inputValue };
+  const hints: TagCount[] = !tagDictionary ? [] : tagDictionary.getHints(inputValue, elements);
+
+  const renderedState: RenderedState = { state, elements, inputValue, hints };
   return renderedState;
 }
 
@@ -675,7 +809,7 @@ function initialState(assert: Assert, inputTags: string[]): RenderedState {
   const state: State = { buffer, selection: { start, end: start } };
 
   log("initialState starting", { inputTags })
-  const renderedState: RenderedState = renderState(state, assert, undefined);
+  const renderedState: RenderedState = renderState(state, assert);
   logRenderedState("initialState returning", renderedState)
   return renderedState;
 }
@@ -686,14 +820,9 @@ function initialState(assert: Assert, inputTags: string[]): RenderedState {
 
 */
 
-interface EditorTagsProps {
-  // the input/original tags to be edited (or an empty array if there are none)
-  inputTags: string[],
-  // the results are pushed back to the parent via this callback
-  result: (outputTags: string[]) => void
-};
-
 export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
+
+  const { inputTags, result, getAllTags } = props;
 
   /*
     React hooks
@@ -721,8 +850,30 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
 
   // see ./EDITOR.md and the definition of the RenderedState interface for a description of this state
   // also https://fettblog.eu/typescript-react/hooks/#usereducer says that type is infered from signature of reducer
-  const [state, dispatch] = React.useReducer(reducer, props.inputTags, (tag) => initialState(assert, tag));
+  const [state, dispatch] = React.useReducer(reducer, inputTags, (inputTags) => initialState(assert, inputTags));
+
+  // this is a dictionary of existing tags
+  const [tagDictionary, setTagDictionary] = React.useState<TagDictionary | undefined>(undefined);
+
   logRenderedState("--RENDERING--", state);
+
+  // useEffect to fetch all the tags from the server exactly once
+  // React's elint rules demand that getAllTags be specified in the deps array, but the value of getAllTags
+  // (which we're being passed as a parameter) is utimately a function at module scope, so it won't vary
+  React.useEffect(() => {
+    // get tags from server
+    getAllTags()
+      .then((tags) => {
+        // use them to contruct a dictionary
+        const tagDictionary: TagDictionary = new TagDictionary(tags);
+        // save the dictionary in state
+        setTagDictionary(tagDictionary);
+      })
+      .catch((reason) => {
+        // alarm the user
+        setErrorMessage(`getAllTags() failed -- ${reason}`);
+      });
+  }, [getAllTags]);
 
   /*
     inputRef (data which is used by some of the event handlers)
@@ -735,7 +886,7 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
   */
 
   function getContext(inputElement: HTMLInputElement): Context {
-    return { inputElement: new InputElement(inputElement, assert), assert, result: props.result };
+    return { inputElement: new InputElement(inputElement, assert), assert, result, tagDictionary };
   }
 
   function handleEditorClick(e: React.MouseEvent) {
@@ -762,6 +913,11 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") {
+      // do nothing and prevent form submission
+      e.preventDefault();
+      return;
+    }
     // apparently dispatch calls the reducer asynchonously, i.e. after this event handler returns, which will be too
     // late to call e.preventDefault(), and so we need two-stage processing, i.e. some here and some inside the reducer:
     // - here we need to test whether the action will or should be handled within the reducer
@@ -802,6 +958,11 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
     }
   }
 
+  function handleHintResult(outputTag: string) {
+    const { inputIndex } = getInputIndex(state.elements, assert);
+    dispatch({ type: "HintResult", context: getContext(inputRef.current!), hint: outputTag, inputIndex });
+  }
+
   /*
     Tag is a FunctionComponent to render each tag
   */
@@ -810,11 +971,11 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
   const Tag: React.FunctionComponent<TagProps> = (props) => {
     const { text, index } = props;
     // https://reactjs.org/docs/handling-events.html#passing-arguments-to-event-handlers
+    // eslint-disable-next-line
+    const close = <a onClick={(e) => handleDeleteTag(index, e)} title="Remove tag"><Icon.Close height="12" /></a>;
     return <span className="tag" onClick={(e) => handleTagClick(index, e)}>
       {text}
-      <a onClick={(e) => handleDeleteTag(index, e)} title="Remove tag">
-        <Icon.Close viewBox="0 0 24 24" width="12" height="12" />
-      </a>
+      {close}
     </span>
   }
 
@@ -825,17 +986,99 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
   function getElement(x: RenderedElement, index: number): React.ReactElement {
     return (x.type === "tag")
       ? <Tag text={x.word} index={index} key={index} />
-      : <input type="text" key="input" ref={inputRef} size={10}
+      : <input type="text" key="input" ref={inputRef}
         onKeyDown={handleKeyDown}
-        onChange={handleChange} />
+        onChange={handleChange}
+        onFocus={e => handleFocus(e, true)} onBlur={e => handleFocus(e, false)}
+        width={10} />
   }
 
   return (
-    <React.Fragment>
+    <div id="tag-both" >
       <div className="tag-editor" onClickCapture={handleEditorClick}>
         {state.elements.map(getElement)}
       </div>
+      <ShowHints hints={state.hints} inputValue={state.inputValue} result={handleHintResult} />
       <ErrorMessage errorMessage={errorMessage} />
-    </React.Fragment>
+    </div>
+  );
+}
+
+/*
+
+  ShowHints
+
+*/
+
+interface ShowHintsProps {
+  // hints (from dictionary)
+  hints: TagCount[],
+  // the current value of the tag in the editor
+  inputValue: string,
+  // callback of tag selected from list of hints if user clicks on it
+  result: (outputTag: string) => void
+}
+const ShowHints: React.FunctionComponent<ShowHintsProps> = (props) => {
+  const { hints, inputValue, result } = props;
+  if (!inputValue.length) {
+    return <div className="tag-hints hidden"></div>;
+  }
+  return (
+    <div className="tag-hints">
+      {!hints.length ? "No results found." : hints.map(hint =>
+        <ShowHint hint={hint} inputValue={inputValue} result={result} key={hint.key} />)}
+    </div>
+  );
+}
+
+interface ShowHintProps {
+  // hints (from dictionary)
+  hint: TagCount,
+  // the current value of the tag in the editor
+  inputValue: string,
+  // callback of tag selected from list of hints if user clicks on it
+  result: (outputTag: string) => void
+}
+const ShowHint: React.FunctionComponent<ShowHintProps> = (props) => {
+  const { hint, inputValue, result } = props;
+
+  function getTag(key: string) {
+    const index = key.indexOf(inputValue);
+    return (
+      <span className="tag">
+        {(index === -1) ? key :
+          <React.Fragment>
+            {key.substring(0, index)}
+            <span className="match">{inputValue}</span>
+            {key.substring(index + inputValue.length)}
+          </React.Fragment>}
+      </span>
+    );
+  }
+  // the key with the matched letters highlighted
+  const tag = getTag(hint.key);
+  // count the number of times this tag is used elsewhere, if any
+  const count = (hint.count) ? <span className="multiplier">×&nbsp;{hint.count}</span> : undefined;
+  // the summary, if any
+  const summary = (hint.summary) ? <p>{hint.summary}</p> : undefined;
+  // a link to more info i.e. the page which defines this tag
+  function getMore(key: string) {
+    const icon = <Icon.Info width="16" height="16" />;
+    // we use <a> here instead of <Link> because this link will open a whole new tab, i.e. another instance of this SPA
+    // in future I think it would be better to reimplement this as a split screen (two-column) view
+    const anchor = <a href={`/tags/${key}/info`} target="_blank" rel="noopener noreferrer">{icon}</a>;
+    return <p className="more-info">{anchor}</p>;
+  }
+  const more = getMore(hint.key);
+  return (
+    <div className="hint" tabIndex={0} key={hint.key}
+      onClick={e => result(hint.key)}
+      onKeyDown={e => { if (e.key === "Enter") result(hint.key); e.preventDefault() }}
+      onFocus={e => handleFocus(e, true)} onBlur={e => handleFocus(e, false)} >
+      {tag}
+      {count}
+      {summary}
+      {more}
+    </div>
   );
 }

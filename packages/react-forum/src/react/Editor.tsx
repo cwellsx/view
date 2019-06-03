@@ -57,13 +57,12 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
   const titleRef = React.createRef<HTMLInputElement>();
   const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
   const [tags, setTags] = React.useState<string[]>([]);
-  console.log(`NewDiscussion tags=${tags}`)
   const { history } = props;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     const markdown = textareaRef.current!.value;
     const title = titleRef.current!.value;
-     event.preventDefault();
+    event.preventDefault();
     IO.newDiscussion({ title, markdown, tags })
       .then((idName: I.IdName) => {
         // construct the URL of the newly-created discussion
@@ -90,7 +89,7 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
       </div>
       <div className="element">
         <label htmlFor="tags">Tags</label>
-        <EditorTags inputTags={emptyTags} result={setTags} />
+        <EditorTags inputTags={emptyTags} result={setTags} getAllTags={IO.getAllTags} />
       </div>
       <div className="element">
         <input type="submit" value="Post Your Answer" />

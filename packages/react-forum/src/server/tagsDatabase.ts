@@ -1,7 +1,6 @@
 import { ResourceType } from "../shared/request";
-import { TagId, isTagIdKey, getTagText } from "./bare";
+import { TagId, isTagIdKey, getTagText, BareTagCount } from "./bare";
 import { IdName } from "../data/id";
-import { TagCount } from "../data/tag";
 
 /*
   Class in which to count each TagId per user
@@ -23,8 +22,8 @@ export class TagIdCounts {
     const count = this.map.get(key);
     this.map.set(key, count ? count + 1 : 1);
   }
-  read(images: IdName[]): TagCount[] {
-    const rc: TagCount[] = [];
+  read(images: IdName[]): BareTagCount[] {
+    const rc: BareTagCount[] = [];
     this.map.forEach((value, key) => {
       if (key.includes(" ")) {
         // do the reverse of what `add(tagId: TagId)` did, above

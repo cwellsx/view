@@ -20,14 +20,25 @@ import { WireMessage, WireDiscussionMeta } from "../shared/wire";
   A "bare" format is intended for the server's storing of data on disk.
 */
 
-/*
-  When TagId is a Key then it identifies a Tag.
+// This is "bare" because it defines persistent tag data but not the associated usage count
+export interface BareTopic {
+  title: string;
+  summary?: string;
+  markdown?: string;
+}
 
-  Otherwise it identifies e.g. an Image (or possibly some other type of content)
+export const summaryLength = { min: 20, max: 460 };
 
-  TagId is used instead of Key in a Discussion, so discussions can be associated with any content, e.g. tags or images.
-*/
+export type BareTag = BareTopic & I.Key;
 
+// this isn't persisted on disk but is used like database might creates an index for a table
+export interface BareTagCount extends I.Key {
+  count: number;
+}
+
+// When TagId is a Key then it identifies a Tag,
+// otherwise it identifies e.g. an Image (or possibly some other type of content)
+// TagId is used instead of Key in BareDiscussionMeta, so discussions can be associated with tags or, e.g. with images.
 export type TagId = I.Key | {
   resourceType: ResourceType;
   what: I.IdName;
@@ -54,6 +65,9 @@ export interface BareUser {
 }
 
 export type BareMessage = WireMessage;
+
+// FIXME!
+
 export type BareDiscussionMeta = WireDiscussionMeta;
 
 export interface BareDiscussion {
