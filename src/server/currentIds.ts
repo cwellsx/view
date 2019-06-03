@@ -30,8 +30,8 @@ class Current {
 export class CurrentIds {
   discussionId: Current;
   messageId: Current;
-  constructor(discussionId: FoundId, messageId: FoundId) {
-    this.discussionId = new Current(discussionId);
-    this.messageId = new Current(messageId);
+  constructor(discussionIds: FoundId, messageIds: FoundId) {
+    this.discussionId = new Current(discussionIds);
+    this.messageId = new Current(messageIds);
   }
 }

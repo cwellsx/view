@@ -96,6 +96,10 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
       }
     }
 
+    case "Tag": {
+      return DB.getAllTags();
+    }
+
     default:
       return undefined;
   }
@@ -115,7 +119,7 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
     return undefined;
   }
   const resource: R.Resource = parsed;
-  console.log(`server routeOnPost ${R.postResourceUrl(resource)}`);
+  console.log(`server routeOnPost ${R.postResourceUrl(resource)} ${JSON.stringify(json, undefined, 2)}`);
 
   const dateTime: string = (new Date()).toUTCString();
 

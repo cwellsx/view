@@ -59,8 +59,17 @@
   width: 200px;
 }
 
-.topic {
+.summary .topic,
+.message .topic {
   float: left;
+}
+
+.summary .topic > *:not(:first-child)::before,
+.message .topic > *:not(:first-child)::before {
+  content: ' ';
+}
+
+.tags .topic {
   padding: 5px 6px 7px 7px;
 }
 

@@ -63,22 +63,22 @@ But here is a list of some fundamental *architectural* components that I have ye
 - [ ] Email -- sending email might be necessary, if not for notifications then perhaps at least for password reset
 - [ ] Push notifications -- assuming a user's page should update automatically, using data pushed from the server,
   e.g. when another user posts a new message, I expect this would be implemented using Ajax and/or WebSocket.
+- [ ] Try adding [this](https://stackoverflow.com/a/50827450/49942) to see whether that enables support for IE (if IE is
+required) -- I suspect React support IE, however I used slightly modern JavaScript like `Array.find` when I was coding
+-- see also https://github.com/facebook/create-react-app/issues/4647
 
 ### More
 
 I'd like to do a little more before stopping, to make a good demo of the UI:
 
-- Display the `<input>` in EditorTabs -- hide its border and resize it based on its content
-- Encapsulate TagId within the server -- and, in the client, only show tags
 - Actually edit a user profile
 - Make the tags clickable, to support
   - Question tagged [tag]
   - Search questions for [user] tagged [tag]
   - Edit tag information
   - List of tags
-- Implement TagDictionary component for EditorTags
+- Validate the tags and other data entered by the user
 - Save data in browser's local storage
 - Deploy to Heroku
-- Choose some demo tag definitions
 - Convert to markdown when rendering message text
 - Filter out dangerous markdown on the server

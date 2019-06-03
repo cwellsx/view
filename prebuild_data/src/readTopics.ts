@@ -1,34 +1,53 @@
-import { getTagText } from "../../src/server/bare";
+import { BareTopic, getTagText, summaryLength } from "../../src/server/bare";
 
-/*
-  Assumes that topics may come from a spreadsheet
-  so they're lines of tab-delimited words or phrases
-*/
-
-export function readTopics(text: string): string[] {
-  const lines = text.split(/\r?\n/);
-  const rc: string[] = [];
-  const unique: Set<string> = new Set<string>();
-  lines.forEach(line => {
-    const words: string[] = line.split("\t");
-    words.forEach(word => {
-      word = word.replace("*", ""); // some input files contain extraneous "*"
-      if (word.length) {
-        unique.add(word);
-      }
-    });
-  });
-  unique.forEach(value => rc.push(value));
-  rc.sort((x, y) => x.localeCompare(y));
-
-  // ensure the topics aren't ambiguous when they're converted to tags
-  const tags: Set<string> = new Set<string>();
-  rc.forEach(topic => {
-    const key = getTagText(topic);
-    if (tags.has(key)) {
-      throw new Error("Ambiguous topic key: " + key);
+function getSummary(paragraph: string[]): string | undefined {
+  const random = Math.random();
+  if (random > 0.66) {
+    return undefined;
+  }
+  const max = summaryLength.max;
+  const wanted = (random > 0.33) ? max : max * random;
+  let rc = "";
+  paragraph.forEach(x => {
+    const sentence = x + ".";
+    if (sentence.length + rc.length + 1 > wanted)
+      return;
+    if (rc.length) {
+      rc += " ";
     }
-    tags.add(key);
+    rc += sentence;
   })
+  if (rc.length < summaryLength.min) {
+    return undefined;
+  }
+  if (rc.length > summaryLength.max) {
+    throw new Error(rc);
+  }
   return rc;
+}
+
+export function addSummaries(titles: string[], input: string[][]): BareTopic[] {
+  // add a random summary to the titles
+  return titles.map((title, index) => {
+    const paragraph: string[] = input[index % input.length];
+    const summary: string | undefined = getSummary(paragraph);
+    return { title, summary };
+  })
+}
+
+export function readTopics(input: string[][]): BareTopic[] {
+  // get the first word of each paragraph
+  const titles: string[] = input.map(paragraph => paragraph[0].split(" ")[0]);
+  // get summaries
+  const rc: BareTopic[] = addSummaries(titles, input);
+  // discard duplicates
+  const unique: Set<string> = new Set<string>();
+  return rc.filter(tag => {
+    const key = getTagText(tag.title);
+    if (unique.has(key)) {
+      return false;
+    }
+    unique.add(key);
+    return true;
+  })
 }

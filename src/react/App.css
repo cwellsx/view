@@ -24,7 +24,7 @@ form {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .error {
@@ -62,11 +62,13 @@ input[type="text"] {
 
 textarea:focus,
 input[type="text"]:focus,
-.tag-editor:focus-within {
+.focussed .tag-editor,
+input[type="submit"]:focus {
   position: relative;
   border-color: #66bfff;
   box-shadow: 0 0 0 4px rgba(0,149,255,0.15);
   outline: 0;
+
 }
 
 input[type="submit"], .linkbutton {

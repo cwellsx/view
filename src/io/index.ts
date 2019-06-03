@@ -90,6 +90,10 @@ export async function getDiscussion(options: R.DiscussionOptions): Promise<I.Dis
   return convertPromise(wirePromise, W.unwireDiscussion);
 }
 
+export async function getAllTags(): Promise<I.TagCount[]> {
+  return getT<I.TagCount[]>({ resourceType: "Tag" });
+}
+
 /*
   function to post data
 */

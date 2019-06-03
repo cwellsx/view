@@ -58,8 +58,8 @@ export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: s
 
 const nbsp = "\u00A0";
 
-export function getTagSummary(summary: I.TagSummary): KeyedItem {
-  const href = getResourceUrl({ resourceType: "Feature", what: { key: summary.key } });
+export function getTagSummary(summary: I.TagCount): KeyedItem {
+  const href = getResourceUrl({ resourceType: "Tag", what: { key: summary.key } });
   const label = summary.key.replace(" ", nbsp)
   const element = <NavLink to={href}>{label}</NavLink>;
   return { element, key: href };
@@ -79,15 +79,17 @@ export function getTagCount(tagCount: I.TagCount) {
   return <div className="topic" key={key}><span>{key}</span>{suffix}</div>;
 }
 
-function getTag(tag: I.Key) {
-  const { key } = tag;
-  return <div className="topic" key={key}><span>{key}</span></div>;
-}
-
-// called from getDiscussionSummary
-// and getMessage (for each essage within discussion)
+// called from getDiscussionSummary, and getMessage (for each essage within discussion)
 function getTags(tags: I.Key[]) {
-  return tags.map(getTag);;
+  return (
+    <div className="topic">
+      {tags.map(tag => {
+        const { key } = tag;
+        // want whitespace between each tag
+        return <React.Fragment key={key}><span>{key}</span>&#32;</React.Fragment>;
+      })}
+    </div>
+  );
 }
 
 export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolean = false): KeyedItem {

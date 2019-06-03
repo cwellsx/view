@@ -40,3 +40,94 @@
   padding: 1px;
   margin: 0 -1px 0 4px;
 }
+
+.tag-editor input {
+  box-sizing: content-box;
+  border: none;
+  box-shadow: none !important;
+  width: auto;
+}
+
+.tag-hints {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  border: 1px solid rgb(187, 192, 196);
+  border-top-style: dotted;
+  padding: 5px;
+  position: relative;
+  top: -1px;
+}
+
+.tag-hints {
+  display: none;
+}
+
+.focussed .tag-hints {
+  display: grid;
+}
+
+.tag-hints > .hint {
+  padding: 5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tag-hints > .hint:hover {
+    background-color: rgb(223, 230, 235);
+}
+
+.tag-hints > .hint > .tag {
+  font-size: 12px;
+  padding: 5px 6px 7px 7px;
+  display: inline-block;
+  font-size: 12px;
+  padding: 0.4em 0.5em;
+  border: 1px solid rgb(225, 236, 244);
+  background-color: rgb(225, 236, 244);
+  margin: 2px 2px 2px 0;
+  border-radius: 3px;
+  color: rgb(44, 87, 119);
+}
+
+.tag-hints > .hint > .tag > .match {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.tag-hints > .hint > p {
+  font-size: 11px;
+}
+
+@media (max-width: 479px)
+{
+  .tag-hints > .hint > p {
+    display: none;
+  }    
+}
+
+.tag-hints > .hint > .multiplier {
+  font-size: 13px;
+  color: rgb(132, 141, 149);
+}
+
+.tag-hints > .hint > .more-info {
+  position: absolute;
+  top: 7px;
+  right: 5px;
+  margin: 0;
+  padding: 3px;
+  visibility: hidden;
+}
+
+.tag-hints > .hint > .more-info svg {
+  fill: rgb(132, 141, 149);
+}
+
+.tag-hints > .hint:hover > .more-info {
+  visibility: visible;
+}
+
+.tag-hints > .hint > .more-info > a {
+  display: block;
+}

@@ -1,5 +1,4 @@
-import { BareUser, BareDiscussion, BareMessage } from "./bare";
-import * as I from "../data";
+import { BareTopic, BareTag, getTagText, BareUser, BareDiscussion, BareMessage } from "./bare";
 
 /*
   This module loads data from modules in the server_data directory.
@@ -93,13 +92,17 @@ export function loadUsers(): Map<number, BareUser> {
 
 export { loadImages } from "../server_data/images";
 
-export function loadTags(): I.Tag[] {
+export function loadTags(): BareTag[] {
   const found = require("../server_data/tags.json");
-  const sample: I.Tag = {
-    key: "foo"
+  const sample: BareTopic = {
+    title: "foo"
   };
-  const loaded: I.Tag[] = assertTypeT(found, [sample]);
-  return loaded;
+  const loaded: BareTopic[] = assertTypeT(found, [sample]);
+  return loaded.map(topic => {
+    const { title, summary, markdown } = topic;
+    const key = getTagText(title);
+    return { title, key, summary, markdown };
+  });
 }
 
 export function loadDiscussions(): Map<number, BareDiscussion> {

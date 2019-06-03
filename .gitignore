@@ -2,6 +2,7 @@
 
 /src/react/NOTES.md
 /src/mock-data
+*.toc.md
 
 # site-specific content not included in the default deploy for this project
 /prebuild_data/data/*.alt
