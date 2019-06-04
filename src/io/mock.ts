@@ -3,6 +3,9 @@ import { routeOnGet, routeOnPost, loginUser } from "../server/routes";
 
 export { loginUser } from "../server/routes";
 
+// you could temporarily change this to enable logging, for debugging
+const isLogging = false;
+
 // this declares a subset of the fields we use from the DOM Response interface
 export interface SimpleResponse {
   readonly ok: boolean;
@@ -39,6 +42,9 @@ export function mockFetch(url: string, init: RequestInit): Promise<SimpleRespons
         // from inside setTimeout we must reject not throw
         // https://stackoverflow.com/questions/33445415/javascript-promises-reject-vs-throw
         reject(new Error(`No mock data found for ${url}`));
+      }
+      if (isLogging) {
+        console.log(JSON.stringify(json, null, 2));
       }
       const jsonPromise: Promise<any> = new Promise<any>((resolve, reject) => {
         // no possible need to call reject because we already have the data

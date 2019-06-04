@@ -4,23 +4,10 @@
   then again the current implementation keeps the whole database in local cache.
 */
 
-export class FoundId {
-  private value: number = 0;
-
-  found(value: number) {
-    if (value > this.value) {
-      this.value = value;
-    }
-  }
-  get current() {
-    return this.value;
-  }
-}
-
 class Current {
   private value: number;
-  constructor(found: FoundId) {
-    this.value = found.current;
+  constructor() {
+    this.value = 0;
   }
   next() {
     return ++this.value;
@@ -28,10 +15,12 @@ class Current {
 }
 
 export class CurrentIds {
+  userId: Current;
   discussionId: Current;
   messageId: Current;
-  constructor(discussionIds: FoundId, messageIds: FoundId) {
-    this.discussionId = new Current(discussionIds);
-    this.messageId = new Current(messageIds);
+  constructor() {
+    this.userId = new Current();
+    this.discussionId = new Current();
+    this.messageId = new Current();
   }
 }

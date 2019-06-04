@@ -82,9 +82,6 @@ function getTopics(): { topicTitles: string[], tags: BareTopic[] } {
   const inputTopics = path.join(getAltInputDir("topics"), "topics.txt");
   if (fs.existsSync(inputTopics)) {
     const topicTitles: string[] = readTopicTitles(fs.readFileSync(inputTopics, "utf8"));
-    // const tags: BareTopic[] = topicTitles.map((value, index) => {
-    //   return { title: value };
-    // });
     const tags: BareTopic[] = addSummaries(topicTitles, getRandom());
     return { topicTitles, tags };
   } else {

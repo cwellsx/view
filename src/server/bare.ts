@@ -25,6 +25,8 @@ export interface BareTopic {
   title: string;
   summary?: string;
   markdown?: string;
+  userId: number;
+  dateTime: string;
 }
 
 export const summaryLength = { min: 20, max: 460 };
@@ -58,6 +60,7 @@ export function getTagText(title: string) {
 export interface BareUser {
   name: string;
   email: string;
+  dateTime: string;
   gravatarHash: string;
   // TODO: add some authentication or credential data somewhere e.g. here
   profile: I.UserProfile;
