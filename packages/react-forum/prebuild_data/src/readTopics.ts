@@ -26,12 +26,15 @@ function getSummary(paragraph: string[]): string | undefined {
   return rc;
 }
 
+const dateTime = (new Date(Date.UTC(2019, 0))).toUTCString();
+const userId = 0;
+
 export function addSummaries(titles: string[], input: string[][]): BareTopic[] {
   // add a random summary to the titles
   return titles.map((title, index) => {
     const paragraph: string[] = input[index % input.length];
     const summary: string | undefined = getSummary(paragraph);
-    return { title, summary };
+    return { title, summary, dateTime, userId };
   })
 }
 

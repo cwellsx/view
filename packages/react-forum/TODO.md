@@ -78,7 +78,11 @@ I'd like to do a little more before stopping, to make a good demo of the UI:
   - Edit tag information
   - List of tags
 - Validate the tags and other data entered by the user
-- Save data in browser's local storage
 - Deploy to Heroku
 - Convert to markdown when rendering message text
 - Filter out dangerous markdown on the server
+- Simplify the implementation of `request.ts`
+- Alter the page margins if it's small-screen
+- Make `getExerpt` markdown-aware, e.g. remove images and ignore the length of hyperlinks
+- Support writing to local storage -- https://github.com/donavon/use-dark-mode
+- Use Sass to implement stylesheets -- https://facebook.github.io/create-react-app/docs/adding-a-sass-stylesheet

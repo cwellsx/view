@@ -1,12 +1,12 @@
 import * as I from "../data";
-import { BareTag, BareTagCount, getTagText, BareUser, BareDiscussion, BareMessage } from "./bare";
-import { loadUsers, loadImages, loadTags, loadDiscussions } from "./loader";
-import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity, WireMessage } from "../shared/wire";
+import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage } from "./bare";
+import { loadImages, loadActions } from "./loader";
+import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity } from "../shared/wire";
 import { getExerpt } from "../shared/exerpt";
 import * as R from "../shared/request";
 import { TagIdCounts } from "./tagsDatabase";
-import { CurrentIds, FoundId } from "./currentIds";
-import * as Posted from "./posted";
+import { CurrentIds } from "./currentIds";
+import * as Action from "./actions";
 
 /*
   This is an in-RAM database
@@ -17,132 +17,33 @@ import * as Posted from "./posted";
   Data -- not exported
 */
 
-const allUsers: Map<number, BareUser> = loadUsers();
-
 const allImages: I.Image[] = loadImages();
 
-const allTags: BareTag[] = loadTags();
+const allUsers: Map<number, BareUser> = new Map<number, BareUser>();
 
-const allDiscussions: Map<number, BareDiscussion> = loadDiscussions();
+const allTags: BareTag[] = [];
 
-const {
-  sortedDiscussionsNewest,
-  sortedDiscussionsActive
-}: {
-  sortedDiscussionsNewest: [number, number][], // [discussionId, time]
-  sortedDiscussionsActive: [number, number][] // [discussionId, time]
-} = sortAllDiscussions(allDiscussions);
+const allDiscussions: Map<number, BareDiscussion> = new Map<number, BareDiscussion>();
 
-const {
-  userMessages,
-  messageDiscussions,
-  userTags,
-  tagDiscussions,
-  currentIds
-}: {
-  userMessages: Map<number, BareMessage[]>, // map userId to sorted array of messages
-  messageDiscussions: Map<number, number>, // map messageId to discussionId
-  userTags: Map<number, TagIdCounts>,
-  tagDiscussions: Map<string, number[]>, // map key to array of discussionId
-  currentIds: CurrentIds
-} = sortAllMessages(allDiscussions);
+// [discussionId, time]
+const sortedDiscussionsNewest: [number, number][] = [];
+// [discussionId, time] 
+const sortedDiscussionsActive: [number, number][] = [];
+
+// map userId to sorted array of messages
+const userMessages: Map<number, BareMessage[]> = new Map<number, BareMessage[]>();
+// map messageId to discussionId 
+const messageDiscussions: Map<number, number> = new Map<number, number>();
+const userTags: Map<number, TagIdCounts> = new Map<number, TagIdCounts>();
+// map key to array of discussionId
+const tagDiscussions: Map<string, number[]> = new Map<string, number[]>();
+const currentIds: CurrentIds = new CurrentIds();
 
 export function messageIdNext(): number {
   return currentIds.messageId.next();
 }
 export function discussionIdNext(): number {
   return currentIds.discussionId.next();
-}
-
-/*
-  functions to sort and index data when it's first loaded from disk
-*/
-
-function sortAllDiscussions(map: Map<number, BareDiscussion>)
-  : {
-    sortedDiscussionsNewest: [number, number][],
-    sortedDiscussionsActive: [number, number][]
-  } {
-  const sortedDiscussionsNewest: [number, number][] = [];
-  const sortedDiscussionsActive: [number, number][] = [];
-
-  function sortDiscussions(index: [number, number][]): void {
-    index.sort((x, y) => y[1] - x[1]);
-  }
-
-  map.forEach((discussion) => {
-    sortedDiscussionsNewest.push(getDiscussionTime(discussion, getMessageStarted));
-    sortedDiscussionsActive.push(getDiscussionTime(discussion, getMessageEnded));
-    discussion.messages.forEach(message => {
-      if (!allUsers.get(message.userId)) {
-        throw new Error(`Unknown userId ${message.userId}`);
-      }
-    });
-  });
-  sortDiscussions(sortedDiscussionsNewest);
-  sortDiscussions(sortedDiscussionsActive);
-  return { sortedDiscussionsNewest, sortedDiscussionsActive };
-}
-
-function sortAllMessages(map: Map<number, BareDiscussion>)
-  : {
-    userMessages: Map<number, BareMessage[]>,
-    messageDiscussions: Map<number, number>,
-    userTags: Map<number, TagIdCounts>,
-    tagDiscussions: Map<string, number[]>,
-    currentIds: CurrentIds
-  } {
-  const userMessages: Map<number, BareMessage[]> = new Map<number, BareMessage[]>();
-  const messageDiscussions: Map<number, number> = new Map<number, number>();
-  const userTags: Map<number, TagIdCounts> = new Map<number, TagIdCounts>();
-  const tagDiscussions: Map<string, number[]> = new Map<string, number[]>();
-
-  // initialize the per-user maps
-  allUsers.forEach((user, key) => {
-    userMessages.set(key, []);
-    userTags.set(key, new TagIdCounts());
-  });
-
-  // initialize the per-tag map
-  allTags.forEach((tag) => {
-    tagDiscussions.set(getTagText(tag.title), []);
-  });
-  allImages.forEach((image) => {
-    tagDiscussions.set(getTagText(image.summary.idName.name), []);
-  });
-
-  // get all messages (and all tags) from all discussions
-  const discussionIds: FoundId = new FoundId();
-  const messageIds: FoundId = new FoundId();
-
-  map.forEach(discussion => {
-    const discussionId = discussion.meta.idName.id;
-    discussionIds.found(discussionId)
-    discussion.messages.forEach(message => {
-      messageIds.found(message.messageId);
-      messageDiscussions.set(message.messageId, discussionId);
-      userMessages.get(message.userId)!.push(message);
-      discussion.meta.tags.forEach(tag => {
-        userTags.get(message.userId)!.add(tag);
-        if (!tagDiscussions.get(tag.key)) {
-          console.error(`Didn't find tag "${tag.key}" for discussion "${discussionId} -- ${tagDiscussions.size}`)
-          return;
-        }
-        tagDiscussions.get(tag.key)!.push(discussionId);
-      });
-    })
-  });
-
-  // sort messages by date (instead of sorted by discussion)
-  userMessages.forEach((value, userId) => {
-    const pairs: [WireMessage, number][] = value.map(message => [message, getMessageTime(message)]);
-    pairs.sort((x, y) => x[1] - y[1]);
-    userMessages.set(userId, pairs.map(pair => pair[0]));
-  });
-  return {
-    userMessages, messageDiscussions, userTags, tagDiscussions,
-    currentIds: new CurrentIds(discussionIds, messageIds)
-  };
 }
 
 /*
@@ -232,7 +133,7 @@ function getRange<TSort, TElement>(
   return { range: { nTotal, sort, pageSize, pageNumber }, selected };
 }
 
-function getTagCounts(): (BareTag & { count: number })[] {
+function getTagCounts(): (I.TagCount & { title: string, markdown: string | undefined })[] {
   return allTags.map(tag => {
     const count = tagDiscussions.get(tag.key)!.length;
     const { title, key, summary, markdown } = tag;
@@ -349,14 +250,64 @@ export function getAllTags(): I.TagCount[] {
 }
 
 /*
-  POST function
+  POST functions
 */
 
-export function postNewMessage(posted: Posted.NewMessage): I.Message {
-  const { discussionId, message } = posted;
-  const discussion: BareDiscussion = allDiscussions.get(posted.discussionId)!;
+function postNewUser(action: Action.NewUser): I.IdName {
+  const { userId, user } = Action.extractNewUser(action);
+  allUsers.set(userId, user);
+  userMessages.set(userId, []);
+  userTags.set(userId, new TagIdCounts());
+  return { id: userId, name: user.name };
+}
+
+function postNewUserProfile(action: Action.NewUserProfile): I.IdName {
+  const { userId, posted } = Action.extractNewUserProfile(action);
+  const user = allUsers.get(userId)!;
+  if (posted.name) {
+    user.name = posted.name;
+  }
+  if (posted.email) {
+    user.email = posted.email;
+  }
+  if (posted.profile) {
+    const { location, aboutMe } = posted.profile;
+    if (location) {
+      user.profile.location = location;
+    }
+    if (aboutMe) {
+      user.profile.aboutMe = aboutMe;
+    }
+  }
+  return { id: userId, name: user.name };
+}
+
+function postNewTopic(action: Action.NewTopic): I.Key {
+  const tag: BareTag = Action.extractNewTopic(action);
+  allTags.push(tag);
+  return { key: tag.key };
+}
+
+function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
+  const { meta, first: message } = Action.extractNewDiscussion(action);
+  // new discussion
+  const discussion: BareDiscussion = { meta, first: message, messages: [] };
+  allDiscussions.set(meta.idName.id, discussion);
+  const active = getDiscussionTime(discussion, getMessageStarted);
+  sortedDiscussionsNewest.unshift(active);
+  sortedDiscussionsActive.unshift(active);
+  // the user owns this message
+  userMessages.get(message.userId)!.push(message);
+  // the message is associated with this discussion
+  messageDiscussions.set(message.messageId, meta.idName.id);
+  return meta.idName;
+}
+
+function postNewMessage(action: Action.NewMessage): I.Message {
+  const { discussionId, message } = Action.extractNewMessage(action);
+  const discussion: BareDiscussion = allDiscussions.get(discussionId)!;
   // add to the discussion
-  discussion.messages.push(posted.message);
+  discussion.messages.push(message);
   // this discussion is now the most active
   function activate(active: [number, number]) {
     // search backwards because it's likely to be more towards the end
@@ -377,17 +328,54 @@ export function postNewMessage(posted: Posted.NewMessage): I.Message {
   return { userSummary: getUserSummary(message.userId), markdown: message.markdown, dateTime: message.dateTime };
 }
 
-export function postNewDiscussion(posted: Posted.NewDiscussion): I.IdName {
-  const { meta, first: message } = posted;
-  // new discussion
-  const discussion: BareDiscussion = { meta, first: message, messages: [] };
-  allDiscussions.set(meta.idName.id, discussion);
-  const active = getDiscussionTime(discussion, getMessageStarted);
-  sortedDiscussionsNewest.unshift(active);
-  sortedDiscussionsActive.unshift(active);
-  // the user owns this message
-  userMessages.get(message.userId)!.push(message);
-  // the message is associated with this discussion
-  messageDiscussions.set(message.messageId, meta.idName.id);
-  return meta.idName;
+export function handleAction(action: Action.Any) {
+  switch (action.type) {
+    case "NewUser":
+      return postNewUser(action);
+    case "NewUserProfile":
+      return postNewUserProfile(action);
+    case "NewTopic":
+      return postNewTopic(action);
+    case "NewDiscussion":
+      return postNewDiscussion(action);
+    case "NewMessage":
+      return postNewMessage(action);
+    default:
+      return { error: "Unexpected post type" };
+  }
 }
+
+/*
+  Loader
+*/
+
+function onLoad(): void {
+  const actions: Action.Any[] = loadActions();
+  function assertId(what: string, actual: number, expected: number, action: Action.Any) {
+    if (actual !== expected) {
+      const first: string = JSON.stringify({ actual, expected }, null, 2);
+      const second: string = JSON.stringify(action, null, 2);
+      console.error(`onLoad assert ${what}Id ${first} ${second}`);
+    }
+  }
+  actions.forEach(action => {
+    // assert that the embedded IDs are in the expected sequence
+    switch (action.type) {
+      case "NewUser":
+        assertId("user", action.userId, currentIds.userId.next(), action);
+        break;
+      case "NewDiscussion":
+        assertId("discussion", action.discussionId, currentIds.discussionId.next(), action);
+        assertId("message", action.messageId, currentIds.messageId.next(), action);
+        break;
+      case "NewMessage":
+        assertId("message", action.messageId, currentIds.messageId.next(), action);
+        break;
+      default:
+        break;
+    }
+    // delegate to the action handler (to replay what happened when the action originally occured)
+    handleAction(action);
+  });
+}
+onLoad();

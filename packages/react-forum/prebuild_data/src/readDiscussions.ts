@@ -14,7 +14,7 @@ import { Key } from "../../src/data";
 */
 
 export function readDiscussions(input: string[][], nUsers: number, tagKeys: string[], imageKeys: string[]): object {
-  
+
   function random_userId(): number { return Math.floor(Math.random() * nUsers) + 1; };
   function random_1to10(): number { return Math.floor((Math.random() * 10) + 1); };
   function random_string(strings: string[]): string { return strings[Math.floor((Math.random() * strings.length))]; };
@@ -22,7 +22,7 @@ export function readDiscussions(input: string[][], nUsers: number, tagKeys: stri
     const key = random_string((imageKeys.length && (Math.random() < 0.15)) ? imageKeys : tagKeys);
     return { key };
   };
-  const startDate = new Date(2019, 0);
+  const startDate = new Date(Date.UTC(2019, 0));
   function random_date(): string {
     const date = new Date(startDate.getTime() + (Math.random() * (Date.now() - startDate.getTime())));
     return date.toUTCString();
@@ -100,11 +100,20 @@ export function readDiscussions(input: string[][], nUsers: number, tagKeys: stri
     rc.push(discussion);
   }
 
+  // sort the messages by their dates (by assigning new messageId values to existing messages)
   const messagesDates: [Date, BareMessage][] = [];
-  rc.forEach(
-    discussion => discussion.messages.forEach(message => messagesDates.push([new Date(message.dateTime), message])));
+  rc.forEach(discussion => {
+    messagesDates.push([new Date(discussion.first.dateTime), discussion.first]);
+    discussion.messages.forEach(
+      message => messagesDates.push([new Date(message.dateTime), message]));
+  });
   messagesDates.sort((x, y) => x[0].getTime() - y[0].getTime());
   messagesDates.forEach((pair, index) => { pair[1].messageId = index + 1; });
 
-  return rc;
+  // sort the discussions by their dates
+  const discussionsDates: [Date, BareDiscussion][] = [];
+  rc.forEach(discussion => discussionsDates.push([new Date(discussion.first.dateTime), discussion]));
+  discussionsDates.sort((x, y) => x[0].getTime() - y[0].getTime());
+  discussionsDates.forEach((pair, index) => { pair[1].meta.idName.id = index + 1; });
+  return discussionsDates.map(pair => pair[1]);
 }

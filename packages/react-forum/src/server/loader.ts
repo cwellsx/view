@@ -1,4 +1,7 @@
-import { BareTopic, BareTag, getTagText, BareUser, BareDiscussion, BareMessage } from "./bare";
+import { BareTopic, BareTag, getTagText, BareUser, BareDiscussion, BareDiscussionMeta, BareMessage } from "./bare";
+import { Key } from "../data";
+import * as Action from "./actions";
+import * as Post from "../shared/post";
 
 /*
   This module loads data from modules in the server_data directory.
@@ -67,10 +70,10 @@ function assertTypeT<T>(loaded: any, wanted: T, optional?: Set<string>): T {
 }
 
 /*
-  exported `loadXxx(): Xxx` functions
+  `loadXxx(): Xxx` functions
 */
 
-export function loadUsers(): Map<number, BareUser> {
+function loadUsers(): Map<number, BareUser> {
   const found = require("../server_data/users.json");
   const sample: [number, BareUser] = [
     1,
@@ -78,6 +81,7 @@ export function loadUsers(): Map<number, BareUser> {
       "name": "ChrisW",
       "email": "cwellsx@gmail.com",
       "gravatarHash": "75bfdecf63c3495489123fe9c0b833e1",
+      "dateTime": "Thu, 03 Jan 2019 22:35:05 GMT",
       "profile": {
         "location": "Normandy",
         "aboutMe": "I wrote this!\n\nFurther details are to be supplied ..."
@@ -92,20 +96,21 @@ export function loadUsers(): Map<number, BareUser> {
 
 export { loadImages } from "../server_data/images";
 
-export function loadTags(): BareTag[] {
+function loadTags(): BareTag[] {
   const found = require("../server_data/tags.json");
   const sample: BareTopic = {
-    title: "foo"
+    title: "foo",
+    userId: 0,
+    dateTime: "Thu, 03 Jan 2019 22:35:05 GMT"
   };
   const loaded: BareTopic[] = assertTypeT(found, [sample]);
   return loaded.map(topic => {
-    const { title, summary, markdown } = topic;
-    const key = getTagText(title);
-    return { title, key, summary, markdown };
+    const key = getTagText(topic.title);
+    return { key, ...topic };
   });
 }
 
-export function loadDiscussions(): Map<number, BareDiscussion> {
+function loadDiscussions(): Map<number, BareDiscussion> {
   const found = require("../server_data/discussions.json");
   const sampleMessage: BareMessage = {
     userId: 7,
@@ -126,4 +131,62 @@ export function loadDiscussions(): Map<number, BareDiscussion> {
   };
   const loaded: BareDiscussion[] = assertTypeT(found, [sample]);
   return new Map<number, BareDiscussion>(loaded.map(x => [x.meta.idName.id, x]));
+}
+
+export function loadActions(): Action.Any[] {
+  const rc: Action.Any[] = [];
+
+  const tags: BareTag[] = loadTags();
+  function tagToNewTopic(tag: BareTag): Action.NewTopic {
+    const { title, summary, markdown, userId, dateTime } = tag;
+    const posted: Post.NewTopic = { title, summary, markdown };
+    return Action.createNewTopic(posted, dateTime, userId);
+  }
+  rc.push(...tags.map(tagToNewTopic))
+
+  const users: Map<number, BareUser> = loadUsers();
+  function userToNewUser(userId: number, user: BareUser): Action.NewUser {
+    const { name, email, dateTime } = user;
+    const posted: Post.NewUser = { name, email };
+    return Action.createNewUser(posted, dateTime, userId);
+  }
+  function userToNewUserProfile(userId: number, user: BareUser): Action.NewUserProfile {
+    const { profile, dateTime } = user;
+    const posted: Post.NewUserProfile = { profile };
+    return Action.createNewUserProfile(posted, dateTime, userId);
+  }
+  users.forEach((user: BareUser, userId: number) => {
+    rc.push(userToNewUser(userId, user));
+    rc.push(userToNewUserProfile(userId, user));
+  });
+
+  const discussions: Map<number, BareDiscussion> = loadDiscussions();
+  function discussionToNewDiscussion(discussionId: number, meta: BareDiscussionMeta, first: BareMessage)
+    : Action.NewDiscussion {
+    const title: string = meta.idName.name;
+    const tags: Key[] = meta.tags;
+    const { markdown, messageId, dateTime, userId } = first;
+    const posted: Post.NewDiscussion = { title, tags: tags.map(tag => tag.key), markdown };
+    return Action.createNewDiscussion(posted, dateTime, userId, discussionId, messageId);
+  }
+  function messageToNewMessage(discussionId: number, message: BareMessage): Action.NewMessage {
+    const { markdown, messageId, dateTime, userId } = message;
+    const posted: Post.NewMessage = { markdown };
+    return Action.createNewMessage(posted, dateTime, userId, discussionId, messageId);
+  }
+  discussions.forEach((discussion: BareDiscussion, discussionId: number) => {
+    const { meta, first, messages } = discussion;
+    rc.push(discussionToNewDiscussion(discussionId, meta, first));
+    rc.push(...messages.map(message => messageToNewMessage(discussionId, message)));
+  });
+
+  const sorted: [Action.Any, number][] = rc.map(action => [action, (new Date(action.dateTime)).getTime()]);
+  sorted.sort((x, y) => {
+    if (x[1] !== y[1]) {
+      return x[1] - y[1];
+    }
+    return Action.getLoadPriority(x[0])-Action.getLoadPriority(y[0]);
+  })
+
+  return sorted.map(pair => pair[0]);
 }

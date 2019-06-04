@@ -1,9 +1,28 @@
+import { UserProfile } from "../data";
+
 // the interfaces in this module declare the type of data posted to the server
 // and used as input parameters in the functions of the ../io/index module.
 
 export interface Login {
   userName: string,
   password: string
+}
+
+export interface NewUser {
+  name: string;
+  email: string;
+}
+
+export interface NewUserProfile {
+  name?: string;
+  email?: string;
+  profile?: UserProfile;
+}
+
+export interface NewTopic {
+  title: string;
+  summary?: string;
+  markdown?: string;
 }
 
 // there's a discussionId as well but it's carried in the URL
