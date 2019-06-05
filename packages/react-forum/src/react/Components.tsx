@@ -12,10 +12,10 @@ import './Components.css';
 */
 
 export function getImageSummary(summary: I.ImageSummary): KeyedItem {
-  const href = getResourceUrl({ resourceType: "Image", what: summary.idName });
+  const href = getResourceUrl({ resourceType: "Image", what: summary });
   const element: React.ReactElement = (
     <React.Fragment>
-      <h3><NavLink to={href}>{summary.idName.name}</NavLink></h3>
+      <h3><NavLink to={href}>{summary.name}</NavLink></h3>
       <p>{summary.summary}</p>
     </React.Fragment>
   );
@@ -58,9 +58,9 @@ export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: s
 
 const nbsp = "\u00A0";
 
-export function getTagSummary(summary: I.TagCount): KeyedItem {
+export function getTagSummary(summary: I.SiteTagCount): KeyedItem {
   const href = getResourceUrl({ resourceType: "Tag", what: { key: summary.key } });
-  const label = summary.key.replace(" ", nbsp)
+  const label = summary.title.replace(" ", nbsp)
   const element = <NavLink to={href}>{label}</NavLink>;
   return { element, key: href };
 }

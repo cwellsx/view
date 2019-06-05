@@ -4,7 +4,7 @@ import { readImages } from "./readImages";
 import { readTopicTitles } from "./readTopicTitles";
 import { readTopics, addSummaries } from "./readTopics";
 import { readDiscussions } from "./readDiscussions";
-import { BareTopic, getTagText } from "../../src/server/bare";
+import { BareTopic, getTagText, TagId } from "../../src/server/bare";
 
 /*
   This reads data from the `/prebuild_data/data` folders
@@ -107,14 +107,16 @@ writeJson(users, outputUsers);
 const tagKeys: string[] = [];
 topicTitles.forEach(topic => tagKeys.push(getTagText(topic)));
 const imageKeys: string[] = [];
-imageNames.forEach(imageName => {
+const imageTags: TagId[] = [];
+imageNames.forEach((imageName, index) => {
   const key = getTagText(imageName);
   if (tagKeys.includes(key) || imageKeys.includes(key)) {
     throw new Error("Ambiguous topic key: " + key);
   }
   imageKeys.push(key);
+  imageTags.push({ id: index + 1, resourceType: "Image" })
 });
 
 const outputDiscussions = getOutputFile("discussions");
-const discussions = readDiscussions(getRandom(), users.length, tagKeys, imageKeys);
+const discussions = readDiscussions(getRandom(), users.length, tagKeys, imageTags);
 writeJson(discussions, outputDiscussions);

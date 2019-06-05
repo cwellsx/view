@@ -1,12 +1,14 @@
 import * as I from "../data";
-import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage } from "./bare";
-import { loadImages, loadActions } from "./loader";
+import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage, TagId, BareDiscussionMeta } from "./bare";
+import { loadImages, loadActions, KeyFromTagId } from "./loader";
 import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity } from "../shared/wire";
 import { getExerpt } from "../shared/exerpt";
 import * as R from "../shared/request";
-import { TagIdCounts } from "./tagsDatabase";
 import { CurrentIds } from "./currentIds";
 import * as Action from "./actions";
+import { TagIdCounts, TagIdDiscussions, simulateTitle } from "./tagIds";
+import {configServer} from "../configServer";
+
 
 /*
   This is an in-RAM database
@@ -36,8 +38,11 @@ const userMessages: Map<number, BareMessage[]> = new Map<number, BareMessage[]>(
 const messageDiscussions: Map<number, number> = new Map<number, number>();
 const userTags: Map<number, TagIdCounts> = new Map<number, TagIdCounts>();
 // map key to array of discussionId
-const tagDiscussions: Map<string, number[]> = new Map<string, number[]>();
+//const tagDiscussions: Map<string, number[]> = new Map<string, number[]>();
+const tagDiscussions: TagIdDiscussions = new TagIdDiscussions(allImages, allTags);
 const currentIds: CurrentIds = new CurrentIds();
+
+const getKeyFromTagId: KeyFromTagId = (tagId: TagId) => tagDiscussions.getKey(tagId);
 
 export function messageIdNext(): number {
   return currentIds.messageId.next();
@@ -91,7 +96,7 @@ function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): Wir
     userIds.add(message.userId);
     rc.discussions.push({
       idName: discussion.meta.idName,
-      tags: discussion.meta.tags,
+      tags: discussion.meta.tags.map(getKeyFromTagId),
       userId: message.userId,
       messageExerpt: getExerpt(message.markdown),
       dateTime: message.dateTime,
@@ -105,7 +110,8 @@ function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): Wir
 function wireDiscussion(discussion: BareDiscussion, messages: BareMessage[], range: I.DiscussionRange): WireDiscussion {
   const rc: WireDiscussion = {
     users: [],
-    meta: discussion.meta,
+    idName: discussion.meta.idName,
+    tags: discussion.meta.tags.map(getKeyFromTagId),
     first: discussion.first,
     range,
     messages
@@ -133,27 +139,19 @@ function getRange<TSort, TElement>(
   return { range: { nTotal, sort, pageSize, pageNumber }, selected };
 }
 
-function getTagCounts(): (I.TagCount & { title: string, markdown: string | undefined })[] {
-  return allTags.map(tag => {
-    const count = tagDiscussions.get(tag.key)!.length;
-    const { title, key, summary, markdown } = tag;
-    return { title, key, summary, markdown, count };
-  });
-}
-
 /*
   GET functions
 */
 
 export function getSiteMap(): I.SiteMap {
   return {
-    images: allImages.map(image => image.summary),
-    tags: getTagCounts()
+    images: allImages,
+    tags: tagDiscussions.siteTagCounts()
   };
 }
 
 export function getImage(id: number): I.Image | undefined {
-  return allImages.find(image => image.summary.idName.id === id);
+  return allImages.find(image => image.id === id);
 }
 
 export function getUserSummaries(): I.UserSummary[] {
@@ -198,7 +196,7 @@ export function getUserActivity(options: R.UserActivityOptions): WireUserActivit
     return [discussion, message];
   });
   const { users, discussions } = wireSummaries(discussionMessages);
-  const tagCounts: BareTagCount[] = userTags.get(userId)!.read(allImages.map(image => image.summary.idName));
+  const tagCounts: BareTagCount[] = userTags.get(userId)!.read();
   // FIXME
   // const tagCounts: I.TagCount[] = bareTagCounts
   return { users, discussions, range, tagCounts };
@@ -242,11 +240,7 @@ export function getDiscussion(options: R.DiscussionOptions): WireDiscussion | un
 }
 
 export function getAllTags(): I.TagCount[] {
-  return getTagCounts().map(x => {
-    // remove the title
-    const { key, summary, markdown, count } = x;
-    return { key, summary, markdown, count };
-  });
+  return tagDiscussions.tagCounts();
 }
 
 /*
@@ -257,7 +251,7 @@ function postNewUser(action: Action.NewUser): I.IdName {
   const { userId, user } = Action.extractNewUser(action);
   allUsers.set(userId, user);
   userMessages.set(userId, []);
-  userTags.set(userId, new TagIdCounts());
+  userTags.set(userId, new TagIdCounts(allImages));
   return { id: userId, name: user.name };
 }
 
@@ -284,22 +278,58 @@ function postNewUserProfile(action: Action.NewUserProfile): I.IdName {
 
 function postNewTopic(action: Action.NewTopic): I.Key {
   const tag: BareTag = Action.extractNewTopic(action);
+  if (!tagDiscussions.addTag(tag.key)) {
+
+    // FIXME
+
+  }
   allTags.push(tag);
   return { key: tag.key };
 }
 
 function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
-  const { meta, first: message } = Action.extractNewDiscussion(action);
+  const { idName, tags, first: message } = Action.extractNewDiscussion(action);
+  const discussionId = idName.id;
+  // ensure that the tags exist and/or can be created
+  const tagIds: TagId[]=[];
+  for (const tag of tags) {
+    let tagId = tagDiscussions.find(tag);
+    if (!tagId) {
+      if (!configServer.autoAddTag) {
+
+        // FIXME
+
+        continue;
+      }
+      // auto-create it now
+      const title = simulateTitle(tag);
+      const newTopic: Action.NewTopic = Action.createNewTopic({title},action.dateTime,action.userId);
+      handleAction(newTopic);
+      // try again to find it
+      tagId = tagDiscussions.find(tag);
+      if (!tagId) {
+
+        // FIXME
+
+        continue;
+      }
+    }
+    tagIds.push(tagId);
+  }
+  // the discussion is associated with tags
+  tagIds.forEach(tagId => tagDiscussions.addDiscussionId(tagId, discussionId));
+  // construct BareDiscussionMeta using TagId[]
+  const meta: BareDiscussionMeta = {idName, tags: tagIds};
   // new discussion
   const discussion: BareDiscussion = { meta, first: message, messages: [] };
-  allDiscussions.set(meta.idName.id, discussion);
+  allDiscussions.set(discussionId, discussion);
   const active = getDiscussionTime(discussion, getMessageStarted);
   sortedDiscussionsNewest.unshift(active);
   sortedDiscussionsActive.unshift(active);
   // the user owns this message
   userMessages.get(message.userId)!.push(message);
   // the message is associated with this discussion
-  messageDiscussions.set(message.messageId, meta.idName.id);
+  messageDiscussions.set(message.messageId, discussionId);
   return meta.idName;
 }
 
@@ -350,7 +380,8 @@ export function handleAction(action: Action.Any) {
 */
 
 function onLoad(): void {
-  const actions: Action.Any[] = loadActions();
+  // images are pre-loaded separately; add the corresponding tagIds
+  const actions: Action.Any[] = loadActions(getKeyFromTagId);
   function assertId(what: string, actual: number, expected: number, action: Action.Any) {
     if (actual !== expected) {
       const first: string = JSON.stringify({ actual, expected }, null, 2);

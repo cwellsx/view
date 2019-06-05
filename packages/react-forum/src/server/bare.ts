@@ -1,6 +1,6 @@
 import * as I from "../data";
 import { ResourceType } from "../shared/request";
-import { WireMessage, WireDiscussionMeta } from "../shared/wire";
+import { WireMessage } from "../shared/wire";
 
 /*
   This defines 'bare' data formats i.e. the format in which data is stored on disk before it's loaded.
@@ -41,13 +41,11 @@ export interface BareTagCount extends I.Key {
 // When TagId is a Key then it identifies a Tag,
 // otherwise it identifies e.g. an Image (or possibly some other type of content)
 // TagId is used instead of Key in BareDiscussionMeta, so discussions can be associated with tags or, e.g. with images.
-export type TagId = I.Key | {
-  resourceType: ResourceType;
-  what: I.IdName;
-};
+export type Tag = { tag: string };
+export type TagId = Tag | { resourceType: ResourceType, id: number };
 
-export function isTagIdKey(tag: TagId): tag is I.Key {
-  return (tag as I.Key).key !== undefined;
+export function isTag(tag: TagId): tag is Tag {
+  return (tag as Tag).tag !== undefined;
 }
 
 export function getTagText(title: string) {
@@ -69,9 +67,11 @@ export interface BareUser {
 
 export type BareMessage = WireMessage;
 
-// FIXME!
-
-export type BareDiscussionMeta = WireDiscussionMeta;
+// BareDiscussionMeta is like WireDiscussionMeta except that its tags are a different type to support TagId
+export interface BareDiscussionMeta {
+  idName: I.IdName;
+  tags: TagId[];
+}
 
 export interface BareDiscussion {
   meta: BareDiscussionMeta;
