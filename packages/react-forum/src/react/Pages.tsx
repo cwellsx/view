@@ -154,8 +154,8 @@ export function User(
   canEdit: boolean,
   userId: number): Layout {
   // crack the input parameters
-  const summary = !isUserProfile(props) ? props.summary : props.data.summary;
-  const aboutMe = !isUserProfile(props) ? undefined : props.data.profile.aboutMe;
+  const summary: I.UserSummary = !isUserProfile(props) ? props.summary : props.data;
+  const aboutMe = !isUserProfile(props) ? undefined : props.data.aboutMe;
 //  const aboutMeDiv = !aboutMe ? undefined : <div dangerouslySetInnerHTML={toHtml(aboutMe)} />;
   const aboutMeDiv = !aboutMe ? undefined : <div>{aboutMe}</div>;
   const userTabType: UserTabType = !isUserProfile(props) ? "Activity" : props.userTabType;
@@ -166,22 +166,22 @@ export function User(
   const selected = canEdit
     ? ((userTabType === "Profile") ? 0 : (userTabType === "EditSettings") ? 1 : 2)
     : ((userTabType === "Profile") ? 0 : 1);
-  const { idName, location } = summary;
+  const { location } = summary;
 
   const slug = (
     <React.Fragment>
-      <h1>{idName.name}</h1>
+      <h1>{summary.name}</h1>
       {gravatarSmall}
     </React.Fragment>
   );
 
   const profile: Tab = {
-    navlink: { href: getUserUrl(idName, "Profile"), text: "Profile" },
+    navlink: { href: getUserUrl(summary, "Profile"), text: "Profile" },
     content: (
       <div className="user-profile profile">
         {gravatar}
         <div className="column">
-          <h1>{idName.name}</h1>
+          <h1>{summary.name}</h1>
           {location ? <p className="location"><Icon.Location width="24" height="24" /> {location}</p> : undefined}
           <div className="about">
             <h3>About me</h3>
@@ -201,7 +201,6 @@ export function User(
     const inputLocation = React.createRef<HTMLInputElement>();
     const inputAbout = React.createRef<HTMLInputElement>();
     const preferences: I.UserPreferences = props.data.preferences!;
-    const profile: I.UserProfile = props.data.profile;
 
     return (
       <div className="user-profile settings">
@@ -211,13 +210,13 @@ export function User(
           {gravatar}
           <div className="column">
             <label>Display name</label>
-            <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={summary.idName.name} />
+            <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={summary.name} />
             <label>Location (optional)</label>
             <input type="text" ref={inputLocation} placeholder="optional" defaultValue={summary.location} />
           </div>
         </div>
         <label>About me</label>
-        <input type="text" ref={inputAbout} placeholder="required" defaultValue={profile.aboutMe} />
+        <input type="text" ref={inputAbout} placeholder="required" defaultValue={aboutMe} />
         <h2>Private settings</h2>
         <label>Email</label>
         <input type="text" ref={inputEmail} placeholder="required" defaultValue={preferences.email} />
@@ -226,7 +225,7 @@ export function User(
   }
 
   const settings: Tab = {
-    navlink: { href: getUserUrl(idName, "EditSettings"), text: "Edit" },
+    navlink: { href: getUserUrl(summary, "EditSettings"), text: "Edit" },
     content: getSettingsContent(),
     slug
   };
@@ -259,13 +258,13 @@ export function User(
     text: (props.summaries.length === 1) ? "1 Message" : `${props.summaries.length} Messages`,
     selected: (props.range.sort === "Newest") ? 0 : 1,
     tabs: [
-      { text: "newest", href: getActivityUrl(props.summary.idName, "Newest") },
-      { text: "oldest", href: getActivityUrl(props.summary.idName, "Oldest") }
+      { text: "newest", href: getActivityUrl(props.summary, "Newest") },
+      { text: "oldest", href: getActivityUrl(props.summary, "Oldest") }
     ]
   };
 
   const activity: Tab = {
-    navlink: { href: getUserUrl(idName, "Activity"), text: "Activity" },
+    navlink: { href: getUserUrl(summary, "Activity"), text: "Activity" },
     content: getActivityContent(),
     subTabs,
     slug
@@ -273,7 +272,7 @@ export function User(
 
   const tabs: Tabs = {
     selected,
-    title: idName.name,
+    title: summary.name,
     tabbed: canEdit ? [profile, settings!, activity] : [profile, activity]
   };
   return {
@@ -350,38 +349,38 @@ export function Discussions(data: I.Discussions): Layout {
 */
 
 export function Discussion(data: I.Discussion, param: R.DiscussionOptions, reload: () => void): Layout {
-  const { meta, first, range, messages } = data;
+  const { id, name, tags, first, range, messages } = data;
   const { nTotal } = range;
 
   const subTabs: SubTabs | undefined = (!nTotal) ? undefined : {
     text: (nTotal === 1) ? "1 Answer" : `${nTotal} Answers`,
     selected: (data.range.sort === "Newest") ? 0 : 1,
     tabs: [
-      { text: "newest", href: R.getDiscussionUrl({ discussion: meta.idName, sort: "Newest" }) },
-      { text: "oldest", href: R.getDiscussionUrl({ discussion: meta.idName, sort: "Oldest" }) }
+      { text: "newest", href: R.getDiscussionUrl({ discussion: data, sort: "Newest" }) },
+      { text: "oldest", href: R.getDiscussionUrl({ discussion: data, sort: "Oldest" }) }
     ]
   };
 
   const content: KeyedItem[] = [];
-  content.push(Summaries.getFirstMessage(first, meta.tags));
+  content.push(Summaries.getFirstMessage(first, tags));
   messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
   if (range.nTotal > range.pageSize) {
     const footer = (
       <div className="footer">
         <div className="index">
           {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
-            (page) => R.getDiscussionUrl({ discussion: meta.idName, page, sort: range.sort }))}
+            (page) => R.getDiscussionUrl({ discussion: data, page, sort: range.sort }))}
         </div>
       </div>
     );
     content.push({ element: footer, key: "footer" });
   }
 
-  const yourAnswer = <AnswerDiscussion discussionId={meta.idName.id} reload={reload} />;
+  const yourAnswer = <AnswerDiscussion discussionId={id} reload={reload} />;
   content.push({ element: yourAnswer, key: "editor" });
 
   return {
-    main: { content, title: meta.idName.name, subTabs },
+    main: { content, title: name, subTabs },
     width: "Open"
   };
 }

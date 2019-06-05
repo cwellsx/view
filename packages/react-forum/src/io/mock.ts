@@ -35,7 +35,7 @@ export function mockFetch(url: string, init: RequestInit): Promise<SimpleRespons
       // but for the mock implementation we get and pass it from app context
       // const me: I.UserSummary | undefined = React.useContext(AppContext).me;
       // const userId: number | undefined = me ? me.idName.id : undefined;
-      const userId = loginUser().idName.id;
+      const userId = loginUser().id;
       const isPost: boolean = init.method === "POST";
       const json = !isPost ? routeOnGet(url, userId) : routeOnPost(url, userId, JSON.parse(init.body as string));
       if (!json) {

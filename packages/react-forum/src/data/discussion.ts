@@ -8,13 +8,14 @@ export interface Message {
   dateTime: string;
 }
 
-export interface Discussion {
-  meta: {
-    idName: IdName;
-    tags: Key[];
-  };
+export interface DiscussionMeta extends IdName {
+  tags: Key[];
+}
+
+export interface Discussion extends DiscussionMeta {
   // the owner of the discussion is the user associated with the first message
   first: Message;
+  // we don't necessarily return all the messages whch actually exist in the discussion
   range: DiscussionRange;
   messages: Message[];
 }
@@ -30,9 +31,7 @@ export interface MessageSummary {
   dateTime: string;
 }
 
-export interface DiscussionSummary {
-  idName: IdName;
-  tags: Key[];
+export interface DiscussionSummary extends DiscussionMeta {
   messageSummary: MessageSummary;
   nAnswers: number;
 }

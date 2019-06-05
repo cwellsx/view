@@ -255,7 +255,7 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
   const { user, userTabType } = parsed;
   const userId = user.id;
   const isActivity: boolean = userTabType === "Activity";
-  const canEdit: boolean = appContext.me ? (appContext.me.idName.id === userId) : false;
+  const canEdit: boolean = appContext.me ? (appContext.me.id === userId) : false;
   if (!canEdit && (userTabType === "EditSettings")) {
     return noMatch(props, "You cannot edit another user's profile");
   }

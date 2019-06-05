@@ -84,10 +84,9 @@ export function readDiscussions(input: string[][], nUsers: number, tagKeys: stri
     }
     messages.sort((x, y) => new Date(x.dateTime).getTime() - new Date(y.dateTime).getTime());
     return {
-      meta: {
-        idName: { id: discussionId, name: title },
-        tags: [tag]
-      },
+      id: discussionId,
+      name: title,
+      tags: [tag],
       first: messages[0],
       messages: messages.slice(1)
     }
@@ -116,6 +115,6 @@ export function readDiscussions(input: string[][], nUsers: number, tagKeys: stri
   const discussionsDates: [Date, BareDiscussion][] = [];
   rc.forEach(discussion => discussionsDates.push([new Date(discussion.first.dateTime), discussion]));
   discussionsDates.sort((x, y) => x[0].getTime() - y[0].getTime());
-  discussionsDates.forEach((pair, index) => { pair[1].meta.idName.id = index + 1; });
+  discussionsDates.forEach((pair, index) => { pair[1].id = index + 1; });
   return discussionsDates.map(pair => pair[1]);
 }

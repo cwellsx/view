@@ -106,7 +106,8 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
 
 // this is a mock function to be improved
 export function loginUser(): UserSummary {
-  return DB.getUser(1, 1)!.summary
+  const { id, name, gravatarHash, location } = DB.getUser(1, 1)!;
+  return { id, name, gravatarHash, location };
 }
 
 export function routeOnPost(url: string, userId: number, json: any): object | undefined {
@@ -148,7 +149,7 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
           const posted = json as Post.NewDiscussion;
           const discussionId = DB.discussionIdNext();
           const messageId = DB.messageIdNext();
-          return Action.createNewDiscussion(posted, dateTime,userId,discussionId,messageId);
+          return Action.createNewDiscussion(posted, dateTime, userId, discussionId, messageId);
         }
 
         return { error: "Unexpected Discussion post" };
