@@ -1,5 +1,5 @@
 import * as I from "../data";
-import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage, TagId, BareDiscussionMeta } from "./bare";
+import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage, TagId } from "./bare";
 import { loadImages, loadActions, KeyFromTagId } from "./loader";
 import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity } from "../shared/wire";
 import { getExerpt } from "../shared/exerpt";
@@ -7,7 +7,7 @@ import * as R from "../shared/request";
 import { CurrentIds } from "./currentIds";
 import * as Action from "./actions";
 import { TagIdCounts, TagIdDiscussions, simulateTitle } from "./tagIds";
-import {configServer} from "../configServer";
+import { configServer } from "../configServer";
 
 
 /*
@@ -61,7 +61,8 @@ function getMessageTime(message: BareMessage): number {
 
 function getUserSummaryFrom(userId: number, data: BareUser): I.UserSummary {
   return {
-    idName: { id: userId, name: data.name },
+    id: userId,
+    name: data.name,
     gravatarHash: data.gravatarHash,
     location: data.profile.location
   }
@@ -82,7 +83,7 @@ function getMessageEnded(discussion: BareDiscussion): BareMessage {
 type GetMessage = (x: BareDiscussion) => BareMessage;
 
 function getDiscussionTime(discussion: BareDiscussion, getMessage: GetMessage): [number, number] {
-  return [discussion.meta.idName.id, getMessageTime(getMessage(discussion))];
+  return [discussion.id, getMessageTime(getMessage(discussion))];
 }
 
 function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): WireSummaries {
@@ -93,10 +94,12 @@ function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): Wir
   const userIds: Set<number> = new Set<number>();
   discussionMessages.forEach(discussionMessage => {
     const [discussion, message] = discussionMessage;
+    const { id, name, tags } = discussion;
     userIds.add(message.userId);
     rc.discussions.push({
-      idName: discussion.meta.idName,
-      tags: discussion.meta.tags.map(getKeyFromTagId),
+      id,
+      name,
+      tags: tags.map(getKeyFromTagId),
       userId: message.userId,
       messageExerpt: getExerpt(message.markdown),
       dateTime: message.dateTime,
@@ -108,11 +111,13 @@ function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): Wir
 }
 
 function wireDiscussion(discussion: BareDiscussion, messages: BareMessage[], range: I.DiscussionRange): WireDiscussion {
+  const { id, name, tags, first } = discussion;
   const rc: WireDiscussion = {
     users: [],
-    idName: discussion.meta.idName,
-    tags: discussion.meta.tags.map(getKeyFromTagId),
-    first: discussion.first,
+    id,
+    name,
+    tags: tags.map(getKeyFromTagId),
+    first,
     range,
     messages
   }
@@ -157,7 +162,7 @@ export function getImage(id: number): I.Image | undefined {
 export function getUserSummaries(): I.UserSummary[] {
   const rc: I.UserSummary[] = [];
   allUsers.forEach((data, userId) => rc.push(getUserSummaryFrom(userId, data)));
-  return rc.sort((x, y) => x.idName.name.localeCompare(y.idName.name));
+  return rc.sort((x, y) => x.name.localeCompare(y.name));
 }
 
 export function getUser(userId: number, userIdLogin?: number): I.User | undefined {
@@ -168,9 +173,10 @@ export function getUser(userId: number, userIdLogin?: number): I.User | undefine
   const preferences: I.UserPreferences | undefined = (userId !== userIdLogin) ? undefined : {
     email: data.email
   };
+  const { id, name, gravatarHash, location } = getUserSummaryFrom(userId, data);
   return {
-    summary: getUserSummaryFrom(userId, data),
-    profile: data.profile,
+    id, name, location, gravatarHash,
+    aboutMe: data.profile.aboutMe,
     preferences: preferences
   };
 }
@@ -291,7 +297,7 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
   const { idName, tags, first: message } = Action.extractNewDiscussion(action);
   const discussionId = idName.id;
   // ensure that the tags exist and/or can be created
-  const tagIds: TagId[]=[];
+  const tagIds: TagId[] = [];
   for (const tag of tags) {
     let tagId = tagDiscussions.find(tag);
     if (!tagId) {
@@ -303,7 +309,7 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
       }
       // auto-create it now
       const title = simulateTitle(tag);
-      const newTopic: Action.NewTopic = Action.createNewTopic({title},action.dateTime,action.userId);
+      const newTopic: Action.NewTopic = Action.createNewTopic({ title }, action.dateTime, action.userId);
       handleAction(newTopic);
       // try again to find it
       tagId = tagDiscussions.find(tag);
@@ -318,10 +324,14 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
   }
   // the discussion is associated with tags
   tagIds.forEach(tagId => tagDiscussions.addDiscussionId(tagId, discussionId));
-  // construct BareDiscussionMeta using TagId[]
-  const meta: BareDiscussionMeta = {idName, tags: tagIds};
   // new discussion
-  const discussion: BareDiscussion = { meta, first: message, messages: [] };
+  const discussion: BareDiscussion = {
+    id: idName.id,
+    name: idName.name,
+    tags: tagIds,
+    first: message,
+    messages: []
+  };
   allDiscussions.set(discussionId, discussion);
   const active = getDiscussionTime(discussion, getMessageStarted);
   sortedDiscussionsNewest.unshift(active);
@@ -330,7 +340,7 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
   userMessages.get(message.userId)!.push(message);
   // the message is associated with this discussion
   messageDiscussions.set(message.messageId, discussionId);
-  return meta.idName;
+  return idName;
 }
 
 function postNewMessage(action: Action.NewMessage): I.Message {

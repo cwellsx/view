@@ -26,13 +26,13 @@ type GravatarSize = "small" | "big" | "huge";
 
 export function getUserSummary(summary: I.UserSummary, option: { title: boolean, size: GravatarSize })
   : { userName: React.ReactElement, gravatar: React.ReactElement, key: string } {
-  const href = getResourceUrl({ resourceType: "User", what: summary.idName });
-  const userName = <NavLink to={href}>{summary.idName.name}</NavLink>;
+  const href = getResourceUrl({ resourceType: "User", what: summary });
+  const userName = <NavLink to={href}>{summary.name}</NavLink>;
   const size = (option.size === "small") ? 32 : (option.size === "big") ? 48 : 164;
   // https://en.gravatar.com/site/implement/images/
   const src = `https://www.gravatar.com/avatar/${summary.gravatarHash}?s=${size * 2}&d=identicon&r=PG`;
-  const img = <img src={src} alt={summary.idName.name} width={size} height={size} />;
-  const title = option.title ? summary.idName.name : undefined;
+  const img = <img src={src} alt={summary.name} width={size} height={size} />;
+  const title = option.title ? summary.name : undefined;
   const gravatar = <NavLink to={href} title={title} className="gravatar">{img}</NavLink>;
   return { userName, gravatar, key: href };
 }
@@ -93,7 +93,7 @@ function getTags(tags: I.Key[]) {
 }
 
 export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolean = false): KeyedItem {
-  const href = getResourceUrl({ resourceType: "Discussion", what: summary.idName });
+  const href = getResourceUrl({ resourceType: "Discussion", what: summary });
   const when = toLocaleString(new Date(summary.messageSummary.dateTime));
   const stats = short ? undefined : (
     <div className="stats">
@@ -108,7 +108,7 @@ export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolea
     <div className="discussion-summary">
       {stats}
       <div className="summary">
-        <h3><NavLink to={href}>{summary.idName.name}</NavLink></h3>
+        <h3><NavLink to={href}>{summary.name}</NavLink></h3>
         <div className="excerpt">{summary.messageSummary.messageExerpt}</div>
         {getTags(summary.tags)}
         {signature}

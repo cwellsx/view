@@ -40,7 +40,7 @@ export interface BareTagCount extends I.Key {
 
 // When TagId is a Key then it identifies a Tag,
 // otherwise it identifies e.g. an Image (or possibly some other type of content)
-// TagId is used instead of Key in BareDiscussionMeta, so discussions can be associated with tags or, e.g. with images.
+// TagId is used instead of Key in BareDiscussion, so discussions can be associated with tags or, e.g. with images.
 export type Tag = { tag: string };
 export type TagId = Tag | { resourceType: ResourceType, id: number };
 
@@ -67,14 +67,8 @@ export interface BareUser {
 
 export type BareMessage = WireMessage;
 
-// BareDiscussionMeta is like WireDiscussionMeta except that its tags are a different type to support TagId
-export interface BareDiscussionMeta {
-  idName: I.IdName;
+export interface BareDiscussion extends I.IdName {
   tags: TagId[];
-}
-
-export interface BareDiscussion {
-  meta: BareDiscussionMeta;
   first: BareMessage;
   messages: BareMessage[];
 }

@@ -1,7 +1,7 @@
 import { IdName, Key } from "../data/id";
 import { TagCount } from "../data/tag";
 import { UserSummary } from "../data/user";
-import { Discussions, DiscussionSummary } from "../data/discussion";
+import { Discussions, DiscussionSummary, DiscussionMeta } from "../data/discussion";
 import { Discussion, Message } from "../data/discussion";
 import { UserActivity } from "../data/userActivity";
 import { DiscussionsRange, DiscussionRange, ActivityRange } from "../data/range";
@@ -14,7 +14,8 @@ import { DiscussionsRange, DiscussionRange, ActivityRange } from "../data/range"
 export interface WireSummaries {
   users: UserSummary[];
   discussions: {
-    idName: IdName, // discussion ID
+    id: number,
+    name: string,
     tags: Key[],
     userId: number, // + user ID
     // ownerId?: number, // plus ID of user who started the discussion, if this is a list of messages not of discussions
@@ -27,12 +28,13 @@ export interface WireSummaries {
 function unwireSummaries(input: WireSummaries): DiscussionSummary[] {
   // create a Map of the users
   const users: Map<number, UserSummary> = new Map<number, UserSummary>(
-    input.users.map(user => [user.idName.id, user])
+    input.users.map(user => [user.id, user])
   );
 
   const summaries: DiscussionSummary[] = input.discussions.map(wire => {
     return {
-      idName: wire.idName,
+      id: wire.id,
+      name: wire.name,
       tags: wire.tags,
       messageSummary: {
         userSummary: users.get(wire.userId)!,
@@ -68,12 +70,7 @@ export interface WireMessage {
   dateTime: string;
 }
 
-export interface WireDiscussionMeta {
-  idName: IdName;
-  tags: Key[];
-}
-
-export type WireDiscussion = WireDiscussionMeta & {
+export interface WireDiscussion extends DiscussionMeta {
   users: UserSummary[];
   first: WireMessage;
   range: DiscussionRange;
@@ -82,10 +79,10 @@ export type WireDiscussion = WireDiscussionMeta & {
 
 export function unwireDiscussion(input: WireDiscussion): Discussion {
   const users: Map<number, UserSummary> = new Map<number, UserSummary>(
-    input.users.map(user => [user.idName.id, user])
+    input.users.map(user => [user.id, user])
   );
 
-  const { idName, tags, range, first, messages } = input;
+  const { id, name, tags, range, first, messages } = input;
 
   function unwireMessage(wire: WireMessage): Message {
     return {
@@ -96,7 +93,9 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
   }
 
   return {
-    meta: { idName, tags },
+    id,
+    name,
+    tags,
     first: unwireMessage(first),
     range: range,
     messages: messages.map(unwireMessage)
@@ -107,7 +106,10 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
   WireUserActivity <-> UserActivity
 */
 
-export type WireUserActivity = WireSummaries & { range: ActivityRange, tagCounts: TagCount[] };
+export interface WireUserActivity extends WireSummaries {
+  range: ActivityRange,
+  tagCounts: TagCount[]
+};
 
 export function unwireUserActivity(input: WireUserActivity): UserActivity {
   const summaries = unwireSummaries(input);

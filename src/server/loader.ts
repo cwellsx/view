@@ -1,4 +1,4 @@
-import { BareTopic, BareUser, BareDiscussion, BareDiscussionMeta, BareMessage } from "./bare";
+import { BareTopic, BareUser, BareDiscussion, BareMessage } from "./bare";
 import { TagId } from "./bare";
 import { Key } from "../data";
 import * as Action from "./actions";
@@ -123,17 +123,13 @@ function loadDiscussions(): Map<number, BareDiscussion> {
     messageId: 1
   };
   const sample: BareDiscussion = {
-    meta: {
-      idName: {
-        id: 1,
-        name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?"
-      },
-      tags: [{ tag: "foo" }]
-    },
+    id: 1,
+    name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?",
+    tags: [{ tag: "foo" }],
     first: sampleMessage,
     messages: [sampleMessage]
   };
-  const alternate: Alternate =  (wanted: any, found: any) => {
+  const alternate: Alternate = (wanted: any, found: any) => {
     if ((wanted.tag) === undefined) {
       // not the wanted we're trying to match
       return false;
@@ -141,7 +137,7 @@ function loadDiscussions(): Map<number, BareDiscussion> {
     return ((found.id) !== undefined) && (found.resourceType !== undefined);
   }
   const loaded: BareDiscussion[] = assertTypeT(found, [sample], undefined, alternate);
-  return new Map<number, BareDiscussion>(loaded.map(x => [x.meta.idName.id, x]));
+  return new Map<number, BareDiscussion>(loaded.map(x => [x.id, x]));
 }
 
 export type KeyFromTagId = (tagId: TagId) => Key;
@@ -174,10 +170,10 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
   });
 
   const discussions: Map<number, BareDiscussion> = loadDiscussions();
-  function discussionToNewDiscussion(discussionId: number, meta: BareDiscussionMeta, first: BareMessage)
+  function discussionToNewDiscussion(discussionId: number, discussion: BareDiscussion, first: BareMessage)
     : Action.NewDiscussion {
-    const title: string = meta.idName.name;
-    const tags: Key[] = meta.tags.map(getKeyFromTagId);
+    const title: string = discussion.name;
+    const tags: Key[] = discussion.tags.map(getKeyFromTagId);
     const { markdown, messageId, dateTime, userId } = first;
     const posted: Post.NewDiscussion = { title, tags: tags.map(tag => tag.key), markdown };
     return Action.createNewDiscussion(posted, dateTime, userId, discussionId, messageId);
@@ -188,8 +184,8 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
     return Action.createNewMessage(posted, dateTime, userId, discussionId, messageId);
   }
   discussions.forEach((discussion: BareDiscussion, discussionId: number) => {
-    const { meta, first, messages } = discussion;
-    rc.push(discussionToNewDiscussion(discussionId, meta, first));
+    const { first, messages } = discussion;
+    rc.push(discussionToNewDiscussion(discussionId, discussion, first));
     rc.push(...messages.map(message => messageToNewMessage(discussionId, message)));
   });
 
@@ -198,7 +194,7 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
     if (x[1] !== y[1]) {
       return x[1] - y[1];
     }
-    return Action.getLoadPriority(x[0])-Action.getLoadPriority(y[0]);
+    return Action.getLoadPriority(x[0]) - Action.getLoadPriority(y[0]);
   })
 
   return sorted.map(pair => pair[0]);

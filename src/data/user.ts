@@ -17,22 +17,21 @@ import { IdName, Key } from "./id";
 
 */
 
-export interface UserSummary {
-  idName: IdName;
+export interface UserSummary extends IdName {
   gravatarHash: string;
   location?: string;
 }
 
 export interface UserSummaryEx extends UserSummary {
-  tagss: Key[];
+  tags: Key[];
 }
 
 export interface UserProfile {
+  // elements are optional e.g. because they're not defined or because they're private
   location?: string;
   aboutMe?: string; // markdown
 }
 
-// elements are optional e.g. because they're not defined or because they're private
 export interface UserPreferences {
   email: string;
   // notifications and groups are TBD
@@ -41,9 +40,7 @@ export interface UserPreferences {
 // to be implemented later
 // export type UserStatus = "active" | "disabled"
 
-export interface User {
-  summary: UserSummary; // include idName, gravatarHash, location
-  profile: UserProfile;
+export interface User extends UserSummary, UserProfile {
   // preferences is present or not present depending on whether this is another user's profile
   // in future could refine this into PublicPreference | PrivatePreferences if we want any preferences to be public
   preferences?: UserPreferences;
