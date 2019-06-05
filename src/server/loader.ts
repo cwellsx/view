@@ -1,4 +1,5 @@
-import { BareTopic, BareTag, getTagText, BareUser, BareDiscussion, BareDiscussionMeta, BareMessage } from "./bare";
+import { BareTopic, BareUser, BareDiscussion, BareDiscussionMeta, BareMessage } from "./bare";
+import { TagId } from "./bare";
 import { Key } from "../data";
 import * as Action from "./actions";
 import * as Post from "../shared/post";
@@ -13,7 +14,9 @@ import * as Post from "../shared/post";
   private helper function to load data from json
 */
 
-function assertTypeT<T>(loaded: any, wanted: T, optional?: Set<string>): T {
+type Alternate = (wanted: any, found: any) => boolean;
+
+function assertTypeT<T>(loaded: any, wanted: T, optional?: Set<string>, alternate?: Alternate): T {
   function assertType(found: any, wanted: any, keyNames?: string): void {
     if (typeof wanted !== typeof found) {
       throw new Error(`assertType expected ${typeof wanted} but found ${typeof found}`);
@@ -53,14 +56,18 @@ function assertTypeT<T>(loaded: any, wanted: T, optional?: Set<string>): T {
       }
       return;
     }
+    if (alternate && alternate(wanted, found)) {
+      // matches the alternate version
+      return;
+    }
     for (const key in wanted) {
-      const expectedKey = keyNames ? keyNames + "." + key : key;
+      const expected = keyNames ? keyNames + "." + key : key;
       if (typeof found[key] === 'undefined') {
-        if (!optional || !optional.has(expectedKey)) {
-          throw new Error(`assertType expected key ${expectedKey}`);
+        if (!optional || !optional.has(expected)) {
+          throw new Error(`assertType expected ${expected} in ${JSON.stringify(wanted)} is ${JSON.stringify(found)}`);
         }
       } else {
-        assertType(found[key], wanted[key], expectedKey);
+        assertType(found[key], wanted[key], expected);
       }
     }
   }
@@ -96,7 +103,7 @@ function loadUsers(): Map<number, BareUser> {
 
 export { loadImages } from "../server_data/images";
 
-function loadTags(): BareTag[] {
+function loadTags(): BareTopic[] {
   const found = require("../server_data/tags.json");
   const sample: BareTopic = {
     title: "foo",
@@ -104,10 +111,7 @@ function loadTags(): BareTag[] {
     dateTime: "Thu, 03 Jan 2019 22:35:05 GMT"
   };
   const loaded: BareTopic[] = assertTypeT(found, [sample]);
-  return loaded.map(topic => {
-    const key = getTagText(topic.title);
-    return { key, ...topic };
-  });
+  return loaded;
 }
 
 function loadDiscussions(): Map<number, BareDiscussion> {
@@ -124,20 +128,29 @@ function loadDiscussions(): Map<number, BareDiscussion> {
         id: 1,
         name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?"
       },
-      tags: [{ key: "foo" }]
+      tags: [{ tag: "foo" }]
     },
     first: sampleMessage,
     messages: [sampleMessage]
   };
-  const loaded: BareDiscussion[] = assertTypeT(found, [sample]);
+  const alternate: Alternate =  (wanted: any, found: any) => {
+    if ((wanted.tag) === undefined) {
+      // not the wanted we're trying to match
+      return false;
+    }
+    return ((found.id) !== undefined) && (found.resourceType !== undefined);
+  }
+  const loaded: BareDiscussion[] = assertTypeT(found, [sample], undefined, alternate);
   return new Map<number, BareDiscussion>(loaded.map(x => [x.meta.idName.id, x]));
 }
 
-export function loadActions(): Action.Any[] {
+export type KeyFromTagId = (tagId: TagId) => Key;
+
+export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
   const rc: Action.Any[] = [];
 
-  const tags: BareTag[] = loadTags();
-  function tagToNewTopic(tag: BareTag): Action.NewTopic {
+  const tags: BareTopic[] = loadTags();
+  function tagToNewTopic(tag: BareTopic): Action.NewTopic {
     const { title, summary, markdown, userId, dateTime } = tag;
     const posted: Post.NewTopic = { title, summary, markdown };
     return Action.createNewTopic(posted, dateTime, userId);
@@ -164,7 +177,7 @@ export function loadActions(): Action.Any[] {
   function discussionToNewDiscussion(discussionId: number, meta: BareDiscussionMeta, first: BareMessage)
     : Action.NewDiscussion {
     const title: string = meta.idName.name;
-    const tags: Key[] = meta.tags;
+    const tags: Key[] = meta.tags.map(getKeyFromTagId);
     const { markdown, messageId, dateTime, userId } = first;
     const posted: Post.NewDiscussion = { title, tags: tags.map(tag => tag.key), markdown };
     return Action.createNewDiscussion(posted, dateTime, userId, discussionId, messageId);

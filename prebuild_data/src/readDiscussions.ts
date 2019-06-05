@@ -1,5 +1,4 @@
-import { BareDiscussion, BareMessage } from "../../src/server/bare";
-import { Key } from "../../src/data";
+import { BareDiscussion, BareMessage, TagId } from "../../src/server/bare";
 
 /*
   This function takes "Lorem ipsum" text from `random.txt`
@@ -13,14 +12,17 @@ import { Key } from "../../src/data";
   - the number of messages per discussion
 */
 
-export function readDiscussions(input: string[][], nUsers: number, tagKeys: string[], imageKeys: string[]): object {
+export function readDiscussions(input: string[][], nUsers: number, tagKeys: string[], imageTags: TagId[]): object {
 
   function random_userId(): number { return Math.floor(Math.random() * nUsers) + 1; };
   function random_1to10(): number { return Math.floor((Math.random() * 10) + 1); };
   function random_string(strings: string[]): string { return strings[Math.floor((Math.random() * strings.length))]; };
-  function random_tag(): Key {
-    const key = random_string((imageKeys.length && (Math.random() < 0.15)) ? imageKeys : tagKeys);
-    return { key };
+  function random_tag(): TagId {
+    if (imageTags.length && (Math.random() < 0.15)) {
+      return imageTags[0];
+    }
+    const tag = random_string(tagKeys);
+    return { tag };
   };
   const startDate = new Date(Date.UTC(2019, 0));
   function random_date(): string {
@@ -67,7 +69,7 @@ export function readDiscussions(input: string[][], nUsers: number, tagKeys: stri
     if (!title) {
       return undefined;
     }
-    const tag: Key = random_tag();
+    const tag: TagId = random_tag();
     const messages: BareMessage[] = [];
     const n = random_1to10();
     for (let i = 0; i < n; ++i) {

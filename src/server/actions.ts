@@ -1,4 +1,5 @@
-import { BareUser, getTagText, BareTag, BareMessage, BareDiscussionMeta } from "./bare";
+import { BareUser, getTagText, BareTag, BareMessage } from "./bare";
+import { IdName } from "../data";
 import * as Post from "../shared/post";
 import * as crypto from "crypto";
 
@@ -107,15 +108,12 @@ export function createNewDiscussion(
   return { type: "NewDiscussion", posted, dateTime, userId, discussionId, messageId }
 }
 
-export function extractNewDiscussion(action: NewDiscussion): { meta: BareDiscussionMeta, first: BareMessage } {
+export function extractNewDiscussion(action: NewDiscussion): { idName: IdName, tags: string[], first: BareMessage } {
   const { dateTime, userId, discussionId, messageId } = action;
   const { title, markdown, tags } = action.posted;
   const first: BareMessage = { dateTime, userId, messageId, markdown };
-  const meta: BareDiscussionMeta = {
-    idName: { id: discussionId, name: title },
-    tags: tags.map(key => { return { key }; })
-  };
-  return { meta, first };
+  const idName: IdName = { id: discussionId, name: title };
+  return { idName, tags, first };
 }
 
 /*

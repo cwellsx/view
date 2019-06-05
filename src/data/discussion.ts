@@ -12,8 +12,8 @@ export interface Discussion {
   meta: {
     idName: IdName;
     tags: Key[];
-    owner: UserSummary; // equals the user of the first message
   };
+  // the owner of the discussion is the user associated with the first message
   first: Message;
   range: DiscussionRange;
   messages: Message[];

@@ -116,7 +116,7 @@ export function Image(data: I.Image): Layout {
   const right = !data.layers ? undefined :
     { element: renderLayers(data.layers, 0), width: data.layersWidth, showButtonLabel: "Show Layers", visible: true };
   return {
-    main: { content: images, title: data.summary.idName.name },
+    main: { content: images, title: data.name },
     width: "Full",
     right
   };
@@ -155,6 +155,9 @@ export function User(
   userId: number): Layout {
   // crack the input parameters
   const summary = !isUserProfile(props) ? props.summary : props.data.summary;
+  const aboutMe = !isUserProfile(props) ? undefined : props.data.profile.aboutMe;
+//  const aboutMeDiv = !aboutMe ? undefined : <div dangerouslySetInnerHTML={toHtml(aboutMe)} />;
+  const aboutMeDiv = !aboutMe ? undefined : <div>{aboutMe}</div>;
   const userTabType: UserTabType = !isUserProfile(props) ? "Activity" : props.userTabType;
 
   // build the gravatars
@@ -181,7 +184,8 @@ export function User(
           <h1>{idName.name}</h1>
           {location ? <p className="location"><Icon.Location width="24" height="24" /> {location}</p> : undefined}
           <div className="about">
-            <p>About me</p>
+            <h3>About me</h3>
+            {aboutMeDiv}
           </div>
         </div>
       </div>

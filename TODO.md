@@ -81,6 +81,13 @@ I'd like to do a little more before stopping, to make a good demo of the UI:
 - Deploy to Heroku
 - Convert to markdown when rendering message text
 - Filter out dangerous markdown on the server
+
+- Simplify the definitions in data/discussion and data/user as already done for data/image
+- Use https://expressjs.com/en/api.html#res in mockSend and server/routes
+- Remove gravatar from saved user data
+
+More:
+
 - Simplify the implementation of `request.ts`
 - Alter the page margins if it's small-screen
 - Make `getExerpt` markdown-aware, e.g. remove images and ignore the length of hyperlinks

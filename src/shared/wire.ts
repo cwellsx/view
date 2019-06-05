@@ -73,9 +73,8 @@ export interface WireDiscussionMeta {
   tags: Key[];
 }
 
-export interface WireDiscussion {
+export type WireDiscussion = WireDiscussionMeta & {
   users: UserSummary[];
-  meta: WireDiscussionMeta;
   first: WireMessage;
   range: DiscussionRange;
   messages: WireMessage[];
@@ -86,7 +85,7 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
     input.users.map(user => [user.idName.id, user])
   );
 
-  const { meta, range, first, messages } = input;
+  const { idName, tags, range, first, messages } = input;
 
   function unwireMessage(wire: WireMessage): Message {
     return {
@@ -97,11 +96,7 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
   }
 
   return {
-    meta: {
-      idName: meta.idName,
-      tags: meta.tags,
-      owner: users.get(first.userId)!
-    },
+    meta: { idName, tags },
     first: unwireMessage(first),
     range: range,
     messages: messages.map(unwireMessage)

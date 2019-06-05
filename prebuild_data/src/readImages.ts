@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import { readLayers } from "./readLayers";
+// import {Image} from "../../src/data";
 
 /*
   Webpack wants us to import any static assets (e.g. jpegs) which we use.
@@ -68,10 +69,9 @@ export function readImages(inputImages: string, outputImages: string, rootOutput
     // so instead we define it using a string template
     appendLine(`
 const image${i}: I.Image = {
-  summary: {
-    idName: { id: ${i}, name: "${json.name}" },
-    summary: \`${summaryMd}\`
-  },
+  id: ${i},
+  name: "${json.name}",
+  summary: \`${summaryMd}\`,
   image: { src: ${importName}, height: ${json.image.height}, width: ${json.image.width} },
   layers: ${!layers ? "undefined" : JSON.stringify(layers)},
   layersWidth: "${json.layersWidth}"
