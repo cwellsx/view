@@ -59,8 +59,8 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
   // the CSS for this is shared with other .user-profile tabs and is defined in ./Pages.css instead of in ./Editor.css
   return (
     <div className="user-profile settings">
-      <h1>Edit</h1>
-      <form className="editor" onSubmit={handleSubmit}>
+      <form className="editor settings" onSubmit={handleSubmit}>
+        <h1>Edit</h1>
         <h2>Public information</h2>
         <div className="public">
           {props.gravatar}

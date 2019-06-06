@@ -16,7 +16,7 @@ export interface KeyedItem {
 }
 
 // shown in the main column of the page, either a single element, or an array of elements shown as a list
-type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
+export type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
 
 // optional content shown in a column to the right of the page; if present the right column can be shown or hidden
 interface RightContent {

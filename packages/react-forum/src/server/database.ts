@@ -275,7 +275,6 @@ function postEditUserProfile(action: Action.EditUserProfile): I.IdName {
   if (posted.aboutMe) {
     user.profile.aboutMe = posted.aboutMe;
   }
-  console.log(JSON.stringify(user, undefined,2))
   return { id: userId, name: user.name };
 }
 
@@ -361,6 +360,7 @@ function postNewMessage(action: Action.NewMessage): I.Message {
   activate(getDiscussionTime(discussion, getMessageEnded));
   // the user owns this message
   userMessages.get(message.userId)!.push(message);
+  discussion.tags.forEach(tagId => userTags.get(message.userId)!.add(tagId));
   // the message is associated with this discussion
   messageDiscussions.set(message.messageId, discussionId);
   return { userSummary: getUserSummary(message.userId), markdown: message.markdown, dateTime: message.dateTime };

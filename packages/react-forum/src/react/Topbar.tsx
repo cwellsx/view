@@ -3,11 +3,11 @@ import { NavLink } from 'react-router-dom';
 import './Topbar.css';
 import * as Icon from "../icons";
 import { route } from "../shared/request";
-import { AppContext, AppContextProps } from './AppContext';
+import { useMe } from './AppContext';
 import { getUserSummary } from "./Components";
 
 export const Topbar: React.FunctionComponent = () => {
-  const appContext: AppContextProps = React.useContext(AppContext);
+  const me = useMe();
 
   return (
     <div className="topbar" >
@@ -15,7 +15,7 @@ export const Topbar: React.FunctionComponent = () => {
         <ul className="icons">
           <li className="icon"><NavLink to={route.siteMap} title="Site Map">
             <Icon.Search width="24" height="24" /></NavLink></li>
-          {appContext.me ?
+          {me ?
             (
               <React.Fragment>
                 <li className="icon"><NavLink to={route.discussions} title="Discussions">
@@ -24,7 +24,7 @@ export const Topbar: React.FunctionComponent = () => {
                   <Icon.UserProfile width="24" height="24" /></NavLink></li>
                 <li className="icon"><NavLink to="/index" title="Notifications">
                   <Icon.Mail width="24" height="24" /></NavLink></li>
-                <li className="icon">{getUserSummary(appContext.me, { title: true, size: "small" }).gravatar}</li>
+                <li className="icon">{getUserSummary(me, { title: true, size: "small" }).gravatar}</li>
               </React.Fragment>
             ) :
             (
