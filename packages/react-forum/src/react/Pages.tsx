@@ -9,9 +9,8 @@ import * as Icon from "../icons";
 import { config } from '../config';
 import { NavLink, Link } from 'react-router-dom';
 import { AnswerDiscussion, EditUserSettings } from "./Editor";
-import { toHtml } from "../io/markdown";
+import { toHtml } from "../io/markdownToHtml";
 import { History } from "history";
-import { useMe } from './AppContext';
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
@@ -146,7 +145,7 @@ export function Users(data: I.UserSummaryEx[]): Layout {
   User
 */
 
-export function UserProfile(user: I.User): Layout {
+export function UserProfile(user: I.User, extra: { canEdit: boolean }): Layout {
   const gravatar = Summaries.getUserSummary(user, { title: false, size: "huge" }).gravatar;
   const { aboutMe, location } = user;
   const aboutMeDiv = !aboutMe ? undefined : <div dangerouslySetInnerHTML={toHtml(aboutMe)} />;
@@ -163,22 +162,22 @@ export function UserProfile(user: I.User): Layout {
       </div>
     </div>
   );
-  return useCommonUserLayout(user, "Profile", content);
+  return useCommonUserLayout(user, "Profile", content, extra.canEdit);
 }
 
-export function UserSettings(user: I.User, __param: number, __reload: () => void, history: History): Layout {
+export function UserSettings(user: I.User, extra: { canEdit: boolean, history: History }): Layout {
   const gravatar = Summaries.getUserSummary(user, { title: false, size: "huge" }).gravatar;
   const content = (
     // EditUserSettings is a separate function component instead of just being incide the getSettingsContent function 
     // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
-    <EditUserSettings history={history} name={user.name} location={user.location} aboutMe={user.aboutMe}
+    <EditUserSettings history={extra.history} name={user.name} location={user.location} aboutMe={user.aboutMe}
       email={user.preferences!.email} userId={user.id} gravatar={gravatar} />
   );
-  return useCommonUserLayout(user, "EditSettings", content);
+  return useCommonUserLayout(user, "EditSettings", content, extra.canEdit);
 }
 
 
-export function UserActivity(activity: I.UserActivity): Layout {
+export function UserActivity(activity: I.UserActivity, extra: { canEdit: boolean }): Layout {
   function getActivityContent(): ReadonlyArray<KeyedItem> {
     if (!activity.summaries.length) {
       return [{ element: <p>This user has not posted any messages.</p>, key: "none" }];
@@ -210,14 +209,12 @@ export function UserActivity(activity: I.UserActivity): Layout {
     ]
   };
 
-  return useCommonUserLayout(activity.summary, "Activity", content, subTabs);
+  return useCommonUserLayout(activity.summary, "Activity", content, extra.canEdit, subTabs);
 }
 
 // create a Layout that's common to all three user tabs
-function useCommonUserLayout(summary: I.UserSummary, userTabType: UserTabType, content: MainContent,
+function useCommonUserLayout(summary: I.UserSummary, userTabType: UserTabType, content: MainContent, canEdit: boolean,
   subTabs?: SubTabs): Layout {
-  // other content within some tabs
-  const me = useMe();
 
   const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
   const slug = (
@@ -226,7 +223,6 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: UserTabType, c
       {gravatarSmall}
     </React.Fragment>
   );
-  const canEdit = !!me && summary.id === me.id;
 
   // the tab definitions
 
@@ -346,7 +342,7 @@ export function Discussions(data: I.Discussions): Layout {
   Discussion
 */
 
-export function Discussion(data: I.Discussion, param: R.DiscussionOptions, reload: () => void): Layout {
+export function Discussion(data: I.Discussion, extra: { reload: () => void }): Layout {
   const { id, name, tags, first, range, messages } = data;
   const { nTotal } = range;
 
@@ -374,7 +370,7 @@ export function Discussion(data: I.Discussion, param: R.DiscussionOptions, reloa
     content.push({ element: footer, key: "footer" });
   }
 
-  const yourAnswer = <AnswerDiscussion discussionId={id} reload={reload} />;
+  const yourAnswer = <AnswerDiscussion discussionId={id} reload={extra.reload} />;
   content.push({ element: yourAnswer, key: "editor" });
 
   return {

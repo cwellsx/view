@@ -8,7 +8,10 @@ import { getUserSummary } from "./Components";
 
 export const Topbar: React.FunctionComponent = () => {
   const me = useMe();
-
+  function showNotifications(e: React.MouseEvent) {
+    alert("To do: this can be the user's inbox where notifications are displayed");
+    e.preventDefault();
+  }
   return (
     <div className="topbar" >
       <div className="container">
@@ -22,7 +25,7 @@ export const Topbar: React.FunctionComponent = () => {
                   <Icon.Message width="24" height="24" /></NavLink></li>
                 <li className="icon"><NavLink to={route.users} title="Users">
                   <Icon.UserProfile width="24" height="24" /></NavLink></li>
-                <li className="icon"><NavLink to="/index" title="Notifications">
+                <li className="icon"><NavLink to="/index" title="Notifications" onClick={showNotifications}>
                   <Icon.Mail width="24" height="24" /></NavLink></li>
                 <li className="icon">{getUserSummary(me, { title: true, size: "small" }).gravatar}</li>
               </React.Fragment>

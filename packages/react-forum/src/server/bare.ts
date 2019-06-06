@@ -55,14 +55,17 @@ export function getTagText(title: string) {
 
 // if data for each user is stored in a separate (numbered) directory
 // then this defines the data which would be stored in each directory
-export interface BareUser {
+export interface StoredUser {
   name: string;
   email: string;
   dateTime: string;
-  gravatarHash: string;
   // TODO: add some authentication or credential data somewhere e.g. here
   profile: I.UserProfile;
   favourites: TagId[];
+}
+
+export interface BareUser extends StoredUser {
+  gravatarHash: string;
 }
 
 export type BareMessage = WireMessage;
