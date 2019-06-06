@@ -71,7 +71,6 @@ required) -- I suspect React support IE, however I used slightly modern JavaScri
 
 I'd like to do a little more before stopping, to make a good demo of the UI:
 
-- Actually edit a user profile
 - Make the tags clickable, to support
   - Question tagged [tag]
   - Search questions for [user] tagged [tag]
@@ -79,11 +78,8 @@ I'd like to do a little more before stopping, to make a good demo of the UI:
   - List of tags
 - Validate the tags and other data entered by the user
 - Deploy to Heroku
-- Filter out dangerous markdown on the server
 
-- Simplify the definitions in data/discussion and data/user as already done for data/image
 - Use https://expressjs.com/en/api.html#res in mockSend and server/routes
-- Remove gravatar from saved user data
 
 More:
 

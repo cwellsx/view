@@ -1,4 +1,4 @@
-import { BareTopic, BareUser, BareDiscussion, BareMessage } from "./bare";
+import { BareTopic, BareDiscussion, BareMessage, StoredUser } from "./bare";
 import { TagId } from "./bare";
 import { Key } from "../data";
 import * as Action from "./actions";
@@ -80,14 +80,13 @@ function assertTypeT<T>(loaded: any, wanted: T, optional?: Set<string>, alternat
   `loadXxx(): Xxx` functions
 */
 
-function loadUsers(): Map<number, BareUser> {
+function loadUsers(): Map<number, StoredUser> {
   const found = require("../server_data/users.json");
-  const sample: [number, BareUser] = [
+  const sample: [number, StoredUser] = [
     1,
     {
       "name": "ChrisW",
       "email": "cwellsx@gmail.com",
-      "gravatarHash": "75bfdecf63c3495489123fe9c0b833e1",
       "dateTime": "Thu, 03 Jan 2019 22:35:05 GMT",
       "profile": {
         "location": "Normandy",
@@ -97,8 +96,8 @@ function loadUsers(): Map<number, BareUser> {
     }
   ];
   const optional: Set<string> = new Set<string>(["profile.aboutMe", "profile.location"]);
-  const loaded: [number, BareUser][] = assertTypeT(found, [sample], optional);
-  return new Map<number, BareUser>(loaded);
+  const loaded: [number, StoredUser][] = assertTypeT(found, [sample], optional);
+  return new Map<number, StoredUser>(loaded);
 }
 
 export { loadImages } from "../server_data/images";
@@ -153,19 +152,19 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
   }
   rc.push(...tags.map(tagToNewTopic))
 
-  const users: Map<number, BareUser> = loadUsers();
-  function userToNewUser(userId: number, user: BareUser): Action.NewUser {
+  const users: Map<number, StoredUser> = loadUsers();
+  function userToNewUser(userId: number, user: StoredUser): Action.NewUser {
     const { name, email, dateTime } = user;
     const posted: Post.NewUser = { name, email };
     return Action.createNewUser(posted, dateTime, userId);
   }
-  function userToNewUserProfile(userId: number, user: BareUser): Action.EditUserProfile {
+  function userToNewUserProfile(userId: number, user: StoredUser): Action.EditUserProfile {
     const { profile, dateTime } = user;
     const { location, aboutMe } = profile;
     const posted: Post.EditUserProfile = { location, aboutMe };
     return Action.createEditUserProfile(posted, dateTime, userId);
   }
-  users.forEach((user: BareUser, userId: number) => {
+  users.forEach((user: StoredUser, userId: number) => {
     rc.push(userToNewUser(userId, user));
     rc.push(userToNewUserProfile(userId, user));
   });
@@ -200,3 +199,26 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
 
   return sorted.map(pair => pair[0]);
 }
+
+// type Crack<T extends object> = T & {
+//   //p: (keyof T | string)[];
+//   b: keyof T;
+// };
+
+// interface Foo {
+//   bar: number
+//   bit: string
+// };
+
+// const baz: Crack<Foo> = {
+//   //p:[],
+//   b: "bar",
+//   bar: 10,
+//   bit: "vv"
+// }
+
+
+// function w(x: Crack<Foo>) {
+//   const y = x.b;
+//   x[y] = 20;
+// }

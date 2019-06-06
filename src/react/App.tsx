@@ -8,7 +8,7 @@ import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
 import * as R from "../shared/request";
-import { AppContext, AppContextProps, useMe } from './AppContext';
+import { AppContext, useMe } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
 import { ErrorMessage } from "./ErrorMessage";
@@ -119,32 +119,36 @@ type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
   timing hole before the useEffect fires and the data is refetched.
 */
 
+// this gets data from the server
 type IoGetDataT<TData, TParam> = (param: TParam) => Promise<TData>;
-type GetLayoutT<TData, TParam, TExtra> = (data: TData, param: TParam, reload: () => void, extra: TExtra) => Layout;
 
-// passed as param to useGetLayout when TParam is void
+// this uses data from the server, and optional extra data, to create a Layout object
+type Reload = () => void;
+type GetLayoutT<TData, TExtra> = (data: TData, extra: TExtra & { reload: Reload }) => Layout;
+
+// this value is passed as param to useGetLayout when TParam is void
 // or I could have implemented a copy-and-paste of useGetLayout without the TParam
 const isVoid: void = (() => { })();
 
 // 1st overload, used when TParam is void
 function useGetLayout0<TData>(
   getData: IoGetDataT<TData, void>,
-  getLayout: GetLayoutT<TData, void, void>): React.ReactElement {
+  getLayout: GetLayoutT<TData, {}>): React.ReactElement {
   return useGetLayout<TData, void>(getData, getLayout, isVoid);
 }
 
 // 2nd overload, used when TParam (passed to the IO function) is significant
 function useGetLayout<TData, TParam>(
   getData: IoGetDataT<TData, TParam>,
-  getLayout: GetLayoutT<TData, TParam, void>,
+  getLayout: GetLayoutT<TData, {}>,
   param: TParam): React.ReactElement {
-  return useGetLayout2<TData, TParam, void>(getData, getLayout, param, isVoid);
+  return useGetLayout2<TData, TParam, {}>(getData, getLayout, param, {});
 }
 
 // 3rd overload when there's TExtra parameter data to pass to the page layout function
-function useGetLayout2<TData, TParam, TExtra>(
+function useGetLayout2<TData, TParam, TExtra extends {}>(
   getData: IoGetDataT<TData, TParam>,
-  getLayout: GetLayoutT<TData, TParam, TExtra>,
+  getLayout: GetLayoutT<TData, TExtra>,
   param: TParam,
   extra: TExtra)
   : React.ReactElement {
@@ -161,6 +165,10 @@ function useGetLayout2<TData, TParam, TExtra>(
     setToggle(!toggle); // toggle the state to force render
   }
 
+  // add the reload function to the extra data which we pass as a parameter to the layout function
+  // so that the layout function can call reload() if it wants to
+  const extra2: TExtra & { reload: Reload } = { ...extra, reload };
+
   React.useEffect(() => {
     getData(param)
       .then((fetched) => {
@@ -172,7 +180,7 @@ function useGetLayout2<TData, TParam, TExtra>(
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
   const layout: Layout = (data) && (prev === param)
-    ? getLayout(data, param, reload, extra) // render the data
+    ? getLayout(data, extra2) // render the data
     : loadingContents; // else no data yet to render
 
   return useLayout(layout);
@@ -250,48 +258,54 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
   const canEdit = !!me && user.id === me.id;
   switch (userTabType) {
     case "Profile":
-      return <UserProfile {...props} userId={user.id} />;
+      return <UserProfile {...props} userId={user.id} canEdit={canEdit} />;
     case "EditSettings":
       if (!canEdit) {
         return noMatch(props, "You cannot edit another user's profile");
       }
-      return <UserEditSettings {...props} userId={user.id} />;
+      return <UserEditSettings {...props} userId={user.id} canEdit={canEdit} />;
     case "Activity":
       const options = R.getUserActivityOptions(props.location);
       if (R.isParserError(options)) {
         return noMatch(props, options.error);
       }
-      return <UserActivity {...props} options={options} />;
+      return <UserActivity {...props} options={options} canEdit={canEdit} />;
     default:
       return noMatch(props, "Unexpected userTabType");
   }
 }
 
-type UserProps = RouteComponentProps & { userId: number };
+// these are used as TExtra types
+type UserCanEdit = { canEdit: boolean };
+type UserCanEditAndHistory = UserCanEdit & { history: History };
+
+type UserProps = RouteComponentProps & { userId: number } & UserCanEdit;
 const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps) => {
-  return useGetLayout<I.User, number>(
+  return useGetLayout2<I.User, number, UserCanEdit>(
     IO.getUser,
     Page.UserProfile,
-    props.userId
+    props.userId,
+    { canEdit: props.canEdit }
   );
 }
 
 const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) => {
-  return useGetLayout2<I.User, number, History>(
+  return useGetLayout2<I.User, number, UserCanEditAndHistory>(
     IO.getUser,
     Page.UserSettings,
     props.userId,
-    props.history
+    { canEdit: props.canEdit, history: props.history }
   );
 }
 
-type UserActivityProps = RouteComponentProps & { options: R.UserActivityOptions };
+type UserActivityProps = RouteComponentProps & { options: R.UserActivityOptions } & UserCanEdit;
 const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
   // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
-  return useGetLayout<I.UserActivity, R.UserActivityOptions>(
+  return useGetLayout2<I.UserActivity, R.UserActivityOptions, UserCanEdit>(
     IO.getUserActivity,
     Page.UserActivity,
-    props.options
+    props.options,
+    { canEdit: props.canEdit }
   );
 }
 

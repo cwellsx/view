@@ -4,7 +4,7 @@ import * as I from "../data";
 import { KeyedItem } from './PageLayout';
 import { getResourceUrl } from "../shared/request";
 import './Components.css';
-import { toHtml } from "../io/markdown";
+import { toHtml } from "../io/markdownToHtml";
 
 /*
   This module defines components which exist within larger content.
