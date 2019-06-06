@@ -118,12 +118,12 @@ div.tags {
   font-size: 18px;
 }
 
-.user-profile.settings input,
+.user-profile.settings input[type="text"],
 .user-profile.settings label {
   display: block;
 }
 
-.user-profile.settings input {
+.user-profile.settings input[type="text"] {
   margin: 5px 0 6px;
   width: 100%;
 }
@@ -134,6 +134,11 @@ div.tags {
 
 .user-profile.settings .column > label:first-child {
   margin-top: 0;
+}
+
+.user-profile.settings div.submit {
+  margin-top: 24px;
+  text-align: center;
 }
 
 /* styles on discussions banner */

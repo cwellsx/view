@@ -116,7 +116,7 @@ export class TagIdDiscussions extends TagIdMap<number[]> {
     const id = this.imageKeyIds.get(tag);
     const tagId: TagId = id ? { id, resourceType: "Image" } : { tag };
     const key = getMapKey(tagId);
-    if (super.has(key)) {
+    if (!super.has(key)) {
       return undefined;
     }
     return tagId;

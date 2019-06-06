@@ -27,20 +27,25 @@ const allTags: BareTag[] = [];
 
 const allDiscussions: Map<number, BareDiscussion> = new Map<number, BareDiscussion>();
 
-// [discussionId, time]
+// these are both an array of [discussionId, time]
 const sortedDiscussionsNewest: [number, number][] = [];
-// [discussionId, time] 
 const sortedDiscussionsActive: [number, number][] = [];
 
 // map userId to sorted array of messages
 const userMessages: Map<number, BareMessage[]> = new Map<number, BareMessage[]>();
 // map messageId to discussionId 
 const messageDiscussions: Map<number, number> = new Map<number, number>();
+
 const userTags: Map<number, TagIdCounts> = new Map<number, TagIdCounts>();
+
 // map key to array of discussionId
-//const tagDiscussions: Map<string, number[]> = new Map<string, number[]>();
 const tagDiscussions: TagIdDiscussions = new TagIdDiscussions(allImages, allTags);
+
 const currentIds: CurrentIds = new CurrentIds();
+
+/*
+  helper functions
+*/
 
 const getKeyFromTagId: KeyFromTagId = (tagId: TagId) => tagDiscussions.getKey(tagId);
 
@@ -50,10 +55,6 @@ export function messageIdNext(): number {
 export function discussionIdNext(): number {
   return currentIds.discussionId.next();
 }
-
-/*
-  helper functions
-*/
 
 function getMessageTime(message: BareMessage): number {
   return new Date(message.dateTime).getTime();
@@ -203,8 +204,6 @@ export function getUserActivity(options: R.UserActivityOptions): WireUserActivit
   });
   const { users, discussions } = wireSummaries(discussionMessages);
   const tagCounts: BareTagCount[] = userTags.get(userId)!.read();
-  // FIXME
-  // const tagCounts: I.TagCount[] = bareTagCounts
   return { users, discussions, range, tagCounts };
 }
 
@@ -261,8 +260,8 @@ function postNewUser(action: Action.NewUser): I.IdName {
   return { id: userId, name: user.name };
 }
 
-function postNewUserProfile(action: Action.NewUserProfile): I.IdName {
-  const { userId, posted } = Action.extractNewUserProfile(action);
+function postEditUserProfile(action: Action.EditUserProfile): I.IdName {
+  const { userId, posted } = Action.extractEditUserProfile(action);
   const user = allUsers.get(userId)!;
   if (posted.name) {
     user.name = posted.name;
@@ -270,15 +269,13 @@ function postNewUserProfile(action: Action.NewUserProfile): I.IdName {
   if (posted.email) {
     user.email = posted.email;
   }
-  if (posted.profile) {
-    const { location, aboutMe } = posted.profile;
-    if (location) {
-      user.profile.location = location;
-    }
-    if (aboutMe) {
-      user.profile.aboutMe = aboutMe;
-    }
+  if (posted.location) {
+    user.profile.location = posted.location;
   }
+  if (posted.aboutMe) {
+    user.profile.aboutMe = posted.aboutMe;
+  }
+  console.log(JSON.stringify(user, undefined,2))
   return { id: userId, name: user.name };
 }
 
@@ -287,7 +284,7 @@ function postNewTopic(action: Action.NewTopic): I.Key {
   if (!tagDiscussions.addTag(tag.key)) {
 
     // FIXME
-
+    console.error("!postNewTopic");
   }
   allTags.push(tag);
   return { key: tag.key };
@@ -305,6 +302,7 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
 
         // FIXME
 
+        console.error("!postNewDiscussion");
         continue;
       }
       // auto-create it now
@@ -372,8 +370,8 @@ export function handleAction(action: Action.Any) {
   switch (action.type) {
     case "NewUser":
       return postNewUser(action);
-    case "NewUserProfile":
-      return postNewUserProfile(action);
+    case "EditUserProfile":
+      return postEditUserProfile(action);
     case "NewTopic":
       return postNewTopic(action);
     case "NewDiscussion":

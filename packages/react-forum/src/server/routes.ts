@@ -155,6 +155,24 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
         return { error: "Unexpected Discussion post" };
       }
 
+      case "User": {
+        // edit settings
+        if (resource.word === "edit") {
+          // get the userId from the URL
+          const requested = R.getResourceId(resource);
+          if (!requested) {
+            // should return 400 Bad Request
+            return { error: "Expected a numeric ID" };
+          }
+          if (userId !==requested.id) {
+            // should return 403 Forbidden
+            return { error: "Expected user to edit their own settings only" };
+          }
+          const posted = json as Post.EditUserProfile;
+          return Action.createEditUserProfile(posted, dateTime, userId);
+        }
+      }
+
       default:
         return { error: "Unexpected resource type" };
     }

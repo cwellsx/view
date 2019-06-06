@@ -1,5 +1,3 @@
-import { UserProfile } from "../data";
-
 // the interfaces in this module declare the type of data posted to the server
 // and used as input parameters in the functions of the ../io/index module.
 
@@ -13,10 +11,11 @@ export interface NewUser {
   email: string;
 }
 
-export interface NewUserProfile {
+export interface EditUserProfile {
   name?: string;
   email?: string;
-  profile?: UserProfile;
+  location?: string;
+  aboutMe?: string; // markdown
 }
 
 export interface NewTopic {

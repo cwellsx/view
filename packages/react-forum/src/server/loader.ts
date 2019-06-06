@@ -159,10 +159,11 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
     const posted: Post.NewUser = { name, email };
     return Action.createNewUser(posted, dateTime, userId);
   }
-  function userToNewUserProfile(userId: number, user: BareUser): Action.NewUserProfile {
+  function userToNewUserProfile(userId: number, user: BareUser): Action.EditUserProfile {
     const { profile, dateTime } = user;
-    const posted: Post.NewUserProfile = { profile };
-    return Action.createNewUserProfile(posted, dateTime, userId);
+    const { location, aboutMe } = profile;
+    const posted: Post.EditUserProfile = { location, aboutMe };
+    return Action.createEditUserProfile(posted, dateTime, userId);
   }
   users.forEach((user: BareUser, userId: number) => {
     rc.push(userToNewUser(userId, user));

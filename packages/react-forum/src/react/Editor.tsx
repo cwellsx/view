@@ -15,12 +15,86 @@ import { History } from "history";
   copied from https://code.google.com/archive/p/pagedown/wikis/PageDown.wiki
 */
 
+/*
+  EditUserSettings
+*/
+
+// this is a separate function component instead of just being incide the getSettingsContent function 
+// [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
+interface EditUserSettingsProps {
+  history: History,
+  name: string,
+  location?: string,
+  aboutMe?: string,
+  email: string,
+  userId: number,
+  gravatar: React.ReactElement
+};
+export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = (props: EditUserSettingsProps) => {
+  const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
+
+  const inputDisplayName = React.createRef<HTMLInputElement>();
+  const inputEmail = React.createRef<HTMLInputElement>();
+  const inputLocation = React.createRef<HTMLInputElement>();
+  const inputAbout = React.createRef<HTMLTextAreaElement>();
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+    const name = inputDisplayName.current!.value;
+    const location = inputLocation.current!.value;
+    const aboutMe = inputAbout.current!.value;
+    const email = inputEmail.current!.value;
+    event.preventDefault();
+    IO.editUserProfile(props.userId, { name, location, aboutMe, email })
+      .then((idName: I.IdName) => {
+        // construct the URL of the newly-created discussion
+        const url = R.getResourceUrl({ resourceType: "User", what: idName });
+        // use history.push() to navigate programmatically
+        // https://reacttraining.com/react-router/web/api/history
+        // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
+        props.history.push(url);
+      })
+      .catch((error: Error) => setErrorMessage(error.message));
+  };
+
+  // the CSS for this is shared with other .user-profile tabs and is defined in ./Pages.css instead of in ./Editor.css
+  return (
+    <div className="user-profile settings">
+      <h1>Edit</h1>
+      <form className="editor" onSubmit={handleSubmit}>
+        <h2>Public information</h2>
+        <div className="public">
+          {props.gravatar}
+          <div className="column">
+            <label>Display name</label>
+            <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={props.name} />
+            <label>Location (optional)</label>
+            <input type="text" ref={inputLocation} placeholder="optional" defaultValue={props.location} />
+          </div>
+        </div>
+        <label>About me</label>
+        <Editor textareaRef={inputAbout} defaultValue={props.aboutMe} />
+        <h2>Private settings</h2>
+        <label>Email</label>
+        <input type="text" ref={inputEmail} placeholder="required" defaultValue={props.email} />
+        <div className="submit">
+          <input type="submit" value="Save Changes" />
+          <ErrorMessage errorMessage={errorMessage} />
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/*
+  AnswerDiscussion
+*/
+
 interface AnswerDiscussionProps { discussionId: number, reload: () => void };
 export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = (props) => {
 
   // The code here is similar to the code in NewDiscussion and could be refactored, e.g. moved
   // into the Editor component which they both share, but I think that abstracting handleSubmit
-  // and errorMessage accross a component boundary would just make it harder to read.
+  // and errorMessage across a component boundary would just make it harder to read.
 
   const textareaRef = React.createRef<HTMLTextAreaElement>();
   const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
@@ -50,6 +124,10 @@ export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = 
 
   return form;
 }
+
+/*
+  NewDiscussionProps
+*/
 
 type NewDiscussionProps = { history: History }
 export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props: NewDiscussionProps) => {
@@ -101,9 +179,16 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
   return form;
 }
 
-interface EditorProps { textareaRef: React.RefObject<HTMLTextAreaElement> };
+/*
+  Editor
+*/
+
+interface EditorProps {
+  textareaRef: React.RefObject<HTMLTextAreaElement>,
+  defaultValue?: string
+};
 export const Editor: React.FunctionComponent<EditorProps> = (props) => {
-  const { textareaRef } = props;
+  const { textareaRef, defaultValue } = props;
 
   // calling reload() will force a re-render, so useEffect will run again, but if getPagedownEditor().run() is called
   // more than once then bad things happen e.g. there would be more than one editor toolbar
@@ -139,6 +224,7 @@ export const Editor: React.FunctionComponent<EditorProps> = (props) => {
             className="wmd-input"
             name="text"
             placeholder="Type markdown here"
+            defaultValue={defaultValue}
           ></textarea>
         </div>
       </div>

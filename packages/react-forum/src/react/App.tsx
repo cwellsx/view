@@ -13,6 +13,7 @@ import { config } from "../config"
 import { loginUser } from "../io/mock";
 import { ErrorMessage } from "./ErrorMessage";
 import { NewDiscussion as NewDiscussionElement } from "./Editor";
+import { History } from "history";
 
 /*
   This defines the App's routes
@@ -260,7 +261,7 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
     return noMatch(props, "You cannot edit another user's profile");
   }
   if (!isActivity) {
-    return <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} />;
+    return <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} history={props.history} />;
   }
   // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
   const options = R.getUserActivityOptions(props.location);
@@ -271,10 +272,10 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
     canEdit={canEdit} />
 }
 
-interface UserProfileProps { userId: number, userTabType: R.UserTabType, canEdit: boolean };
+interface UserProfileProps { userId: number, userTabType: R.UserTabType, canEdit: boolean, history: History };
 const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfileProps) => {
 
-  const { userId, userTabType, canEdit } = props;
+  const { userId, userTabType, canEdit, history } = props;
 
   // we want to do something different here -- 
   // i.e. we want reuse the data from the call to IO.getUser,
@@ -283,7 +284,7 @@ const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfi
   // instead we use `useGet` and invoke the "get layout" from here i.e. outside the function which contains useEffect.
 
   const data: I.User | undefined = useGet(IO.getUser, userId);
-  const layout = (!data) ? loadingContents : Page.User({ data, userTabType }, canEdit, userId);
+  const layout = (!data) ? loadingContents : Page.User({ data, userTabType, history }, canEdit, userId);
   return useLayout(layout);
 }
 
