@@ -111,3 +111,7 @@ export async function newDiscussion(data: Post.NewDiscussion): Promise<I.IdName>
   return getT<I.IdName>({ resourceType: "Discussion", word: "new" }, data);
 }
 
+export async function editUserProfile(userId: number, data: Post.EditUserProfile): Promise<I.IdName> {
+  return getT<I.IdName>({ resourceType: "User", word: "edit", what: R.requestIdName(userId) }, data);
+}
+

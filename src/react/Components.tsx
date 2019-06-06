@@ -4,6 +4,7 @@ import * as I from "../data";
 import { KeyedItem } from './PageLayout';
 import { getResourceUrl } from "../shared/request";
 import './Components.css';
+import { toHtml } from "../io/markdown";
 
 /*
   This module defines components which exist within larger content.
@@ -16,7 +17,7 @@ export function getImageSummary(summary: I.ImageSummary): KeyedItem {
   const element: React.ReactElement = (
     <React.Fragment>
       <h3><NavLink to={href}>{summary.name}</NavLink></h3>
-      <p>{summary.summary}</p>
+      <div dangerouslySetInnerHTML={toHtml(summary.summary)} />
     </React.Fragment>
   );
   return { element, key: href };
@@ -179,9 +180,7 @@ function getMessage(message: I.Message, index: number, tags?: I.Key[]): KeyedIte
   const element = (
     <React.Fragment>
       <div className="message">
-        <p>
-          {message.markdown}
-        </p>
+        <div dangerouslySetInnerHTML={toHtml(message.markdown)} />
         {topic}
         {getUserInfo(message.userSummary, "small", when)}
       </div>

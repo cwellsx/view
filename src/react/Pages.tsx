@@ -8,7 +8,9 @@ import './Pages.css';
 import * as Icon from "../icons";
 import { config } from '../config';
 import { NavLink, Link } from 'react-router-dom';
-import { AnswerDiscussion } from "./Editor";
+import { AnswerDiscussion, EditUserSettings } from "./Editor";
+import { toHtml } from "../io/markdown";
+import { History } from "history";
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
@@ -143,7 +145,7 @@ export function Users(data: I.UserSummaryEx[]): Layout {
   User
 */
 
-interface UserProfileProps { data: I.User, userTabType: UserTabType };
+interface UserProfileProps { data: I.User, userTabType: UserTabType, history: History };
 
 function isUserProfile(props: UserProfileProps | I.UserActivity): props is UserProfileProps {
   return (props as UserProfileProps).userTabType !== undefined;
@@ -156,8 +158,7 @@ export function User(
   // crack the input parameters
   const summary: I.UserSummary = !isUserProfile(props) ? props.summary : props.data;
   const aboutMe = !isUserProfile(props) ? undefined : props.data.aboutMe;
-//  const aboutMeDiv = !aboutMe ? undefined : <div dangerouslySetInnerHTML={toHtml(aboutMe)} />;
-  const aboutMeDiv = !aboutMe ? undefined : <div>{aboutMe}</div>;
+  const aboutMeDiv = !aboutMe ? undefined : <div dangerouslySetInnerHTML={toHtml(aboutMe)} />;
   const userTabType: UserTabType = !isUserProfile(props) ? "Activity" : props.userTabType;
 
   // build the gravatars
@@ -168,16 +169,10 @@ export function User(
     : ((userTabType === "Profile") ? 0 : 1);
   const { location } = summary;
 
-  const slug = (
-    <React.Fragment>
-      <h1>{summary.name}</h1>
-      {gravatarSmall}
-    </React.Fragment>
-  );
+  // main content within each tab
 
-  const profile: Tab = {
-    navlink: { href: getUserUrl(summary, "Profile"), text: "Profile" },
-    content: (
+  function getProfileContent(): React.ReactElement {
+    return (
       <div className="user-profile profile">
         {gravatar}
         <div className="column">
@@ -189,46 +184,18 @@ export function User(
           </div>
         </div>
       </div>
-    )
-  };
+    );
+  }
 
   function getSettingsContent(): React.ReactElement {
     if (!canEdit || !isUserProfile(props)) {
       return <p>To be supplied</p>;
     }
-    const inputDisplayName = React.createRef<HTMLInputElement>();
-    const inputEmail = React.createRef<HTMLInputElement>();
-    const inputLocation = React.createRef<HTMLInputElement>();
-    const inputAbout = React.createRef<HTMLInputElement>();
-    const preferences: I.UserPreferences = props.data.preferences!;
-
-    return (
-      <div className="user-profile settings">
-        <h1>Edit</h1>
-        <h2>Public information</h2>
-        <div className="public">
-          {gravatar}
-          <div className="column">
-            <label>Display name</label>
-            <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={summary.name} />
-            <label>Location (optional)</label>
-            <input type="text" ref={inputLocation} placeholder="optional" defaultValue={summary.location} />
-          </div>
-        </div>
-        <label>About me</label>
-        <input type="text" ref={inputAbout} placeholder="required" defaultValue={aboutMe} />
-        <h2>Private settings</h2>
-        <label>Email</label>
-        <input type="text" ref={inputEmail} placeholder="required" defaultValue={preferences.email} />
-      </div>
-    );
+    // EditUserSettings is a separate function component instead of just being incide the getSettingsContent function 
+    // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
+    return <EditUserSettings history={props.history} name={summary.name} location={summary.location} aboutMe={aboutMe}
+      email={props.data.preferences!.email} userId={summary.id} gravatar={gravatar} />;
   }
-
-  const settings: Tab = {
-    navlink: { href: getUserUrl(summary, "EditSettings"), text: "Edit" },
-    content: getSettingsContent(),
-    slug
-  };
 
   function getActivityContent(): ReadonlyArray<KeyedItem> {
     if (isUserProfile(props)) {
@@ -251,6 +218,15 @@ export function User(
     return [first].concat(next);
   }
 
+  // other content within some tabs
+
+  const slug = (
+    <React.Fragment>
+      <h1>{summary.name}</h1>
+      {gravatarSmall}
+    </React.Fragment>
+  );
+
   function getActivityUrl(user: I.IdName, sort: R.ActivitySort) {
     return R.getUserActivityUrl({ user, userTabType: "Activity", sort })
   }
@@ -261,6 +237,19 @@ export function User(
       { text: "newest", href: getActivityUrl(props.summary, "Newest") },
       { text: "oldest", href: getActivityUrl(props.summary, "Oldest") }
     ]
+  };
+
+  // the tab definitions
+
+  const profile: Tab = {
+    navlink: { href: getUserUrl(summary, "Profile"), text: "Profile" },
+    content: getProfileContent()
+  };
+
+  const settings: Tab = {
+    navlink: { href: getUserUrl(summary, "EditSettings"), text: "Edit" },
+    content: getSettingsContent(),
+    slug
   };
 
   const activity: Tab = {
@@ -275,6 +264,7 @@ export function User(
     title: summary.name,
     tabbed: canEdit ? [profile, settings!, activity] : [profile, activity]
   };
+
   return {
     main: tabs, width: "Closed"
   };

@@ -84,7 +84,7 @@ interface EditorTagsProps {
 */
 
 // you could temporarily change this to enable logging, for debugging
-const isLogging = true;
+const isLogging = false;
 
 /*
   All the type definitions

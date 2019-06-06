@@ -74,19 +74,19 @@ export function extractNewUser(action: NewUser): { userId: number, user: BareUse
 }
 
 /*
-  NewUserProfile
+  EditUserProfile
 */
 
-export type NewUserProfile = ActionT<"NewUserProfile", Post.NewUserProfile>;
+export type EditUserProfile = ActionT<"EditUserProfile", Post.EditUserProfile>;
 
-export function createNewUserProfile(
-  posted: Post.NewUserProfile,
+export function createEditUserProfile(
+  posted: Post.EditUserProfile,
   dateTime: string, userId: number)
-  : NewUserProfile {
-  return { type: "NewUserProfile", posted, dateTime, userId }
+  : EditUserProfile {
+  return { type: "EditUserProfile", posted, dateTime, userId }
 }
 
-export function extractNewUserProfile(action: NewUserProfile): { userId: number, posted: Post.NewUserProfile } {
+export function extractEditUserProfile(action: EditUserProfile): { userId: number, posted: Post.EditUserProfile } {
   const { userId, posted } = action;
   return { userId, posted };
 }
@@ -144,12 +144,12 @@ export function extractNewMessage(action: NewMessage): { discussionId: number, m
   Any
 */
 
-export type Any = NewTopic | NewUser | NewUserProfile | NewMessage | NewDiscussion;
+export type Any = NewTopic | NewUser | EditUserProfile | NewMessage | NewDiscussion;
 
 export function getLoadPriority(action: Any): number {
   switch (action.type) {
     case "NewUser": return 1;
-    case "NewUserProfile": return 2;
+    case "EditUserProfile": return 2;
     case "NewTopic": return 3;
     case "NewDiscussion": return 4;
     case "NewMessage": return 5;
