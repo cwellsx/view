@@ -8,7 +8,7 @@ import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
 import * as R from "../shared/request";
-import { AppContext, AppContextProps } from './AppContext';
+import { AppContext, AppContextProps, useMe } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
 import { ErrorMessage } from "./ErrorMessage";
@@ -119,10 +119,34 @@ type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
   timing hole before the useEffect fires and the data is refetched.
 */
 
-function useGetLayout<TData, TParam = void>(
-  getData: (param: TParam) => Promise<TData>,
-  getLayout: (data: TData, param: TParam, reload: () => void) => Layout,
-  param: TParam)
+type IoGetDataT<TData, TParam> = (param: TParam) => Promise<TData>;
+type GetLayoutT<TData, TParam, TExtra> = (data: TData, param: TParam, reload: () => void, extra: TExtra) => Layout;
+
+// passed as param to useGetLayout when TParam is void
+// or I could have implemented a copy-and-paste of useGetLayout without the TParam
+const isVoid: void = (() => { })();
+
+// 1st overload, used when TParam is void
+function useGetLayout0<TData>(
+  getData: IoGetDataT<TData, void>,
+  getLayout: GetLayoutT<TData, void, void>): React.ReactElement {
+  return useGetLayout<TData, void>(getData, getLayout, isVoid);
+}
+
+// 2nd overload, used when TParam (passed to the IO function) is significant
+function useGetLayout<TData, TParam>(
+  getData: IoGetDataT<TData, TParam>,
+  getLayout: GetLayoutT<TData, TParam, void>,
+  param: TParam): React.ReactElement {
+  return useGetLayout2<TData, TParam, void>(getData, getLayout, param, isVoid);
+}
+
+// 3rd overload when there's TExtra parameter data to pass to the page layout function
+function useGetLayout2<TData, TParam, TExtra>(
+  getData: IoGetDataT<TData, TParam>,
+  getLayout: GetLayoutT<TData, TParam, TExtra>,
+  param: TParam,
+  extra: TExtra)
   : React.ReactElement {
 
   const [prev, setParam] = React.useState<TParam | undefined>(undefined);
@@ -130,7 +154,7 @@ function useGetLayout<TData, TParam = void>(
 
   // we pass the reload function to the getLayout function so that it can force a reload e.g. after
   // posting a new message to the server. We force a reload because nothing has changed on the client --
-  // not even the URL -- but we want to fecth/refresh the data from the server.
+  // not even the URL -- but we want to fetch/refresh the data from the server.
   // https://stackoverflow.com/questions/46240647/can-i-call-forceupdate-in-stateless-component
   const [toggle, setToggle] = React.useState<boolean>(true);
   function reload() {
@@ -148,39 +172,10 @@ function useGetLayout<TData, TParam = void>(
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
   const layout: Layout = (data) && (prev === param)
-    ? getLayout(data, param, reload) // render the data
+    ? getLayout(data, param, reload, extra) // render the data
     : loadingContents; // else no data yet to render
 
   return useLayout(layout);
-}
-
-// passed as param to useGetLayout when TParam is void
-// or I could have implemented a copy-and-paste of useGetLayout without the TParam
-const isVoid: void = (() => { })();
-
-function useGet<TData, TParam>(getData: (param: TParam) => Promise<TData>, param: TParam): TData | undefined {
-
-  const [prev, setParam] = React.useState<TParam | undefined>(undefined);
-  const [data, setData] = React.useState<TData | undefined>(undefined);
-
-  React.useEffect(() => {
-    getData(param)
-      .then((fetched) => {
-        setData(fetched);
-        setParam(param);
-      });
-  }, [getData, param]);
-
-  if (prev !== param) {
-    // the param used n the most recent useEffect and currently saved in state doesn't match the current/desired prop
-    // so return undefined for now and wait until useEffect has a chance to run again.
-    // https://stackoverflow.com/questions/56096560/avoid-old-data-when-using-useeffect-to-fetch-data
-    return undefined;
-  }
-
-  // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
-
-  return data;
 }
 
 /*
@@ -194,10 +189,9 @@ function useGet<TData, TParam>(getData: (param: TParam) => Promise<TData>, param
 
 const SiteMap: React.FunctionComponent = () => {
 
-  return useGetLayout<I.SiteMap>(
+  return useGetLayout0<I.SiteMap>(
     IO.getSiteMap,
-    Page.SiteMap,
-    isVoid
+    Page.SiteMap
   );
 }
 
@@ -236,10 +230,9 @@ const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => 
 */
 
 const Users: React.FunctionComponent = () => {
-  return useGetLayout<I.UserSummaryEx[]>(
+  return useGetLayout0<I.UserSummaryEx[]>(
     IO.getUsers,
-    Page.Users,
-    isVoid
+    Page.Users
   );
 }
 
@@ -248,64 +241,58 @@ const Users: React.FunctionComponent = () => {
 */
 
 const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const appContext: AppContextProps = React.useContext(AppContext);
   const parsed = R.getUserOptions(props.location);
+  const me = useMe();
   if (R.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
-  const { user, userTabType } = parsed;
-  const userId = user.id;
-  const isActivity: boolean = userTabType === "Activity";
-  const canEdit: boolean = appContext.me ? (appContext.me.id === userId) : false;
-  if (!canEdit && (userTabType === "EditSettings")) {
-    return noMatch(props, "You cannot edit another user's profile");
+  const { userTabType, user } = parsed;
+  const canEdit = !!me && user.id === me.id;
+  switch (userTabType) {
+    case "Profile":
+      return <UserProfile {...props} userId={user.id} />;
+    case "EditSettings":
+      if (!canEdit) {
+        return noMatch(props, "You cannot edit another user's profile");
+      }
+      return <UserEditSettings {...props} userId={user.id} />;
+    case "Activity":
+      const options = R.getUserActivityOptions(props.location);
+      if (R.isParserError(options)) {
+        return noMatch(props, options.error);
+      }
+      return <UserActivity {...props} options={options} />;
+    default:
+      return noMatch(props, "Unexpected userTabType");
   }
-  if (!isActivity) {
-    return <UserProfile userId={userId} userTabType={userTabType} canEdit={canEdit} history={props.history} />;
-  }
-  // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
-  const options = R.getUserActivityOptions(props.location);
-  if (R.isParserError(options)) {
-    return noMatch(props, options.error);
-  }
-  return <UserActivity user={options.user} userTabType={options.userTabType} sort={options.sort} page={options.page}
-    canEdit={canEdit} />
 }
 
-interface UserProfileProps { userId: number, userTabType: R.UserTabType, canEdit: boolean, history: History };
-const UserProfile: React.FunctionComponent<UserProfileProps> = (props: UserProfileProps) => {
-
-  const { userId, userTabType, canEdit, history } = props;
-
-  // we want to do something different here -- 
-  // i.e. we want reuse the data from the call to IO.getUser,
-  // even if the userTabType changes between "Profile" and "EditSettings"
-  // if we used useGetLayout then we ought to specify (e.g. via useCallback) that userTabType is a dependency, so
-  // instead we use `useGet` and invoke the "get layout" from here i.e. outside the function which contains useEffect.
-
-  const data: I.User | undefined = useGet(IO.getUser, userId);
-  const layout = (!data) ? loadingContents : Page.User({ data, userTabType, history }, canEdit, userId);
-  return useLayout(layout);
+type UserProps = RouteComponentProps & { userId: number };
+const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps) => {
+  return useGetLayout<I.User, number>(
+    IO.getUser,
+    Page.UserProfile,
+    props.userId
+  );
 }
 
-type UserActivityProps = R.UserActivityOptions & { canEdit: boolean };
+const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) => {
+  return useGetLayout2<I.User, number, History>(
+    IO.getUser,
+    Page.UserSettings,
+    props.userId,
+    props.history
+  );
+}
+
+type UserActivityProps = RouteComponentProps & { options: R.UserActivityOptions };
 const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
-
-  const { user, userTabType, canEdit } = props;
-  const { sort, page } = props;
-
-  const options: R.UserActivityOptions = React.useMemo(
-    () => { return { user: { id: user.id, name: user.name }, userTabType, sort, page }; },
-    [user.id, user.name, userTabType, sort, page])
-
-  // we want to do something a bit different here too --
-  // i.e. we want to pass the canEdit value to the Page.User function
-  // so that it knows whether to display the "Edit Settings" tab as an option
-  // even though canEdit is not a parameter passed to the IO.getUserActivity function
-  // so again we use `useGet` here instead of `useGetLayout` to better control how we invoke the "get layout" function
-  const data: I.UserActivity | undefined = useGet(IO.getUserActivity, options);
-  const layout = (!data) ? loadingContents : Page.User(data, canEdit, user.id);
-  return useLayout(layout);
+  // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
+  return useGetLayout<I.UserActivity, R.UserActivityOptions>(
+    IO.getUserActivity,
+    Page.UserActivity,
+    props.options
+  );
 }
 
 /*

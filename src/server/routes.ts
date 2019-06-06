@@ -171,6 +171,8 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
           const posted = json as Post.EditUserProfile;
           return Action.createEditUserProfile(posted, dateTime, userId);
         }
+        
+        return { error: "Unexpected User post" };
       }
 
       default:

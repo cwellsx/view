@@ -1,6 +1,6 @@
 import React from 'react';
 import * as I from "../data";
-import { KeyedItem, Layout, Tab, Tabs, SubTabs } from './PageLayout';
+import { KeyedItem, Layout, Tab, Tabs, SubTabs, MainContent } from './PageLayout';
 import * as Summaries from "./Components";
 import { getUserUrl, UserTabType, getDiscussionsUrl, PageSize, route } from "../shared/request";
 import * as R from "../shared/request";
@@ -11,6 +11,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { AnswerDiscussion, EditUserSettings } from "./Editor";
 import { toHtml } from "../io/markdown";
 import { History } from "history";
+import { useMe } from './AppContext';
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
@@ -145,119 +146,126 @@ export function Users(data: I.UserSummaryEx[]): Layout {
   User
 */
 
-interface UserProfileProps { data: I.User, userTabType: UserTabType, history: History };
-
-function isUserProfile(props: UserProfileProps | I.UserActivity): props is UserProfileProps {
-  return (props as UserProfileProps).userTabType !== undefined;
-}
-
-export function User(
-  props: UserProfileProps | I.UserActivity,
-  canEdit: boolean,
-  userId: number): Layout {
-  // crack the input parameters
-  const summary: I.UserSummary = !isUserProfile(props) ? props.summary : props.data;
-  const aboutMe = !isUserProfile(props) ? undefined : props.data.aboutMe;
+export function UserProfile(user: I.User): Layout {
+  const gravatar = Summaries.getUserSummary(user, { title: false, size: "huge" }).gravatar;
+  const { aboutMe, location } = user;
   const aboutMeDiv = !aboutMe ? undefined : <div dangerouslySetInnerHTML={toHtml(aboutMe)} />;
-  const userTabType: UserTabType = !isUserProfile(props) ? "Activity" : props.userTabType;
-
-  // build the gravatars
-  const gravatar = Summaries.getUserSummary(summary, { title: false, size: "huge" }).gravatar;
-  const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
-  const selected = canEdit
-    ? ((userTabType === "Profile") ? 0 : (userTabType === "EditSettings") ? 1 : 2)
-    : ((userTabType === "Profile") ? 0 : 1);
-  const { location } = summary;
-
-  // main content within each tab
-
-  function getProfileContent(): React.ReactElement {
-    return (
-      <div className="user-profile profile">
-        {gravatar}
-        <div className="column">
-          <h1>{summary.name}</h1>
-          {location ? <p className="location"><Icon.Location width="24" height="24" /> {location}</p> : undefined}
-          <div className="about">
-            <h3>About me</h3>
-            {aboutMeDiv}
-          </div>
+  const content = (
+    <div className="user-profile profile">
+      {gravatar}
+      <div className="column">
+        <h1>{user.name}</h1>
+        {location ? <p className="location"><Icon.Location width="24" height="24" /> {location}</p> : undefined}
+        <div className="about">
+          <h3>About me</h3>
+          {aboutMeDiv}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+  return useCommonUserLayout(user, "Profile", content);
+}
 
-  function getSettingsContent(): React.ReactElement {
-    if (!canEdit || !isUserProfile(props)) {
-      return <p>To be supplied</p>;
-    }
+export function UserSettings(user: I.User, __param: number, __reload: () => void, history: History): Layout {
+  const gravatar = Summaries.getUserSummary(user, { title: false, size: "huge" }).gravatar;
+  const content = (
     // EditUserSettings is a separate function component instead of just being incide the getSettingsContent function 
     // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
-    return <EditUserSettings history={props.history} name={summary.name} location={summary.location} aboutMe={aboutMe}
-      email={props.data.preferences!.email} userId={summary.id} gravatar={gravatar} />;
-  }
+    <EditUserSettings history={history} name={user.name} location={user.location} aboutMe={user.aboutMe}
+      email={user.preferences!.email} userId={user.id} gravatar={gravatar} />
+  );
+  return useCommonUserLayout(user, "EditSettings", content);
+}
 
+
+export function UserActivity(activity: I.UserActivity): Layout {
   function getActivityContent(): ReadonlyArray<KeyedItem> {
-    if (isUserProfile(props)) {
-      return [{ element: <p>To be supplied</p>, key: "none" }];
-    }
-    if (!props.summaries.length) {
+    if (!activity.summaries.length) {
       return [{ element: <p>This user has not posted any messages.</p>, key: "none" }];
     }
-    const tagCounts = props.tagCounts.sort((x, y) => x.key.localeCompare(y.key));
+    const tagCounts = activity.tagCounts.sort((x, y) => x.key.localeCompare(y.key));
     const tags = (
       <React.Fragment>
-        <h2>{`${props.tagCounts.length} ${config.strTags}`}</h2>
+        <h2>{`${activity.tagCounts.length} ${config.strTags}`}</h2>
         <div className="tags">
           {tagCounts.map(Summaries.getTagCount)}
         </div>
       </React.Fragment>
     );
     const first: KeyedItem = { element: tags, key: "tags" };
-    const next: KeyedItem[] = props.summaries.map(summary => Summaries.getDiscussionSummary(summary, true));
+    const next: KeyedItem[] = activity.summaries.map(summary => Summaries.getDiscussionSummary(summary, true));
     return [first].concat(next);
   }
+  const content = getActivityContent();
 
+  function getActivityUrl(user: I.IdName, sort: R.ActivitySort) {
+    return R.getUserActivityUrl({ user, userTabType: "Activity", sort })
+  }
+  const subTabs: SubTabs = {
+    text: (activity.summaries.length === 1) ? "1 Message" : `${activity.summaries.length} Messages`,
+    selected: (activity.range.sort === "Newest") ? 0 : 1,
+    tabs: [
+      { text: "newest", href: getActivityUrl(activity.summary, "Newest") },
+      { text: "oldest", href: getActivityUrl(activity.summary, "Oldest") }
+    ]
+  };
+
+  return useCommonUserLayout(activity.summary, "Activity", content, subTabs);
+}
+
+// create a Layout that's common to all three user tabs
+function useCommonUserLayout(summary: I.UserSummary, userTabType: UserTabType, content: MainContent,
+  subTabs?: SubTabs): Layout {
   // other content within some tabs
+  const me = useMe();
 
+  const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
   const slug = (
     <React.Fragment>
       <h1>{summary.name}</h1>
       {gravatarSmall}
     </React.Fragment>
   );
-
-  function getActivityUrl(user: I.IdName, sort: R.ActivitySort) {
-    return R.getUserActivityUrl({ user, userTabType: "Activity", sort })
-  }
-  const subTabs: SubTabs | undefined = (isUserProfile(props)) ? undefined : {
-    text: (props.summaries.length === 1) ? "1 Message" : `${props.summaries.length} Messages`,
-    selected: (props.range.sort === "Newest") ? 0 : 1,
-    tabs: [
-      { text: "newest", href: getActivityUrl(props.summary, "Newest") },
-      { text: "oldest", href: getActivityUrl(props.summary, "Oldest") }
-    ]
-  };
+  const canEdit = !!me && summary.id === me.id;
 
   // the tab definitions
 
   const profile: Tab = {
     navlink: { href: getUserUrl(summary, "Profile"), text: "Profile" },
-    content: getProfileContent()
+    content: <p>To be supplied</p>
   };
 
   const settings: Tab = {
     navlink: { href: getUserUrl(summary, "EditSettings"), text: "Edit" },
-    content: getSettingsContent(),
+    content: <p className="error">Not authorized</p>,
     slug
   };
 
   const activity: Tab = {
     navlink: { href: getUserUrl(summary, "Activity"), text: "Activity" },
-    content: getActivityContent(),
+    content: <p>To be supplied</p>,
     subTabs,
     slug
   };
+
+  function getSelected(): number {
+    switch (userTabType) {
+      case "Profile":
+        profile.content = content;
+        return 0;
+      case "EditSettings":
+        if (canEdit) {
+          settings.content = content;
+        }
+        return 1;
+      case "Activity":
+        activity.content = content;
+        return (canEdit) ? 2 : 1;
+      default:
+        throw new Error("Unexpected userTabType");
+    }
+  }
+  const selected = getSelected();
 
   const tabs: Tabs = {
     selected,

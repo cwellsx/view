@@ -1,4 +1,4 @@
-import { IdName, Key } from "../data/id";
+import { Key } from "../data/id";
 import { TagCount } from "../data/tag";
 import { UserSummary } from "../data/user";
 import { Discussions, DiscussionSummary, DiscussionMeta } from "../data/discussion";

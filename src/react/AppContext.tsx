@@ -11,3 +11,8 @@ export const AppContext = React.createContext<AppContextProps>({
   me: undefined,
   setMe: (me: I.UserSummary | undefined) => {}
 });
+
+export function useMe(): I.UserSummary | undefined {
+  const appContext: AppContextProps = React.useContext(AppContext);
+  return appContext.me;
+}
