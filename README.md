@@ -3,19 +3,19 @@ This is forum/discussion software, written using React.js and TypeScript.
 ## Demo
 
 This software is running at `https://url-to-be-supplied.example.com` --
-try that, to see how it behaves and what it looks like.
+try that to see how it behaves, and what it looks like.
 
 ## Why
 
-I write this, because it's one thing to read about a tool, another thing to design and write an implementation with it.
+I wrote this to confirm my understanding, of how to design and write an application using React.
 
-The React API documentation shows isolated sample components or fragments,
-each implemented using half-a-dozen lines of code -- whereas this let me experience:
+The React API documentation shows isolated sample components or fragments --
+each implemented using half-a-dozen lines of code -- whereas this larger project shows some example of:
 
 - How to implement an application
   -- [`./src/react/App.tsx`](./src/react/App.tsx)
 - How to implement something like a "master page template"
-  -- i.e. where different pages may share similar but configurable, reusable layouts
+  -- i.e. where different pages share similar but configurable, reusable layouts
 - How to implement a highly interactive component
   -- [`./src/react/EditorTags.*`](./src/react/EDITORTAGS.md)
 - How to implement a Single Page Application
@@ -39,21 +39,17 @@ rots --ext .css .md .ts .tsx
 
 In summary, React seems like a great way to write a whole application:
 
-- Nice tools
-  - VS Code's integration with TypeScript
-  - Seamless integration between editing the source and browsing the result
-- Organize the implementation any way you like
+- Nice tools -- including seamless integration between editing the source and browsing the result,
+and, VS Code's integration with TypeScript
+- Organize the implementation, into modules, any way you like
 - Minimal overhead, no "framework" to learn to fit into
 - A wealth of 3rd-party components
 
 It also seems an adequate way to write some highly-interactive components.
 
 Using it with TypeScript instead of JavaScript also seems ideal -- for example,
-having TypeScript interfaces to define the format of data shared between components:
-
-- Shared between client and server
-- Used in the APIs of any reusable/shared components
-  
+using TypeScript interfaces to define the format of data shared  between client and server,
+and used in the APIs of any reusable/shared components.
 Having strong types helps with refactoring as well.
 
 The source code all exists in two subdirectories:

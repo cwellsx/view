@@ -1,6 +1,9 @@
 // the interfaces in this module declare the type of data posted to the server
 // and used as input parameters in the functions of the ../io/index module.
 
+// The string elements aren't optional -- if they were optional then the server couldn't
+// tell the difference between an element beng omitted (unspecified) versus an element being deleted
+
 export interface Login {
   userName: string,
   password: string
@@ -12,16 +15,16 @@ export interface NewUser {
 }
 
 export interface EditUserProfile {
-  name?: string;
-  email?: string;
-  location?: string;
-  aboutMe?: string; // markdown
+  name: string;
+  email: string;
+  location: string;
+  aboutMe: string; // markdown
 }
 
 export interface NewTopic {
   title: string;
-  summary?: string;
-  markdown?: string;
+  summary: string;
+  markdown: string;
 }
 
 // there's a discussionId as well but it's carried in the URL

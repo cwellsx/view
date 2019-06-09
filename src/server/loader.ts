@@ -145,12 +145,7 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
   const rc: Action.Any[] = [];
 
   const tags: BareTopic[] = loadTags();
-  function tagToNewTopic(tag: BareTopic): Action.NewTopic {
-    const { title, summary, markdown, userId, dateTime } = tag;
-    const posted: Post.NewTopic = { title, summary, markdown };
-    return Action.createNewTopic(posted, dateTime, userId);
-  }
-  rc.push(...tags.map(tagToNewTopic))
+  rc.push(...tags.map(Action.createStoredTopic))
 
   const users: Map<number, StoredUser> = loadUsers();
   function userToNewUser(userId: number, user: StoredUser): Action.NewUser {
@@ -159,10 +154,7 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
     return Action.createNewUser(posted, dateTime, userId);
   }
   function userToNewUserProfile(userId: number, user: StoredUser): Action.EditUserProfile {
-    const { profile, dateTime } = user;
-    const { location, aboutMe } = profile;
-    const posted: Post.EditUserProfile = { location, aboutMe };
-    return Action.createEditUserProfile(posted, dateTime, userId);
+    return Action.createStoredUserProfile(user, userId);
   }
   users.forEach((user: StoredUser, userId: number) => {
     rc.push(userToNewUser(userId, user));

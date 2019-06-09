@@ -7,6 +7,9 @@ export const config = {
   exerptlength: 200,
   strQuestions: "Questions", // could be "Discussions or "Questions"
   strTags: "Tags", // could be "Tags or "Topics" or even "Features"
-  strNewQuestion: "Ask a question", // could be "Start a discussion" or "New discussion"
-  strNewQuestionButton: "Ask Question", // could be "Start a discussion" or "New discussion"
+  strNewQuestion: {
+    title: "Ask a question", // could be "Start a discussion" or "New discussion"
+    button: "Ask Question", // could be "Start a discussion" or "New discussion"
+    noun: "question"
+  }
 };

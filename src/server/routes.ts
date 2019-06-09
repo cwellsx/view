@@ -180,6 +180,10 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
     }
   }
 
+  if (resource.resourceType==="Login") {
+    return loginUser();
+  }
+
   const action = getAction(resource);
   if (R.isParserError(action)) {
     // should return 400 Bad Request

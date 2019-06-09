@@ -27,10 +27,6 @@ form {
   display: none !important;
 }
 
-.error {
-  color: red;
-}
-
 img {
   height: auto;
 }
@@ -41,6 +37,12 @@ button {
 
 label, button {
   cursor: pointer;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 4px;
 }
 
 a {
