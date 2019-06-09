@@ -35,6 +35,11 @@
   padding-bottom: 0.75rem;
 }
 
+.column-text .content .element:last-child,
+.tabbed .element:last-child {
+  border-bottom: none;
+}
+
 .column-text.none .content .element {
   border: none;
 }
@@ -62,12 +67,6 @@
 
 .element h2 {
   margin-top: 0;
-}
-
-.element label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 4px;
 }
 
 /* wide columns e.g. Images */
@@ -136,6 +135,7 @@
 
 .tabbed {
   margin: 1.5rem 0 0 1.5rem;
+  padding-bottom: 0.75em;
 }
 
 .tabs {

@@ -1,7 +1,8 @@
-import { BareUser, getTagText, BareTag, BareMessage } from "./bare";
+import { BareUser, getTagText, BareTag, BareMessage, StoredUser, BareTopic } from "./bare";
 import { IdName } from "../data";
 import * as Post from "../shared/post";
 import * as crypto from "crypto";
+import { simulateTitle } from "./tagIds";
 
 /*
   These are the types of data posted by users which may be stored on disk.
@@ -37,6 +38,19 @@ export function createNewTopic(
   posted: Post.NewTopic,
   dateTime: string, userId: number)
   : NewTopic {
+  return { type: "NewTopic", posted, dateTime, userId }
+}
+
+export function createStoredTopic(stored: BareTopic): NewTopic {
+  const posted: Post.NewTopic = { title: stored.title, summary: "" + stored.summary, markdown: "" + stored.markdown }
+  return { type: "NewTopic", posted, dateTime: stored.dateTime, userId: stored.userId }
+}
+
+export function createNewTag(
+  tag: string,
+  dateTime: string, userId: number)
+  : NewTopic {
+  const posted: Post.NewTopic = { title: simulateTitle(tag), summary: "", markdown: "" };
   return { type: "NewTopic", posted, dateTime, userId }
 }
 
@@ -84,6 +98,17 @@ export function createEditUserProfile(
   dateTime: string, userId: number)
   : EditUserProfile {
   return { type: "EditUserProfile", posted, dateTime, userId }
+}
+
+export function createStoredUserProfile(
+  stored: StoredUser,
+  userId: number)
+  : EditUserProfile {
+  const posted: Post.EditUserProfile = {
+    name: stored.name, email: stored.email, location: "" + stored.profile.location,
+    aboutMe: "" + stored.profile.aboutMe
+  };
+  return { type: "EditUserProfile", posted, dateTime: stored.dateTime, userId }
 }
 
 export function extractEditUserProfile(action: EditUserProfile): { userId: number, posted: Post.EditUserProfile } {

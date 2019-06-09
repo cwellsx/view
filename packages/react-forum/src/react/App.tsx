@@ -70,7 +70,7 @@ type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
   The sequence of events is:
 
   1. Called for the first time
-  2. Calls hard-coded renderLayout(title, loadingContents)
+  2. Returns hard-coded `renderLayout(loadingContents)` which displays a "Loading..." message
   3. useEffect fires and:
      - Call getData to fetch data from the server
      - Call getContents to render the data into a Layout instance
@@ -374,7 +374,7 @@ const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: Rout
 
   // this is unusual because we don't need to fetch data before rendering this element
   const content = <NewDiscussionElement history={props.history} />;
-  const title = config.strNewQuestion;
+  const title = config.strNewQuestion.title;
   const layout: Layout = {
     main: { content, title },
     width: "None"

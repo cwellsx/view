@@ -2,35 +2,62 @@ import React from 'react';
 import { useLayout, Layout } from './PageLayout';
 import * as I from "../data";
 import * as IO from "../io";
-import { ErrorMessage } from "./ErrorMessage";
 import { AppContext, AppContextProps } from './AppContext';
+import * as Post from "../shared/post";
+import { ValidatedState, createValidated, Input, createInitialState, useReducer0 } from "./ErrorMessage";
+import "./Login.css"
 
 export const Login: React.FunctionComponent = () => {
 
-  const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
+  type T = Post.Login;
+
+  function initialState(): ValidatedState<T> {
+    const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
+      ["userName", {
+        label: "Username",
+        hideLabel: true,
+        options: {},
+        create: { type: "input", placeholder: "Username", attributes: {} }
+      }],
+      ["password", {
+        label: "Password",
+        hideLabel: true,
+        options: {},
+        create: { type: "input", placeholder: "Password", attributes: {} }
+      }],
+    ]);
+    // reuse the default values for the initial state
+    const state: T = { userName: "", password: "" };
+    return createInitialState(inputs, state);
+  }
+
+  const [state, dispatch] = useReducer0<T>(() => initialState());
+
   const appContext: AppContextProps = React.useContext(AppContext);
 
-  const inputUserName = React.createRef<HTMLInputElement>();
-  const inputPassword = React.createRef<HTMLInputElement>();
-
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
-    const userName = inputUserName.current!.value;
-    const password = inputPassword.current!.value;
-    IO.login({ userName, password })
-      .then((userSummary: I.UserSummary) => appContext.setMe(userSummary))
-      .catch((error: Error) => setErrorMessage(error.message));
     event.preventDefault();
+    if (state.errorMessages.size) {
+      // error messages are already displayed
+      return;
+    }
+    IO.login(state.posted)
+      .then((userSummary: I.UserSummary) => appContext.setMe(userSummary))
+      .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
   };
+
+  // created the validated elements and the submit button
+  const buttonText = { label: "Submit", noun: "login" };
+  const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
 
   const content = (
     <React.Fragment>
       <p>This will be a login page, with user name and password.</p>
       <p>For this prototype, just press the button to simulate a login.</p>
-      <form onSubmit={handleSubmit}>
-        <p><input type="text" ref={inputUserName} placeholder="Username" /></p>
-        <p><input type="text" ref={inputPassword} placeholder="Password" /></p>
-        <p><input type="submit" value="Submit" /></p>
-        <ErrorMessage errorMessage={errorMessage} />
+      <form className="login" onSubmit={handleSubmit}>
+        <div className="p">{mapInputs.get("userName")}</div>
+        <div className="p">{mapInputs.get("password")}</div>
+        <div className="p">{button}</div>
       </form>
       <h3>Only in this prototype</h3>
       <p>The UI details for creating a new account are not defined yet.</p>

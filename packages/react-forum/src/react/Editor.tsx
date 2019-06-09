@@ -4,10 +4,20 @@ import 'pagedown-editor/pagedown.css';
 import './Editor.css';
 import * as IO from '../io';
 import * as I from '../data';
-import { ErrorMessage } from './ErrorMessage';
 import { EditorTags } from './EditorTags';
 import * as R from "../shared/request";
 import { History } from "history";
+import { config } from "../config";
+import {
+  ValidatedState, createValidated, Input, createInitialState, useReducer, useReducer0,
+  ValidatedEditorProps, Validated
+} from "./ErrorMessage";
+import * as Post from "../shared/post";
+
+const minLengths = {
+  title: 15,
+  body: 30
+}
 
 /*
   There's no README in the https://github.com/StackExchange/pagedown repo
@@ -31,57 +41,81 @@ interface EditUserSettingsProps {
   gravatar: React.ReactElement
 };
 export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = (props: EditUserSettingsProps) => {
-  const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
 
-  const inputDisplayName = React.createRef<HTMLInputElement>();
-  const inputEmail = React.createRef<HTMLInputElement>();
-  const inputLocation = React.createRef<HTMLInputElement>();
-  const inputAbout = React.createRef<HTMLTextAreaElement>();
+  type T = Post.EditUserProfile;
+
+  function initialState(initialData: EditUserSettingsProps): ValidatedState<T> {
+    const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
+      ["name", {
+        label: "Display name",
+        options: {},
+        create: { type: "input", placeholder: "required", attributes: {} }
+      }],
+      ["location", {
+        label: "Location (optional)",
+        options: { optional: true },
+        create: { type: "input", placeholder: "optional", attributes: {} }
+      }],
+      ["email", {
+        label: "Email",
+        options: {},
+        create: { type: "input", placeholder: "required", attributes: {} }
+      }],
+      ["aboutMe", {
+        label: "About me",
+        options: { optional: true },
+        create: { type: "editor", editor: Editor }
+      }],
+    ]);
+    // reuse the default values for the initial state
+    const { name, location, email, aboutMe } = initialData;
+    const state: T = { name, location: "" + location, email, aboutMe: "" + aboutMe };
+    return createInitialState(inputs, state);
+  }
+
+  const [state, dispatch] = useReducer<T, EditUserSettingsProps>(props, (x: EditUserSettingsProps) => initialState(x));
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
-    const name = inputDisplayName.current!.value;
-    const location = inputLocation.current!.value;
-    const aboutMe = inputAbout.current!.value;
-    const email = inputEmail.current!.value;
     event.preventDefault();
-    IO.editUserProfile(props.userId, { name, location, aboutMe, email })
+    if (state.errorMessages.size) {
+      // error messages are already displayed
+      return;
+    }
+    // post edited profile to the server
+    IO.editUserProfile(props.userId, state.posted)
       .then((idName: I.IdName) => {
-        // construct the URL of the newly-created discussion
+        // construct the URL of the newly-edited user
         const url = R.getResourceUrl({ resourceType: "User", what: idName });
         // use history.push() to navigate programmatically
         // https://reacttraining.com/react-router/web/api/history
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
         props.history.push(url);
       })
-      .catch((error: Error) => setErrorMessage(error.message));
+      .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
   };
 
-  // the CSS for this is shared with other .user-profile tabs and is defined in ./Pages.css instead of in ./Editor.css
+  // created the validated elements and the submit button
+  const buttonText = { label: "Save Changes", noun: "changed settings" };
+  const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
+
   return (
-    <div className="user-profile settings">
-      <form className="editor settings" onSubmit={handleSubmit}>
-        <h1>Edit</h1>
-        <h2>Public information</h2>
-        <div className="public">
-          {props.gravatar}
-          <div className="column">
-            <label>Display name</label>
-            <input type="text" ref={inputDisplayName} placeholder="required" defaultValue={props.name} />
-            <label>Location (optional)</label>
-            <input type="text" ref={inputLocation} placeholder="optional" defaultValue={props.location} />
-          </div>
+    <form className="editor settings" onSubmit={handleSubmit}>
+      <h1>Edit</h1>
+      <h2>Public information</h2>
+      <div className="public">
+        {props.gravatar}
+        <div className="column">
+          {mapInputs.get("name")}
+          {mapInputs.get("location")}
         </div>
-        <label>About me</label>
-        <Editor textareaRef={inputAbout} defaultValue={props.aboutMe} />
-        <h2>Private settings</h2>
-        <label>Email</label>
-        <input type="text" ref={inputEmail} placeholder="required" defaultValue={props.email} />
-        <div className="submit">
-          <input type="submit" value="Save Changes" />
-          <ErrorMessage errorMessage={errorMessage} />
-        </div>
-      </form>
-    </div>
+      </div>
+      {mapInputs.get("aboutMe")}
+      <h2>Private settings</h2>
+      {mapInputs.get("email")}
+      <div className="submit">
+        {button}
+      </div>
+    </form>
   );
 }
 
@@ -92,33 +126,52 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
 interface AnswerDiscussionProps { discussionId: number, reload: () => void };
 export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = (props) => {
 
-  // The code here is similar to the code in NewDiscussion and could be refactored, e.g. moved
-  // into the Editor component which they both share, but I think that abstracting handleSubmit
-  // and errorMessage across a component boundary would just make it harder to read.
+  type T = Post.NewMessage;
 
-  const textareaRef = React.createRef<HTMLTextAreaElement>();
-  const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
+  function initialState(): ValidatedState<T> {
+    const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
+      ["markdown", {
+        label: "Body",
+        hideLabel: true,
+        options: { minLength: minLengths.body },
+        create: { type: "editor", editor: Editor }
+      }],
+    ]);
+    // reuse the default values for the initial state
+    const state: T = { markdown: "" };
+    return createInitialState(inputs, state);
+  }
+
+  const [state, dispatch] = useReducer0<T>(() => initialState());
 
   const { discussionId, reload } = props;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
-    const markdown = textareaRef.current!.value;
     event.preventDefault();
-    IO.newMessage(discussionId, { markdown })
-      .then((message: I.Message) => {
+    if (state.errorMessages.size) {
+      // error messages are already displayed
+      return;
+    }
+    IO.newMessage(discussionId, state.posted)
+      .then((__message: I.Message) => {
         // could push the received message into the display
         // but instead let's force a reload e.g. to see whether any other user has posted too
         reload();
       })
-      .catch((error: Error) => setErrorMessage(error.message));
+      .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
   };
+
+  // created the validated elements and the submit button
+  const buttonText = { label: "Post Your Answer", noun: "answer" };
+  const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
 
   const form = (
     <form className="editor" onSubmit={handleSubmit}>
       <h2>Your Answer</h2>
-      <Editor textareaRef={textareaRef} />
-      <p><input type="submit" value="Post Your Answer" /></p>
-      <ErrorMessage errorMessage={errorMessage} />
+      {mapInputs.get("markdown")}
+      <div className="submit">
+        {button}
+      </div>
     </form>
   );
 
@@ -131,47 +184,68 @@ export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = 
 
 type NewDiscussionProps = { history: History }
 export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props: NewDiscussionProps) => {
-  const textareaRef = React.createRef<HTMLTextAreaElement>();
-  const titleRef = React.createRef<HTMLInputElement>();
-  const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
+
+  type T = Post.NewDiscussion;
+
+  function initialState(): ValidatedState<T> {
+    const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
+      ["title", {
+        label: "Title",
+        options: { minLength: minLengths.title },
+        create: { type: "input", placeholder: "", attributes: {} }
+      }],
+      ["markdown", {
+        label: "Body",
+        options: { minLength: minLengths.body },
+        create: { type: "editor", editor: Editor }
+      }],
+    ]);
+    // reuse the default values for the initial state
+    const state: T = { title: "", markdown: "", tags: [] };
+    return createInitialState(inputs, state);
+  }
+
+  const [state, dispatch] = useReducer0<T>(() => initialState());
+  // tags are handle separately ... the validation etc. in ErrorMessage.tsx is only for string elements
+  // whereas tags are string[]
   const [tags, setTags] = React.useState<string[]>([]);
+
   const { history } = props;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
-    const markdown = textareaRef.current!.value;
-    const title = titleRef.current!.value;
     event.preventDefault();
-    IO.newDiscussion({ title, markdown, tags })
+    if (state.errorMessages.size) {
+      // error messages are already displayed
+      return;
+    }
+    IO.newDiscussion({ ...state.posted, tags })
       .then((idName: I.IdName) => {
         // construct the URL of the newly-created discussion
         const url = R.getResourceUrl({ resourceType: "Discussion", what: idName });
-        // use history.push() to navigate programmatically
-        // https://reacttraining.com/react-router/web/api/history
-        // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
         history.push(url);
       })
-      .catch((error: Error) => setErrorMessage(error.message));
+      .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
   };
 
-  const emptyTags: string[] = [];
+  // created the validated elements and the submit button
+  const buttonText = { label: config.strNewQuestion.button, noun: config.strNewQuestion.noun };
+  const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
 
+  const emptyTags: string[] = [];
   const form = (
     <form className="editor" onSubmit={handleSubmit}>
       <div className="element">
-        <label htmlFor="title">Title</label>
-        <input type="text" name="title" ref={titleRef} placeholder="Title" />
+        {mapInputs.get("title")}
       </div>
       <div className="element">
-        <label htmlFor="text">Body</label>
-        <Editor textareaRef={textareaRef} />
+        {mapInputs.get("markdown")}
       </div>
       <div className="element">
         <label htmlFor="tags">Tags</label>
         <EditorTags inputTags={emptyTags} result={setTags} getAllTags={IO.getAllTags} />
       </div>
       <div className="element">
-        <input type="submit" value="Post Your Answer" />
-        <ErrorMessage errorMessage={errorMessage} />
+        {button}
       </div>
     </form>
   );
@@ -183,12 +257,8 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
   Editor
 */
 
-interface EditorProps {
-  textareaRef: React.RefObject<HTMLTextAreaElement>,
-  defaultValue?: string
-};
-export const Editor: React.FunctionComponent<EditorProps> = (props) => {
-  const { textareaRef, defaultValue } = props;
+const Editor = (props: ValidatedEditorProps) => {
+  const { label, handleChange, defaultValue, errorMessage } = props;
 
   // calling reload() will force a re-render, so useEffect will run again, but if getPagedownEditor().run() is called
   // more than once then bad things happen e.g. there would be more than one editor toolbar
@@ -205,9 +275,26 @@ export const Editor: React.FunctionComponent<EditorProps> = (props) => {
     }
   }, [once]);
 
+  const validated = (
+    <React.Fragment>
+      <Validated errorMessage={errorMessage}>
+        <textarea
+          // ref={textareaRef}
+          onChange={e => handleChange(e.target.value)}
+          id="wmd-input"
+          className="wmd-input"
+          name={label.name}
+          placeholder="Type markdown here"
+          defaultValue={defaultValue}
+        ></textarea>
+      </Validated>
+    </React.Fragment>
+  );
+
   // these elements are copied from those in the "pagedown-editor/sample.html"
   return (
     <React.Fragment>
+      {label.element}
       <div className="container">
         <div className="wmd-panel">
           <div>
@@ -218,14 +305,7 @@ export const Editor: React.FunctionComponent<EditorProps> = (props) => {
             <div id="wmd-button-bar">
             </div>
           </div>
-          <textarea
-            ref={textareaRef}
-            id="wmd-input"
-            className="wmd-input"
-            name="text"
-            placeholder="Type markdown here"
-            defaultValue={defaultValue}
-          ></textarea>
+          {validated}
         </div>
       </div>
     </React.Fragment>

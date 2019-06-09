@@ -167,11 +167,13 @@ export function UserProfile(user: I.User, extra: { canEdit: boolean }): Layout {
 
 export function UserSettings(user: I.User, extra: { canEdit: boolean, history: History }): Layout {
   const gravatar = Summaries.getUserSummary(user, { title: false, size: "huge" }).gravatar;
+  // EditUserSettings is a separate function component instead of just being incide the getSettingsContent function 
+  // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
   const content = (
-    // EditUserSettings is a separate function component instead of just being incide the getSettingsContent function 
-    // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
-    <EditUserSettings history={extra.history} name={user.name} location={user.location} aboutMe={user.aboutMe}
-      email={user.preferences!.email} userId={user.id} gravatar={gravatar} />
+    <div className="user-profile settings">
+      <EditUserSettings history={extra.history} name={user.name} location={user.location} aboutMe={user.aboutMe}
+        email={user.preferences!.email} userId={user.id} gravatar={gravatar} />
+    </div>
   );
   return useCommonUserLayout(user, "EditSettings", content, extra.canEdit);
 }
@@ -233,7 +235,7 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: UserTabType, c
 
   const settings: Tab = {
     navlink: { href: getUserUrl(summary, "EditSettings"), text: "Edit" },
-    content: <p className="error">Not authorized</p>,
+    content: <p>Not authorized</p>,
     slug
   };
 
@@ -293,7 +295,7 @@ export function Discussions(data: I.Discussions): Layout {
       <div className="minigrid">
         <h1>{title}</h1>
         <div className="link">
-          <Link to={route.newDiscussion} className="linkbutton">{config.strNewQuestionButton}</Link>
+          <Link to={route.newDiscussion} className="linkbutton">{config.strNewQuestion.button}</Link>
         </div>
       </div>
       <div className="minigrid subtitle">

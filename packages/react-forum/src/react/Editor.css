@@ -50,8 +50,11 @@ form.editor {
   margin-top: 0;
 }
 
-.editor.settings div.submit {
+.editor div.submit {
   margin-top: 24px;
+}
+
+.editor.settings div.submit {
   text-align: center;
 }
 

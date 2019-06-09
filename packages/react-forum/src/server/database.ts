@@ -6,7 +6,7 @@ import { getExerpt } from "../shared/exerpt";
 import * as R from "../shared/request";
 import { CurrentIds } from "./currentIds";
 import * as Action from "./actions";
-import { TagIdCounts, TagIdDiscussions, simulateTitle } from "./tagIds";
+import { TagIdCounts, TagIdDiscussions } from "./tagIds";
 import { configServer } from "../configServer";
 
 
@@ -263,18 +263,10 @@ function postNewUser(action: Action.NewUser): I.IdName {
 function postEditUserProfile(action: Action.EditUserProfile): I.IdName {
   const { userId, posted } = Action.extractEditUserProfile(action);
   const user = allUsers.get(userId)!;
-  if (posted.name) {
-    user.name = posted.name;
-  }
-  if (posted.email) {
-    user.email = posted.email;
-  }
-  if (posted.location) {
-    user.profile.location = posted.location;
-  }
-  if (posted.aboutMe) {
-    user.profile.aboutMe = posted.aboutMe;
-  }
+  user.name = posted.name;
+  user.email = posted.email;
+  user.profile.location = posted.location;
+  user.profile.aboutMe = posted.aboutMe;
   return { id: userId, name: user.name };
 }
 
@@ -305,8 +297,7 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
         continue;
       }
       // auto-create it now
-      const title = simulateTitle(tag);
-      const newTopic: Action.NewTopic = Action.createNewTopic({ title }, action.dateTime, action.userId);
+      const newTopic: Action.NewTopic = Action.createNewTag(tag, action.dateTime, action.userId);
       handleAction(newTopic);
       // try again to find it
       tagId = tagDiscussions.find(tag);

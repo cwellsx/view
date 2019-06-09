@@ -45,7 +45,7 @@
   fill: rgb(214, 217, 220);
 }
 
-.topbar .icon > *.login {
+.topbar .login {
   background-color: rgb(0, 149, 255);
   color: white;
   padding: 0.5rem 0.8rem;

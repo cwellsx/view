@@ -66,6 +66,8 @@ But here is a list of some fundamental *architectural* components that I have ye
 - [ ] Try adding [this](https://stackoverflow.com/a/50827450/49942) to see whether that enables support for IE (if IE is
 required) -- I suspect React support IE, however I used slightly modern JavaScript like `Array.find` when I was coding
 -- see also https://github.com/facebook/create-react-app/issues/4647
+- [ ] There's currently client-side validation but not server-side validation, e.g. of an edited user profile, so a
+  malicious client could post invalid changes (e.g. a user profile which deletes the user name).
 
 ### More
 
