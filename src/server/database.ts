@@ -3,7 +3,7 @@ import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage, TagId } f
 import { loadImages, loadActions, KeyFromTagId } from "./loader";
 import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity } from "../shared/wire";
 import { getExerpt } from "../shared/exerpt";
-import * as R from "../shared/request";
+import * as R from "../shared/urls";
 import { CurrentIds } from "./currentIds";
 import * as Action from "./actions";
 import { TagIdCounts, TagIdDiscussions } from "./tagIds";
@@ -293,7 +293,7 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
 
         // FIXME
 
-        console.error("!postNewDiscussion");
+        console.error(`postNewDiscussion can't auto-add ${tag}`);
         continue;
       }
       // auto-create it now

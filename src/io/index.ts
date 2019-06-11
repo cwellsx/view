@@ -1,13 +1,15 @@
 import * as I from "../data";
 import * as W from "../shared/wire"
 import * as Post from "../shared/post";
-import * as R from "../shared/request";
+import * as R from "../shared/urls";
 import { config } from "../config"
 // only used for the mock
 import { SimpleResponse, mockFetch } from "../io/mock";
 
-function get(resource: R.Resource, body?: object): Promise<SimpleResponse> {
-  const url = (body) ? R.postResourceUrl(resource) : R.getResourceUrl(resource);
+// you could temporarily change this to enable logging, for debugging
+const isLogging = false;
+
+function get(url: string, body?: object): Promise<SimpleResponse> {
   // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
   const init: RequestInit = {
 
@@ -29,8 +31,11 @@ function get(resource: R.Resource, body?: object): Promise<SimpleResponse> {
 }
 
 // https://stackoverflow.com/questions/41103360/how-to-use-fetch-in-typescript
-function getT<T>(resource: R.Resource, body?: object): Promise<T> {
-  return get(resource, body)
+function getT<T>(url: string, body?: object): Promise<T> {
+  if (isLogging) {
+    console.log(`getT(${url})`);
+  }
+  return get(url, body)
     .then(response => {
       if (!response.ok) {
         throw new Error(response.statusText);
@@ -44,19 +49,19 @@ function getT<T>(resource: R.Resource, body?: object): Promise<T> {
 */
 
 export async function getSiteMap(): Promise<I.SiteMap> {
-  return getT<I.SiteMap>({ resourceType: "SiteMap" });
+  return getT<I.SiteMap>(R.getSiteMapUrl());
 }
 
-export async function getImage(id: number): Promise<I.Image> {
-  return getT<I.Image>({ resourceType: "Image", what: R.requestIdName(id) });
+export async function getImage(image: I.IdName): Promise<I.Image> {
+  return getT<I.Image>(R.getImageUrl(image));
 }
 
 export async function getUsers(): Promise<I.UserSummaryEx[]> {
-  return getT<I.UserSummaryEx[]>({ resourceType: "User" });
+  return getT<I.UserSummaryEx[]>(R.getUsersUrl());
 }
 
-export async function getUser(id: number): Promise<I.User> {
-  return getT<I.User>({ resourceType: "User", what: R.requestIdName(id) });
+export async function getUser(user: I.IdName): Promise<I.User> {
+  return getT<I.User>(R.getUserUrl(user));
 }
 
 function convertPromise<TWire, TData>(promise: Promise<TWire>, convert: (wire: TWire) => TData): Promise<TData> {
@@ -73,25 +78,25 @@ function convertPromise<TWire, TData>(promise: Promise<TWire>, convert: (wire: T
 }
 
 export async function getUserActivity(options: R.UserActivityOptions): Promise<I.UserActivity> {
-  const resource = R.getUserActivityResource(options)
-  const wirePromise: Promise<W.WireUserActivity> = getT<W.WireUserActivity>(resource);
+  const url = R.getUserActivityUrl(options)
+  const wirePromise: Promise<W.WireUserActivity> = getT<W.WireUserActivity>(url);
   return convertPromise(wirePromise, W.unwireUserActivity);
 }
 
 export async function getDiscussions(options: R.DiscussionsOptions): Promise<I.Discussions> {
-  const resource = R.getDiscussionsResource(options);
-  const wirePromise: Promise<W.WireDiscussions> = getT<W.WireDiscussions>(resource);
+  const url = R.getDiscussionsOptionsUrl(options);
+  const wirePromise: Promise<W.WireDiscussions> = getT<W.WireDiscussions>(url);
   return convertPromise(wirePromise, W.unwireDiscussions);
 }
 
 export async function getDiscussion(options: R.DiscussionOptions): Promise<I.Discussion> {
-  const resource = R.getDiscussionResource(options);
-  const wirePromise: Promise<W.WireDiscussion> = getT<W.WireDiscussion>(resource);
+  const url = R.getDiscussionOptionsUrl(options);
+  const wirePromise: Promise<W.WireDiscussion> = getT<W.WireDiscussion>(url);
   return convertPromise(wirePromise, W.unwireDiscussion);
 }
 
 export async function getAllTags(): Promise<I.TagCount[]> {
-  return getT<I.TagCount[]>({ resourceType: "Tag" });
+  return getT<I.TagCount[]>(R.getTagsUrl());
 }
 
 /*
@@ -99,19 +104,18 @@ export async function getAllTags(): Promise<I.TagCount[]> {
 */
 
 export async function login(data: Post.Login): Promise<I.UserSummary> {
-  return getT<I.UserSummary>({ resourceType: "Login" }, data);
+  return getT<I.UserSummary>(R.postLoginUrl(), data);
 }
 
 export async function newMessage(discussionId: number, data: Post.NewMessage): Promise<I.Message> {
-  return getT<I.Message>(
-    { resourceType: "Discussion", what: R.requestIdName(discussionId), post: "answer/submit" }, data);
+  return getT<I.Message>(R.postNewAnswerUrl(discussionId), data);
 }
 
 export async function newDiscussion(data: Post.NewDiscussion): Promise<I.IdName> {
-  return getT<I.IdName>({ resourceType: "Discussion", word: "new" }, data);
+  return getT<I.IdName>(R.postNewDiscussionUrl(), data);
 }
 
 export async function editUserProfile(userId: number, data: Post.EditUserProfile): Promise<I.IdName> {
-  return getT<I.IdName>({ resourceType: "User", word: "edit", what: R.requestIdName(userId) }, data);
+  return getT<I.IdName>(R.postEditUserProfileUrl(userId), data);
 }
 

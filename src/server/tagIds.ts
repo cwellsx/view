@@ -1,6 +1,12 @@
-import { ResourceType } from "../shared/request";
-import { TagId, isTag, getTagText, BareTag, BareTagCount } from "./bare";
+import { ResourceType, slugify } from "../shared/urls";
+import { TagId, isTag, BareTag, BareTagCount } from "./bare";
 import { IdName, Key, SiteTagCount, TagCount, Image } from "../data";
+
+export function getTagText(title: string) {
+  return slugify(title);
+  // preserve only alphanumeric and whitespace, then convert all whitespace, then toLower
+  //return title.replace(/[^A-Za-z0-9 ]/, "").replace(/ /g, "-").toLocaleLowerCase();
+}
 
 function getMapKey(tagId: TagId): string {
   return isTag(tagId) ? tagId.tag : `${tagId.id} ${tagId.resourceType}`;

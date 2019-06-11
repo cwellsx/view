@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Topbar.css';
 import * as Icon from "../icons";
-import { route } from "../shared/request";
+import { route } from "../shared/urls";
 import { useMe } from './AppContext';
 import { getUserSummary } from "./Components";
 

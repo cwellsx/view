@@ -7,7 +7,7 @@ import './App.css';
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
-import * as R from "../shared/request";
+import * as R from "../shared/urls";
 import { AppContext, useMe } from './AppContext';
 import { config } from "../config"
 import { loginUser } from "../io/mock";
@@ -209,7 +209,7 @@ const SiteMap: React.FunctionComponent = () => {
 
 const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
 
-  const parsed = R.getImageOptions(props.location);
+  const parsed = R.isImage(props.location);
   if (R.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
@@ -218,18 +218,22 @@ const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteCompone
   // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />` instead
   // of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
   // So far as I can tell from testing, what really matters is the array of dependencies passed to useEffects.
-  return <ImageId imageId={parsed.image.id} />;
+  return <ImageId id={parsed.id} name={parsed.name} />;
 }
 
-interface ImageIdProps { imageId: number };
+interface ImageIdProps { id: number, name: string };
 const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
 
+  // ImageId is a separate function component because there's an `if` statement at the top of the Image cmpnent
   // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
 
-  return useGetLayout<I.Image, number>(
+  const { id, name } = props;
+  const idName = React.useMemo<I.IdName>(() => { return { id, name }; }, [id, name]);
+
+  return useGetLayout<I.Image, I.IdName>(
     IO.getImage,
     Page.Image,
-    props.imageId
+    idName
   );
 }
 
@@ -249,7 +253,7 @@ const Users: React.FunctionComponent = () => {
 */
 
 const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const parsed = R.getUserOptions(props.location);
+  const parsed = R.isUserOptions(props.location);
   const me = useMe();
   if (R.isParserError(parsed)) {
     return noMatch(props, parsed.error);
@@ -258,14 +262,15 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
   const canEdit = !!me && user.id === me.id;
   switch (userTabType) {
     case "Profile":
-      return <UserProfile {...props} userId={user.id} canEdit={canEdit} />;
+    case undefined:
+      return <UserProfile {...props} id={user.id} name={user.name} canEdit={canEdit} />;
     case "EditSettings":
       if (!canEdit) {
         return noMatch(props, "You cannot edit another user's profile");
       }
-      return <UserEditSettings {...props} userId={user.id} canEdit={canEdit} />;
+      return <UserEditSettings {...props} id={user.id} name={user.name} canEdit={canEdit} />;
     case "Activity":
-      const options = R.getUserActivityOptions(props.location);
+      const options = R.isUserActivityOptions(props.location);
       if (R.isParserError(options)) {
         return noMatch(props, options.error);
       }
@@ -279,21 +284,25 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
 type UserCanEdit = { canEdit: boolean };
 type UserCanEditAndHistory = UserCanEdit & { history: History };
 
-type UserProps = RouteComponentProps & { userId: number } & UserCanEdit;
+type UserProps = RouteComponentProps & I.IdName & UserCanEdit;
 const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps) => {
-  return useGetLayout2<I.User, number, UserCanEdit>(
+  const { id, name } = props;
+  const idName = React.useMemo<I.IdName>(() => { return { id, name }; }, [id, name]);
+  return useGetLayout2<I.User, I.IdName, UserCanEdit>(
     IO.getUser,
     Page.UserProfile,
-    props.userId,
+    idName,
     { canEdit: props.canEdit }
   );
 }
 
 const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) => {
-  return useGetLayout2<I.User, number, UserCanEditAndHistory>(
+  const { id, name } = props;
+  const idName = React.useMemo<I.IdName>(() => { return { id, name }; }, [id, name]);
+  return useGetLayout2<I.User, I.IdName, UserCanEditAndHistory>(
     IO.getUser,
     Page.UserSettings,
-    props.userId,
+    idName,
     { canEdit: props.canEdit, history: props.history }
   );
 }
@@ -301,10 +310,14 @@ const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) 
 type UserActivityProps = RouteComponentProps & { options: R.UserActivityOptions } & UserCanEdit;
 const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
   // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
+  const { user, userTabType, sort, page } = props.options;
+  const { id, name } = user;
+  const options = React.useMemo<R.UserActivityOptions>(
+    () => { return { user: { id, name }, userTabType, sort, page }; }, [id, name, userTabType, sort, page]);
   return useGetLayout2<I.UserActivity, R.UserActivityOptions, UserCanEdit>(
     IO.getUserActivity,
     Page.UserActivity,
-    props.options,
+    options,
     { canEdit: props.canEdit }
   );
 }
@@ -315,7 +328,7 @@ const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserAct
 
 const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options
-  const options = R.getDiscussionsOptions(props.location);
+  const options = R.isDiscussionsOptions(props.location);
   if (R.isParserError(options)) {
     return noMatch(props, options.error);
   }
@@ -344,7 +357,7 @@ const DiscussionsList: React.FunctionComponent<R.DiscussionsOptions> = (props: R
 
 const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
 
-  const parsed = R.getDiscussionOptions(props.location);
+  const parsed = R.isDiscussionOptions(props.location);
   if (R.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }

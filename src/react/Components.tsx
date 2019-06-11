@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import { NavLink } from 'react-router-dom';
 import * as I from "../data";
 import { KeyedItem } from './PageLayout';
-import { getResourceUrl } from "../shared/request";
+import * as R from "../shared/urls";
 import './Components.css';
 import { toHtml } from "../io/markdownToHtml";
 
@@ -13,7 +13,7 @@ import { toHtml } from "../io/markdownToHtml";
 */
 
 export function getImageSummary(summary: I.ImageSummary): KeyedItem {
-  const href = getResourceUrl({ resourceType: "Image", what: summary });
+  const href = R.getImageUrl(summary);
   const element: React.ReactElement = (
     <React.Fragment>
       <h3><NavLink to={href}>{summary.name}</NavLink></h3>
@@ -27,7 +27,7 @@ type GravatarSize = "small" | "big" | "huge";
 
 export function getUserSummary(summary: I.UserSummary, option: { title: boolean, size: GravatarSize })
   : { userName: React.ReactElement, gravatar: React.ReactElement, key: string } {
-  const href = getResourceUrl({ resourceType: "User", what: summary });
+  const href = R.getUserUrl(summary);
   const userName = <NavLink to={href}>{summary.name}</NavLink>;
   const size = (option.size === "small") ? 32 : (option.size === "big") ? 48 : 164;
   // https://en.gravatar.com/site/implement/images/
@@ -60,7 +60,7 @@ export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: s
 const nbsp = "\u00A0";
 
 export function getTagSummary(summary: I.SiteTagCount): KeyedItem {
-  const href = getResourceUrl({ resourceType: "Tag", what: { key: summary.key } });
+  const href = R.getTagUrl(summary);
   const label = summary.title.replace(" ", nbsp)
   const element = <NavLink to={href}>{label}</NavLink>;
   return { element, key: href };
@@ -94,7 +94,7 @@ function getTags(tags: I.Key[]) {
 }
 
 export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolean = false): KeyedItem {
-  const href = getResourceUrl({ resourceType: "Discussion", what: summary });
+  const href = R.getDiscussionUrl(summary);
   const when = toLocaleString(new Date(summary.messageSummary.dateTime));
   const stats = short ? undefined : (
     <div className="stats">

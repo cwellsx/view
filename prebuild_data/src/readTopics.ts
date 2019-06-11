@@ -1,4 +1,5 @@
-import { BareTopic, getTagText, summaryLength } from "../../src/server/bare";
+import { BareTopic, summaryLength } from "../../src/server/bare";
+import { getTagText } from "../../src/server/tagids";
 
 function getSummary(paragraph: string[]): string | undefined {
   const random = Math.random();

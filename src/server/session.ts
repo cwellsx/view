@@ -1,4 +1,4 @@
-import * as R from "../shared/request";
+import * as R from "../shared/urls";
 
 /*
   In future, add code to load old state from disk and to save new state to disk.
