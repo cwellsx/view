@@ -2,8 +2,7 @@ import React from 'react';
 import * as I from "../data";
 import { KeyedItem, Layout, Tab, Tabs, SubTabs, MainContent } from './PageLayout';
 import * as Summaries from "./Components";
-import { getUserUrl, UserTabType, getDiscussionsUrl, PageSize, route } from "../shared/request";
-import * as R from "../shared/request";
+import * as R from "../shared/urls";
 import './Pages.css';
 import * as Icon from "../icons";
 import { config } from '../config';
@@ -215,7 +214,7 @@ export function UserActivity(activity: I.UserActivity, extra: { canEdit: boolean
 }
 
 // create a Layout that's common to all three user tabs
-function useCommonUserLayout(summary: I.UserSummary, userTabType: UserTabType, content: MainContent, canEdit: boolean,
+function useCommonUserLayout(summary: I.UserSummary, userTabType: R.UserTabType, content: MainContent, canEdit: boolean,
   subTabs?: SubTabs): Layout {
 
   const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
@@ -229,18 +228,18 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: UserTabType, c
   // the tab definitions
 
   const profile: Tab = {
-    navlink: { href: getUserUrl(summary, "Profile"), text: "Profile" },
+    navlink: { href: R.getUserOptionsUrl({ user: summary, userTabType: "Profile" }), text: "Profile" },
     content: <p>To be supplied</p>
   };
 
   const settings: Tab = {
-    navlink: { href: getUserUrl(summary, "EditSettings"), text: "Edit" },
+    navlink: { href: R.getUserOptionsUrl({ user: summary, userTabType: "EditSettings" }), text: "Edit" },
     content: <p>Not authorized</p>,
     slug
   };
 
   const activity: Tab = {
-    navlink: { href: getUserUrl(summary, "Activity"), text: "Activity" },
+    navlink: { href: R.getUserOptionsUrl({ user: summary, userTabType: "Activity" }), text: "Activity" },
     content: <p>To be supplied</p>,
     subTabs,
     slug
@@ -295,15 +294,15 @@ export function Discussions(data: I.Discussions): Layout {
       <div className="minigrid">
         <h1>{title}</h1>
         <div className="link">
-          <Link to={route.newDiscussion} className="linkbutton">{config.strNewQuestion.button}</Link>
+          <Link to={R.route.newDiscussion} className="linkbutton">{config.strNewQuestion.button}</Link>
         </div>
       </div>
       <div className="minigrid subtitle">
         <div className="count">{formatNumber(range.nTotal, config.strQuestions)}</div>
         <div className="sort">
-          <NavLink to={getDiscussionsUrl({ sort: "Newest" })}
+          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Newest" })}
             className={range.sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
-          <NavLink to={getDiscussionsUrl({ sort: "Active" })}
+          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Active" })}
             className={range.sort === "Active" ? "selected" : undefined}>Active</NavLink>
         </div>
       </div>
@@ -316,12 +315,12 @@ export function Discussions(data: I.Discussions): Layout {
       <div className="minigrid footer">
         <div className="page">
           {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
-            (page) => getDiscussionsUrl({ page, sort }))}
+            (page) => R.getDiscussionsOptionsUrl({ page, sort }))}
         </div>
         <div className="page">
           {Summaries.getNavLinks(
             [15, 30, 50].map(n => { return { text: "" + n, n }; }),
-            (n: number) => getDiscussionsUrl({ pagesize: n as PageSize }),
+            (n: number) => R.getDiscussionsOptionsUrl({ pagesize: n as R.PageSize }),
             (n: number) => `show ${n} items per page`,
             range.pageSize,
             false
@@ -352,8 +351,8 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
     text: (nTotal === 1) ? "1 Answer" : `${nTotal} Answers`,
     selected: (data.range.sort === "Newest") ? 0 : 1,
     tabs: [
-      { text: "newest", href: R.getDiscussionUrl({ discussion: data, sort: "Newest" }) },
-      { text: "oldest", href: R.getDiscussionUrl({ discussion: data, sort: "Oldest" }) }
+      { text: "newest", href: R.getDiscussionOptionsUrl({ discussion: data, sort: "Newest" }) },
+      { text: "oldest", href: R.getDiscussionOptionsUrl({ discussion: data, sort: "Oldest" }) }
     ]
   };
 
@@ -365,7 +364,7 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
       <div className="footer">
         <div className="index">
           {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
-            (page) => R.getDiscussionUrl({ discussion: data, page, sort: range.sort }))}
+            (page) => R.getDiscussionOptionsUrl({ discussion: data, page, sort: range.sort }))}
         </div>
       </div>
     );

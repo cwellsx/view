@@ -1,4 +1,4 @@
-import { DiscussionsSort, DiscussionSort, ActivitySort } from "../shared/request";
+import { DiscussionsSort, DiscussionSort, ActivitySort } from "../shared/urls";
 
 /*
   This is used to paginate the unlimited-length lists (e.g. of discussions) which are fetched

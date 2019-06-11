@@ -1,5 +1,5 @@
 import * as I from "../data";
-import { ResourceType } from "../shared/request";
+import { ResourceType } from "../shared/urls";
 import { WireMessage } from "../shared/wire";
 
 /*
@@ -46,11 +46,6 @@ export type TagId = Tag | { resourceType: ResourceType, id: number };
 
 export function isTag(tag: TagId): tag is Tag {
   return (tag as Tag).tag !== undefined;
-}
-
-export function getTagText(title: string) {
-  // preserve only alphanumeric and whitespace, then convert all whitespace, then toLower
-  return title.replace(/[^A-Za-z0-9 ]/, "").replace(/ /g, "-").toLocaleLowerCase();
 }
 
 // if data for each user is stored in a separate (numbered) directory

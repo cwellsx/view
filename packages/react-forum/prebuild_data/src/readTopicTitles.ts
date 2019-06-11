@@ -1,4 +1,4 @@
-import { getTagText } from "../../src/server/bare";
+import { getTagText } from "../../src/server/tagids";
 
 /*
   Assumes that topics may come from a spreadsheet
@@ -12,7 +12,7 @@ export function readTopicTitles(text: string): string[] {
   lines.forEach(line => {
     const words: string[] = line.split("\t");
     words.forEach(word => {
-      word = word.replace("*", ""); // some input files contain an extraneous "*"
+      word = word.trim().replace("*", ""); // some input files contain an extraneous "*"
       if (word.length) {
         unique.add(word);
       }

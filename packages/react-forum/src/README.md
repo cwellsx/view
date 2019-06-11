@@ -85,7 +85,7 @@ The directories listed below define code which is shared (used) by the client-si
       <li><code>post.ts</code> -- the format of data posted (sent via HTTP 'POST') from the client to the server</li>
       <li><code>push.ts</code> -- the format of data pushed (as asynchronous notification) from the server to the client
       (a feature which isn't implemented)</li>
-      <li><code>request.ts</code> -- the format of the all URLs used for GET and POST requests</li>
+      <li><code>urls.ts</code> -- the format of the all URLs used for GET and POST requests</li>
       <li><code>wire.ts</code> -- the format of data on the wire between client and server (which is a slightly more
       compact format than used by the React scripts and defined in the <code>./data</code> directory)</li>
     </ul>

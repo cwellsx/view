@@ -7,10 +7,10 @@ try that to see how it behaves, and what it looks like.
 
 ## Why
 
-I wrote this to confirm my understanding, of how to design and write an application using React.
+I wrote this project, to confirm my understanding of how to design and write an application using React.
 
-The React API documentation shows isolated sample components or fragments --
-each implemented using half-a-dozen lines of code -- whereas this larger project shows some example of:
+The React API documentation shows small code examples --
+each a half-a-dozen lines of code -- whereas this larger project shows some example of:
 
 - How to implement an application
   -- [`./src/react/App.tsx`](./src/react/App.tsx)

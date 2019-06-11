@@ -5,7 +5,7 @@ import './Editor.css';
 import * as IO from '../io';
 import * as I from '../data';
 import { EditorTags } from './EditorTags';
-import * as R from "../shared/request";
+import * as R from "../shared/urls";
 import { History } from "history";
 import { config } from "../config";
 import {
@@ -69,7 +69,7 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
     ]);
     // reuse the default values for the initial state
     const { name, location, email, aboutMe } = initialData;
-    const state: T = { name, location: "" + location, email, aboutMe: "" + aboutMe };
+    const state: T = { name, location: location ? location : "", email, aboutMe: aboutMe ? aboutMe : "" };
     return createInitialState(inputs, state);
   }
 
@@ -85,7 +85,7 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
     IO.editUserProfile(props.userId, state.posted)
       .then((idName: I.IdName) => {
         // construct the URL of the newly-edited user
-        const url = R.getResourceUrl({ resourceType: "User", what: idName });
+        const url = R.getUserUrl(idName);
         // use history.push() to navigate programmatically
         // https://reacttraining.com/react-router/web/api/history
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
@@ -221,7 +221,7 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
     IO.newDiscussion({ ...state.posted, tags })
       .then((idName: I.IdName) => {
         // construct the URL of the newly-created discussion
-        const url = R.getResourceUrl({ resourceType: "Discussion", what: idName });
+        const url = R.getDiscussionUrl(idName);
         history.push(url);
       })
       .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));

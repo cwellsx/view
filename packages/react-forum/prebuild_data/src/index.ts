@@ -4,7 +4,8 @@ import { readImages } from "./readImages";
 import { readTopicTitles } from "./readTopicTitles";
 import { readTopics, addSummaries } from "./readTopics";
 import { readDiscussions } from "./readDiscussions";
-import { BareTopic, getTagText, TagId } from "../../src/server/bare";
+import { BareTopic, TagId } from "../../src/server/bare";
+import { getTagText } from "../../src/server/tagids";
 
 /*
   This reads data from the `/prebuild_data/data` folders
