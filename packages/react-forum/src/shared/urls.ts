@@ -637,5 +637,6 @@ export const route = {
   discussions: makeUrl(routeDiscussions),
   users: makeUrl(routeUsers),
   images: makeUrl(routeImages),
-  newDiscussion: makeUrl(routeNewDiscussion)
+  newDiscussion: makeUrl(routeNewDiscussion),
+  tags: makeUrl(routeTags)
 }

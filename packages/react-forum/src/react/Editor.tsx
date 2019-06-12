@@ -4,7 +4,7 @@ import 'pagedown-editor/pagedown.css';
 import './Editor.css';
 import * as IO from '../io';
 import * as I from '../data';
-import { EditorTags } from './EditorTags';
+import { EditorTags, OutputTags } from './EditorTags';
 import * as R from "../shared/urls";
 import { History } from "history";
 import { config } from "../config";
@@ -208,17 +208,17 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
   const [state, dispatch] = useReducer0<T>(() => initialState());
   // tags are handle separately ... the validation etc. in ErrorMessage.tsx is only for string elements
   // whereas tags are string[]
-  const [tags, setTags] = React.useState<string[]>([]);
+  const [outputTags, setOutputTags] = React.useState<OutputTags>({ tags: [], isValid: false });
 
   const { history } = props;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (state.errorMessages.size) {
+    if (state.errorMessages.size || !outputTags.isValid) {
       // error messages are already displayed
       return;
     }
-    IO.newDiscussion({ ...state.posted, tags })
+    IO.newDiscussion({ ...state.posted, tags: outputTags.tags })
       .then((idName: I.IdName) => {
         // construct the URL of the newly-created discussion
         const url = R.getDiscussionUrl(idName);
@@ -232,6 +232,7 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
   const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
 
   const emptyTags: string[] = [];
+  const { minimum, maximum, canNewTag } = config.tagValidation;
   const form = (
     <form className="editor" onSubmit={handleSubmit}>
       <div className="element">
@@ -242,7 +243,10 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
       </div>
       <div className="element">
         <label htmlFor="tags">Tags</label>
-        <EditorTags inputTags={emptyTags} result={setTags} getAllTags={IO.getAllTags} />
+        <EditorTags inputTags={emptyTags} result={setOutputTags} getAllTags={IO.getAllTags}
+          minimum={minimum} maximum={maximum} canNewTag={canNewTag}
+          showValidationError={state.onSubmit}
+          hrefAllTags={R.route.tags} />
       </div>
       <div className="element">
         {button}

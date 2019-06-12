@@ -1,14 +1,24 @@
 .error {
-  color: red;
+  color: #C91D2E;
   padding: 2px;
   margin-top: 4px;
   font-size: 13px;
 }
 
-.invalid {
-  border: solid 1px red !important;
+.error a {
+  color: #430a0f;
+  text-decoration: underline;
 }
 
+.error.bold {
+  font-weight: bold;
+}
+
+.invalid {
+  border: solid 1px #C91D2E !important;
+}
+
+.focussed .tag-editor.invalid,
 .invalid:focus {
   box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.15) !important;
 }
@@ -17,9 +27,10 @@
   position: relative;
 }
 
-.validated svg {
+.validated svg.error {
   position: absolute;
   right: 0.7em;
   top: 50%;
   margin-top: -12px;
+  fill: #dc3d4c;
 }
