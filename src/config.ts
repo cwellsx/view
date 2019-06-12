@@ -11,5 +11,10 @@ export const config = {
     title: "Ask a question", // could be "Start a discussion" or "New discussion"
     button: "Ask Question", // could be "Start a discussion" or "New discussion"
     noun: "question"
+  },
+  tagValidation: {
+    minimum: true,
+    maximum: true,
+    canNewTag: false
   }
 };

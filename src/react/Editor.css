@@ -58,3 +58,6 @@ form.editor {
   text-align: center;
 }
 
+.wmd-input.invalid {
+  border-top-color: darkgray !important;
+}

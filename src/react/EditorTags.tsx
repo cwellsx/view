@@ -4,6 +4,7 @@ import './EditorTags.css';
 import * as Icon from "../icons";
 // this simply displays red text if non-empty text is passed to its errorMessage property
 import { ErrorMessage } from './ErrorMessage';
+import { Link } from 'react-router-dom';
 
 // these are the properties of an existing tag, used or displayed by the TagDictionary
 interface TagCount {
@@ -11,12 +12,31 @@ interface TagCount {
   summary?: string,
   count: number
 }
+
+// these are properties to configurare the validation of tags
+interface Validation {
+  // whether a minimum number of tags must be defined, e.g. 1
+  minimum: boolean,
+  // whether a maximum number of tags must be defined, e.g. 5
+  maximum: boolean,
+  // whether the user can create new tags, or whether tags must match what's already in the dictionary
+  canNewTag: boolean,
+  // whether the show validation error messages -- they're hidden until the user first presses the form's submit button
+  showValidationError: boolean,
+  // the href used for the link to "popular tags" in the validation error message -- i.e. "/tags"
+  hrefAllTags: string
+}
+
+// the results are pushed back to the parent via this callback
+export interface OutputTags { tags: string[], isValid: boolean };
+type ParentCallback = (outputTags: OutputTags) => void;
+
 // this defines the properties which you pass to the EditorTags functional component
-interface EditorTagsProps {
+interface EditorTagsProps extends Validation {
   // the input/original tags to be edited (or an empty array if there are none)
   inputTags: string[],
   // the results are pushed back to the parent via this callback
-  result: (outputTags: string[]) => void,
+  result: ParentCallback,
   // a function to fetch all existing tags from the server (for tag dictionary lookup)
   getAllTags: () => Promise<TagCount[]>
 };
@@ -92,15 +112,13 @@ const isLogging = false;
 
 type Assert = (assertion: boolean, message: string, extra?: () => object) => void;
 
-// the results are pushed back to the parent via this callback
-type ParentCallback = (outputTags: string[]) => void;
-
 // this is extra data which event handlers pass (as part of the action) from the function component to the reducer
 interface Context {
   inputElement: InputElement;
   assert: Assert;
   result: ParentCallback;
   tagDictionary?: TagDictionary;
+  validation: Validation;
 };
 
 // this is like the input data from which the RenderedState is calculated
@@ -119,6 +137,8 @@ interface RenderedElement {
   readonly word: string;
   // whether this word is rendered by a Tag element or by the one input element
   readonly type: "tag" | "input";
+  // whether this word matches an existing tag in the dictionary
+  readonly isValid: boolean;
 };
 
 // this interface combines the two states, and is what's stored using useState
@@ -131,6 +151,8 @@ interface RenderedState {
   readonly inputValue: string;
   // the hints associated with the inputValue, taken from the TagDictionary
   hints: TagCount[];
+  // the validation error message (zero length if there isn't one)
+  validationError: string;
 }
 
 // this wraps the current state of the <input> control
@@ -268,11 +290,13 @@ class MutableState {
   // called when the event handler has finished mutating this MutableState
   getState(): RenderedState {
     const state: State = { buffer: this.buffer, selection: this.selection };
-    const { assert, inputElement, tagDictionary } = this.context;
-    const renderedState: RenderedState = renderState(state, assert, inputElement, tagDictionary);
+    const { assert, inputElement, tagDictionary, validation } = this.context;
+    const renderedState: RenderedState = renderState(state, assert, validation, inputElement, tagDictionary);
     logRenderedState("MutableState.getState returning", renderedState);
     // do a callback to the parent to say what the current tags are
-    this.context.result(renderedState.elements.map(element => element.word));
+    const tags: string[] = renderedState.elements.map(element => element.word).filter(word => !!word.length);
+    const isValid = !renderedState.validationError.length;
+    this.context.result({ tags, isValid });
     return renderedState;
   }
 
@@ -343,7 +367,7 @@ class MutableState {
   }
 
   private invariant() {
-    // we mutate the state but because we make several mutations this asserts that the state remains sane or predicatble
+    // we mutate the state but because we make several mutations this asserts that the state remains sane or predictable
     assertWords(this.words, this.buffer, this.context.assert);
   }
   private assertSpaceAt(index: number) {
@@ -411,6 +435,9 @@ class TagDictionary {
     }
     const found = findTags(true, maxHints);
     return (found.length === maxHints) ? found : found.concat(findTags(false, maxHints - found.length));
+  }
+  exists(inputValue: string): boolean {
+    return this.tags.some(tag => tag.key === inputValue);
   }
   toJSON(): string {
     // not worth logging all the elements
@@ -637,6 +664,9 @@ function getWordStart(words: ReadonlyArray<string>, index: number, assert: Asser
 function assertElements(elements: ReadonlyArray<RenderedElement>, buffer: string, assert: Assert): void {
   assertWords(elements.map(x => x.word), buffer, assert);
   getInputIndex(elements, assert);
+  elements.forEach((element, index) =>
+    assert(!!element.word.length || (element.type === "input" && index === elements.length - 1),
+      "unexpected zero-length word"));
 }
 function assertWords(words: ReadonlyArray<string>, buffer: string, assert: Assert): void {
   for (let i = 0; i < words.length; ++i) {
@@ -686,7 +716,7 @@ function handleFocus(e: React.FocusEvent<HTMLElement>, hasFocus: boolean) {
   const activeElement = document.activeElement;
   const targetName = target.tagName;
   const activeElementName = (activeElement) ? activeElement.tagName : "!activeElement";
-  log("handleFocus", { hasFocus, targetName, activeElementName, relatedName, relatedClass }, true);
+  log("handleFocus", { hasFocus, targetName, activeElementName, relatedName, relatedClass });
   // calculate it
   hasFocus = hasFocus || (relatedClass === "hint");
   // write the result
@@ -703,7 +733,8 @@ function handleFocus(e: React.FocusEvent<HTMLElement>, hasFocus: boolean) {
 */
 
 // this function calculates the Rendered value given a State value
-function renderState(state: State, assert: Assert, inputElement?: InputElement, tagDictionary?: TagDictionary)
+function renderState(state: State, assert: Assert, validation: Validation,
+  inputElement?: InputElement, tagDictionary?: TagDictionary)
   : RenderedState {
   const elements: RenderedElement[] = [];
   let editing: number | undefined = undefined;
@@ -714,6 +745,11 @@ function renderState(state: State, assert: Assert, inputElement?: InputElement, 
     inputElement.setContent(text, start, end);
     inputValue = text;
     assert(start >= 0 && end <= text.length, `setInput invalid range: ${text} ${start} ${end}`)
+  }
+
+  function addElement(type: "tag" | "input", word: string): void {
+    const isValid: boolean = !word.length || validation.canNewTag || (!!tagDictionary && tagDictionary.exists(word));
+    elements.push({ type, word, isValid });
   }
 
   // split the buffer
@@ -733,7 +769,7 @@ function renderState(state: State, assert: Assert, inputElement?: InputElement, 
       // selection is not in this word
       // - selection starts beyond the end of the word
       // - or selection ends before the start of the word
-      elements.push({ type: "tag", word });
+      addElement("tag", word);
     } else {
       if (!inputElement) {
         // the initialState function should set the selection at the end of the buffer
@@ -753,7 +789,7 @@ function renderState(state: State, assert: Assert, inputElement?: InputElement, 
           // selection starts and ends in this word
           setInput(word, selection.start - wordStart, selection.end - wordStart, inputElement);
           editing = elements.length;
-          elements.push({ type: "input", word });
+          addElement("input", word);
         } else {
           // starts in this word but ends in a future word
           assert(!accumulated, "shouldn't accumulate anything previously")
@@ -771,7 +807,7 @@ function renderState(state: State, assert: Assert, inputElement?: InputElement, 
           // selection ends in this word
           setInput(accumulated.text, accumulated.start, selection.end - accumulated.wordStart, inputElement);
           editing = elements.length;
-          elements.push({ type: "input", word: accumulated.text });
+          addElement("input", accumulated.text);
           accumulated = undefined;
         } else {
           // selection ends in a future word (and we already added this word to the accumulator)
@@ -790,26 +826,46 @@ function renderState(state: State, assert: Assert, inputElement?: InputElement, 
       // the <input> element is already part of the DOM; reset it now
       setInput("", 0, 0, inputElement);
     }
-    elements.push({ type: "input", word: "" });
+    addElement("input", "");
   }
 
   assertElements(elements, state.buffer, assert);
 
   const hints: TagCount[] = !tagDictionary ? [] : tagDictionary.getHints(inputValue, elements);
+  // if logging only log the keyword of each hint, otherwise logging the tags' summaries makes it long and hard to read
+  (hints as any).toJSON = () => "[" + hints.map(hint => hint.key).join(",") + "]";
 
-  const renderedState: RenderedState = { state, elements, inputValue, hints };
+  function getValidationError(): string {
+    const nWords: number = elements.filter(element => !!element.word.length).length;
+    const invalid: string[] = elements.filter(element => !element.isValid).map(element => element.word);
+    if (nWords < 1 && validation.minimum) {
+      return "Please enter at least one tag;";
+    }
+    if (nWords > 5 && validation.maximum) {
+      return "Please enter a maximum of five tags.";
+    }
+    if (!!invalid.length) {
+      return (invalid.length === 1)
+        ? `Tag '${invalid[0]}' does not match an existing topic.`
+        : `Tags ${invalid.map(word => "'" + word + "'").join(" and ")} do not match existing topics.`
+    }
+    return "";
+  }
+  const validationError = getValidationError();
+
+  const renderedState: RenderedState = { state, elements, inputValue, hints, validationError };
   return renderedState;
 }
 
 // this function calculates the initial state, calculated from props and used to initialize useState
-function initialState(assert: Assert, inputTags: string[]): RenderedState {
+function initialState(assert: Assert, inputTags: string[], validation: Validation): RenderedState {
   assert(!inputTags.some(found => found !== found.trim()), "input tags not trimmed", () => { return { inputTags }; });
   const buffer = inputTags.join(" ");
   const start = buffer.length + 1;
   const state: State = { buffer, selection: { start, end: start } };
 
   log("initialState starting", { inputTags })
-  const renderedState: RenderedState = renderState(state, assert);
+  const renderedState: RenderedState = renderState(state, assert, validation);
   logRenderedState("initialState returning", renderedState)
   return renderedState;
 }
@@ -823,6 +879,7 @@ function initialState(assert: Assert, inputTags: string[]): RenderedState {
 export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
 
   const { inputTags, result, getAllTags } = props;
+  const validation: Validation = props;
 
   /*
     React hooks
@@ -850,7 +907,8 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
 
   // see ./EDITOR.md and the definition of the RenderedState interface for a description of this state
   // also https://fettblog.eu/typescript-react/hooks/#usereducer says that type is infered from signature of reducer
-  const [state, dispatch] = React.useReducer(reducer, inputTags, (inputTags) => initialState(assert, inputTags));
+  const [state, dispatch] = React.useReducer(reducer, inputTags,
+    (inputTags) => initialState(assert, inputTags, validation));
 
   // this is a dictionary of existing tags
   const [tagDictionary, setTagDictionary] = React.useState<TagDictionary | undefined>(undefined);
@@ -886,7 +944,7 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
   */
 
   function getContext(inputElement: HTMLInputElement): Context {
-    return { inputElement: new InputElement(inputElement, assert), assert, result, tagDictionary };
+    return { inputElement: new InputElement(inputElement, assert), assert, result, tagDictionary, validation };
   }
 
   function handleEditorClick(e: React.MouseEvent) {
@@ -967,13 +1025,14 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
     Tag is a FunctionComponent to render each tag
   */
 
-  interface TagProps { text: string, index: number };
+  interface TagProps { text: string, index: number, isValid: boolean };
   const Tag: React.FunctionComponent<TagProps> = (props) => {
-    const { text, index } = props;
+    const { text, index, isValid } = props;
     // https://reactjs.org/docs/handling-events.html#passing-arguments-to-event-handlers
     // eslint-disable-next-line
     const close = <a onClick={(e) => handleDeleteTag(index, e)} title="Remove tag"><Icon.Close height="12" /></a>;
-    return <span className="tag" onClick={(e) => handleTagClick(index, e)}>
+    const className = isValid ? "tag" : "tag invalid";
+    return <span className={className} onClick={(e) => handleTagClick(index, e)}>
       {text}
       {close}
     </span>
@@ -983,23 +1042,48 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
     The return statement which yields the JSX.Element from this function component
   */
 
-  function getElement(x: RenderedElement, index: number): React.ReactElement {
-    return (x.type === "tag")
-      ? <Tag text={x.word} index={index} key={index} />
+  function getElement(element: RenderedElement, index: number): React.ReactElement {
+    const isValid = element.isValid || !props.showValidationError;
+    return (element.type === "tag")
+      ? <Tag text={element.word} index={index} key={index} isValid={isValid} />
       : <input type="text" key="input" ref={inputRef}
+        className={isValid ? undefined : "invalid"}
         onKeyDown={handleKeyDown}
         onChange={handleChange}
         onFocus={e => handleFocus(e, true)} onBlur={e => handleFocus(e, false)}
         width={10} />
   }
 
+  function showValidationResult() {
+    const showError = props.showValidationError && !!state.validationError.length;
+    if (!showError) {
+      return { className: "tag-editor", icon: undefined, validationError: undefined };
+    }
+    const className = "tag-editor invalid";
+    const icon = <Icon.Error className="error" />;
+    const validationErrorMessage = state.validationError;
+    const suffix = (validationErrorMessage[validationErrorMessage.length - 1] !== ";") ? undefined :
+      (
+        <React.Fragment>
+          {"see a list of popular"} <Link to={props.hrefAllTags}>popular tags</Link>{"."}
+        </React.Fragment>
+      );
+    const validationError = <p className="error">{validationErrorMessage} {suffix}</p>;
+    return {validationError,icon, className};
+  }
+  const {validationError,icon, className} = showValidationResult();
+
   return (
     <div id="tag-both" >
-      <div className="tag-editor" onClickCapture={handleEditorClick}>
-        {state.elements.map(getElement)}
+      <div className="validated">
+        <div className={className} onClickCapture={handleEditorClick}>
+          {state.elements.map(getElement)}
+          {icon}
+        </div>
       </div>
       <ShowHints hints={state.hints} inputValue={state.inputValue} result={handleHintResult} />
       <ErrorMessage errorMessage={errorMessage} />
+      {validationError}
     </div>
   );
 }

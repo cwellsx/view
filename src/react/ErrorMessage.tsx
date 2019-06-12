@@ -8,10 +8,11 @@ import * as Icon from "../icons";
 
 interface ErrorMessageProps {
   errorMessage?: string,
+  bold?: boolean
 }
 
 export const ErrorMessage: React.FunctionComponent<ErrorMessageProps> = (props: ErrorMessageProps) => {
-  const className: string = (props.errorMessage) ? "error" : "hidden";
+  const className: string = ((props.errorMessage) ? "error" : "hidden") + (props.bold ? " bold" : "");
   return (
     <p className={className}>{props.errorMessage}</p>
   );
@@ -34,8 +35,7 @@ export const Validated = (props: ValidatedProps) => {
   // https://stackoverflow.com/questions/36750387/react-adding-props-to-an-existing-component
   const className = !props.children.props.className ? "invalid" : "invalid " + props.children.props.className;
   const child = (!errorMessage) ? props.children : React.cloneElement(props.children, { className });
-  const iconSize = 24;
-  const icon = (!errorMessage) ? undefined : <Icon.Error width={iconSize} height={iconSize} fill="red" />;
+  const icon = (!errorMessage) ? undefined : <Icon.Error className="error" fill="#dc3d4c" />;
   return (
     <React.Fragment>
       <div className="validated">
@@ -242,7 +242,7 @@ export function createValidated<T extends object>(
   const button = (
     <div>
       <input type="submit" value={buttonText.label} onClick={handleClick} />
-      <ErrorMessage errorMessage={buttonError} />
+      <ErrorMessage errorMessage={buttonError} bold={true} />
     </div>
   );
   return { mapInputs: rc, button };
