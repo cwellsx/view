@@ -248,6 +248,28 @@ export function getAllTags(): I.TagCount[] {
   return tagDiscussions.tagCounts();
 }
 
+export function getTags(options: R.TagsOptions): I.Tags {
+  const tags: I.TagCount[] = getAllTags();
+  const sort: R.TagsSort = options.sort ? options.sort : "Popular";
+  if (options.sort === "Name") {
+    tags.sort((x, y) => x.key.localeCompare(y.key));
+  } else {
+    tags.sort((x, y) => {
+      return (x.count === y.count)
+        ? x.key.localeCompare(y.key)
+        : y.count - x.count;
+    });
+  }
+  const { range, selected } = getRange(
+    tags.length,
+    sort,
+    options.pagesize,
+    options.page ? options.page : 1,
+    tags
+  );
+  return { range, tagCounts: selected };
+}
+
 /*
   POST functions
 */

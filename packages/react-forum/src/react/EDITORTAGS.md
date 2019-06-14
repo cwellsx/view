@@ -18,28 +18,32 @@ however all words except the currently-selected word have some visible style app
 It's implemented as a `<div>` like this:
 
 ```tsx
-  function getElement(x: RenderedElement, index: number): React.ReactElement {
-    return (x.type === "tag")
-      ? <Tag text={x.word} index={index} key={index} />
-      : <input type="text" key="input" ref={inputRef} tabIndex={tabIndex}
-        onKeyDown={handleKeyDown}
-        onChange={handleChange} />
+  function getElement(element: RenderedElement, index: number): React.ReactElement {
+    const isValid = !props.showValidationError || element.isValid;
+    return (element.type === "tag")
+      ? <Tag text={element.word} index={index} key={index} isValid={isValid} />
+      : <input type="text" key="input" ref={inputRef} className={isValid ? undefined : "invalid"} width={10}
+        onKeyDown={handleKeyDown} onChange={handleChange}
+        onFocus={e => handleFocus(e, true)} onBlur={e => handleFocus(e, false)} />
   }
 
   return (
-    <React.Fragment>
-      <div className="tag-editor" onClickCapture={handleEditorClick}>
+    <div id="tag-both" >
+      <div className={className} onClickCapture={handleEditorClick}>
         {state.elements.map(getElement)}
+        {icon}
       </div>
+      <ShowHints hints={state.hints} inputValue={state.inputValue} result={handleHintResult} />
       <ErrorMessage errorMessage={errorMessage} />
-    </React.Fragment>
+      {validationError}
+    </div>
   );
 ```
 
 The `<div>` -- and the `state.elements` array shown above -- contains:
 
 - Exactly one `<input>` element, in which you edit the currently-selected word
-- One or more React components of type `<Tag>`, which style the other words which you're not currently editing
+- One or more React components of my type `<Tag>`, which style the other words which you're not currently editing
 
 The `<input>` element may be:
 
@@ -60,8 +64,45 @@ this is a `start` and `end` range, because you can select a range of text,
 e.g. by pressing the <kbd>Shift</kbd> key when you use the cursor keys
 - The `elements` array, which is calculated from the buffer and the selection range, and which identifies which word is
 associated with the `<input>` element and which other words are associated with the `<Tag>` elements.
-- The `inputValue` which identifies the current value of the `<input>` element,
-and a `hints` array which lists the possible tags which might be a match for the input value
+- The `inputValue` which identifies the current value of the `<input>` element
+- A `hints` array which lists the possible tags which might be a match for the input value
+- A `validationError` message if the current tags are invalid and deserve an error message
+
+```typescript
+// this is like the input data from which the RenderedState is calculated
+// these and other state elements are readonly so that event handlers must mutate MutableState instead
+interface State {
+  // the selection range within the buffer
+  // this may even span multiple words, in which case all the selected words are in the <input> element
+  readonly selection: { readonly start: number, readonly end: number },
+  // the words (i.e. the tags when this is split on whitespace)
+  readonly buffer: string
+};
+
+// this interface identifies the array of <input> and <Tag> elements to be rendered, and the word associated with each
+interface RenderedElement {
+  // the string value of this word
+  readonly word: string;
+  // whether this word is rendered by a Tag element or by the one input element
+  readonly type: "tag" | "input";
+  // whether this word matches an existing tag in the dictionary
+  readonly isValid: boolean;
+};
+
+// this interface combines the two states, and is what's stored using useReducer
+interface RenderedState {
+  // the buffer which contains the tag-words, and the selection within the buffer
+  readonly state: State;
+  // how that's rendered i.e. the <input> element plus <Tag> elements
+  readonly elements: ReadonlyArray<RenderedElement>;
+  // the current ("semi-controlled") value of the <input> element
+  readonly inputValue: string;
+  // the hints associated with the inputValue, taken from the TagDictionary
+  hints: TagCount[];
+  // the validation error message (zero length if there isn't one)
+  validationError: string;
+}
+```
 
 Because there's a lot of data, and the data elements are inter-related,
 I implement it with `useReducer` instead of `useState`.
@@ -122,13 +163,37 @@ So the following remain inside the function component:
 
 - All state data
 - All event handlers (which delegate to the reducer, and which may reference `inputRef.current`)
-
-The `assert` function depends on the `setErrorMessage` function, which is state -- so the `assert` function too is
+- The `assert` function depends on the `setErrorMessage` function, which is state -- so the `assert` function too is
 defined inside the function component, and is passed as a parameter to any function which needs it.
+
+Data that's stored inside the function component, and which isn't stored as state,
+is passed to the reducer in the "action".
+
+```typescript
+interface ActionEditorClick { type: "EditorClick", context: Context };
+interface ActionHintResult { type: "HintResult", context: Context, hint: string, inputIndex: number };
+interface ActionDeleteTag { type: "DeleteTag", context: Context, index: number };
+interface ActionTagClick { type: "TagClick", context: Context, index: number };
+interface ActionKeyDown { type: "KeyDown", context: Context, key: string, shiftKey: boolean };
+interface ActionChange { type: "Change", context: Context };
+```
 
 All the `Action` types include an `InputElement` (which is created by the event handler which generates the action),
 because the `MutableState` class (called from the reducer) requires an `InputElement`, in order to update the `State`
 (including the `buffer` and the `selection`) to match the contents of the `<input>` element.
+
+In fact there's other data too, which the reducer needs and is passed in the action:
+
+```typescript
+// this is extra data which event handlers pass (as part of the action) from the function component to the reducer
+interface Context {
+  inputElement: InputElement;
+  assert: Assert;
+  result: ParentCallback;
+  tagDictionary?: TagDictionary;
+  validation: Validation;
+};
+```
 
 ## Controlling the `<input>` element
 

@@ -1,4 +1,4 @@
-import { DiscussionsSort, DiscussionSort, ActivitySort } from "../shared/urls";
+import { DiscussionsSort, DiscussionSort, ActivitySort, TagsSort } from "../shared/urls";
 
 /*
   This is used to paginate the unlimited-length lists (e.g. of discussions) which are fetched
@@ -16,3 +16,5 @@ export type DiscussionRange = Range<DiscussionSort>;
 export type DiscussionsRange = Range<DiscussionsSort>;
 
 export type ActivityRange = Range<ActivitySort>;
+
+export type TagsRange = Range<TagsSort>;

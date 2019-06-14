@@ -96,7 +96,12 @@ export async function getDiscussion(options: R.DiscussionOptions): Promise<I.Dis
 }
 
 export async function getAllTags(): Promise<I.TagCount[]> {
-  return getT<I.TagCount[]>(R.getTagsUrl());
+  return getT<I.TagCount[]>(R.getAllTagsUrl());
+}
+
+export async function getTags(options: R.TagsOptions): Promise<I.Tags> {
+  const url = R.getTagsOptionsUrl(options);
+  return getT<I.Tags>(url);
 }
 
 /*

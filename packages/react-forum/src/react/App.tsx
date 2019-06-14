@@ -50,6 +50,7 @@ const AppRoutes: React.FunctionComponent = () => {
         <ReactRouter.Route exact path={R.route.discussions} component={Discussions} />
         <ReactRouter.Route exact path={R.route.newDiscussion} component={NewDiscussion} />
         <ReactRouter.Route exact path={R.route.users} component={Users} />
+        <ReactRouter.Route exact path={R.route.tags} component={Tags} />
         <ReactRouter.Route path={R.route.users} component={User} />
         <ReactRouter.Route path={R.route.images} component={Image} />
         <ReactRouter.Route path={R.route.discussions} component={Discussion} />
@@ -393,6 +394,33 @@ const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: Rout
     width: "None"
   };
   return useLayout(layout);
+}
+
+/*
+  Tags
+*/
+
+const Tags: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+  // get the options
+  const options = R.isTagsOptions(props.location);
+  if (R.isParserError(options)) {
+    return noMatch(props, options.error);
+  }
+  return <TagsList sort={options.sort} pagesize={options.pagesize} page={options.page} />;
+}
+
+const TagsList: React.FunctionComponent<R.TagsOptions> = (props: R.TagsOptions) => {
+
+  const { sort, pagesize, page } = props;
+  const options: R.TagsOptions = React.useMemo(
+    () => { return { sort, pagesize, page }; },
+    [sort, pagesize, page])
+
+  return useGetLayout<I.Tags, R.TagsOptions>(
+    IO.getTags,
+    Page.Tags,
+    options
+  );
 }
 
 /*

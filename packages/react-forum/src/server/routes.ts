@@ -103,7 +103,16 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
     }
 
     case "Tag": {
-      return DB.getAllTags();
+
+      if (R.isAllTags(location)) {
+        return DB.getAllTags();
+      }
+      const options = R.isTagsOptions(location);
+      if (!R.isParserError(options)) {
+        return DB.getTags(options);
+      }
+      // should return 400 Bad Request
+      return undefined;
     }
 
     default:
