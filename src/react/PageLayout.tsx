@@ -63,6 +63,7 @@ export interface Layout {
   main: Tabs | {
     title: string;
     subtitle?: React.ReactElement;
+    footer?: React.ReactElement;
     content: MainContent;
     subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
   };
@@ -98,9 +99,9 @@ function renderSubTabs(subTabs: SubTabs) {
   );
 }
 
-function renderContent(content: MainContent, subTabs?: SubTabs) {
+function renderContent(content: MainContent, subTabs?: SubTabs, footer?: React.ReactElement) {
   if (Array.isArray(content)) {
-    return (
+    const elements = (
       content.map((x, index) => {
         const subMenu = ((index === 1) && subTabs) ? renderSubTabs(subTabs) : undefined;
         const className = ((index === 0) && subTabs) ? "element first" : "element";
@@ -114,8 +115,19 @@ function renderContent(content: MainContent, subTabs?: SubTabs) {
         );
       })
     );
+    return (!footer) ? elements : (
+      <React.Fragment>
+        {elements}
+        <div className="element" key="footer">{footer}</div>
+      </React.Fragment>
+    );
   }
-  return  content;
+  return (
+    <React.Fragment>
+      {content}
+      {footer}
+    </React.Fragment>
+  );
 }
 
 function renderTabs(main: Tabs, isTop: boolean) {
@@ -233,7 +245,7 @@ function switchLayout(layout: Layout) {
     );
   }
 
-  const mainColumn = renderContent(layout.main.content, layout.main.subTabs);
+  const mainColumn = renderContent(layout.main.content, layout.main.subTabs, layout.main.footer);
   setTitle(layout.main.title);
 
   const title = layout.main.subtitle ? layout.main.subtitle : <h1>{layout.main.title}</h1>;

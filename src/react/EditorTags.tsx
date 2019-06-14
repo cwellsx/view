@@ -1,10 +1,10 @@
 import React from 'react';
 import './EditorTags.css';
 // this is to display a little 'x' SVG -- a Close icon which is displayed on each tag -- clicking it will delete the tag
+// also to display a little '(!)' SVG -- an Error icon which is displayed in the element, if there's a validation error
 import * as Icon from "../icons";
 // this simply displays red text if non-empty text is passed to its errorMessage property
 import { ErrorMessage } from './ErrorMessage';
-import { Link } from 'react-router-dom';
 
 // these are the properties of an existing tag, used or displayed by the TagDictionary
 interface TagCount {
@@ -141,7 +141,7 @@ interface RenderedElement {
   readonly isValid: boolean;
 };
 
-// this interface combines the two states, and is what's stored using useState
+// this interface combines the two states, and is what's stored using useReducer
 interface RenderedState {
   // the buffer which contains the tag-words, and the selection within the buffer
   readonly state: State;
@@ -209,6 +209,7 @@ class InputElement {
     // set the value before the selection, otherwise the selection might be invalid
     this.inputElement.value = value;
     this.inputElement.setSelectionRange(start, end);
+    // dynammically readjust the width of the input element to match its content
     const width = getTextWidth(value + "0");
     this.inputElement.style.width = `${width}px`;
   }
@@ -293,7 +294,7 @@ class MutableState {
     const { assert, inputElement, tagDictionary, validation } = this.context;
     const renderedState: RenderedState = renderState(state, assert, validation, inputElement, tagDictionary);
     logRenderedState("MutableState.getState returning", renderedState);
-    // do a callback to the parent to say what the current tags are
+    // do a callback to the parent to say what the current tags are (excluding the empty <input> word if there is one)
     const tags: string[] = renderedState.elements.map(element => element.word).filter(word => !!word.length);
     const isValid = !renderedState.validationError.length;
     this.context.result({ tags, isValid });
@@ -470,7 +471,8 @@ function reducer(state: RenderedState, action: Action): RenderedState {
   log("reducer", action);
   const inputElement = action.context.inputElement;
 
-  // this function returns a MutableState instance
+  // this function returns a MutableState instance, which is based on the previous state plus the passed-in context
+  // the passed-in context includes the new content of the <input> element
   function getMutableState(): MutableState {
     logRenderedState("getMutableState", state);
     return new MutableState(state, action.context);
@@ -688,6 +690,7 @@ function getTextWidth(text: string) {
       if (!context) {
         return undefined;
       }
+      // matches the font famly and size defined in App.css
       context.font = '14px Arial, "Helvetica Neue", Helvetica, sans-serif';
       (getTextWidth as any).canvas = canvas;
       (getTextWidth as any).context = context;
@@ -701,15 +704,17 @@ function getTextWidth(text: string) {
   return context.measureText(text).width;
 }
 
+// see [Simulating `:focus-within`](./EDITORTAGS.md#simulating-focus-within)
 function handleFocus(e: React.FocusEvent<HTMLElement>, hasFocus: boolean) {
-  // see [Simulating `:focus-within`](./EDITORTAGS.md#simulating-focus-within)
   function isElement(related: EventTarget | HTMLElement): related is HTMLElement {
     return (related as HTMLElement).tagName !== undefined;
   }
   // read it
   const target = e.target;
   const relatedTarget = e.relatedTarget;
+  // relatedTarget is of type EventTarget -- upcast from that to HTMLElement
   const related: HTMLElement | undefined = (relatedTarget && isElement(relatedTarget)) ? relatedTarget : undefined;
+  // get the tagName and className of the element
   const relatedName = (!relatedTarget) ? "!target" : (!related) ? "!element" : related.tagName;
   const relatedClass = (!related) ? "" : related.className;
   // log it
@@ -732,7 +737,8 @@ function handleFocus(e: React.FocusEvent<HTMLElement>, hasFocus: boolean) {
   Functions which construct the RenderedState
 */
 
-// this function calculates the Rendered value given a State value
+// this function calculates a new RenderedState and sets the InputElement content and selection, for a given State value
+// it's called from initialState and from MutableState
 function renderState(state: State, assert: Assert, validation: Validation,
   inputElement?: InputElement, tagDictionary?: TagDictionary)
   : RenderedState {
@@ -1042,44 +1048,41 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
     The return statement which yields the JSX.Element from this function component
   */
 
-  function getElement(element: RenderedElement, index: number): React.ReactElement {
-    const isValid = element.isValid || !props.showValidationError;
-    return (element.type === "tag")
-      ? <Tag text={element.word} index={index} key={index} isValid={isValid} />
-      : <input type="text" key="input" ref={inputRef}
-        className={isValid ? undefined : "invalid"}
-        onKeyDown={handleKeyDown}
-        onChange={handleChange}
-        onFocus={e => handleFocus(e, true)} onBlur={e => handleFocus(e, false)}
-        width={10} />
-  }
-
   function showValidationResult() {
     const showError = props.showValidationError && !!state.validationError.length;
     if (!showError) {
       return { className: "tag-editor", icon: undefined, validationError: undefined };
     }
-    const className = "tag-editor invalid";
+    const className = "tag-editor invalid validated";
     const icon = <Icon.Error className="error" />;
     const validationErrorMessage = state.validationError;
+    // use <a href={}> instead of <Link to={}> -- https://github.com/ReactTraining/react-router/issues/6344
     const suffix = (validationErrorMessage[validationErrorMessage.length - 1] !== ";") ? undefined :
       (
         <React.Fragment>
-          {"see a list of popular"} <Link to={props.hrefAllTags}>popular tags</Link>{"."}
+          {"see a list of "}
+          <a href={props.hrefAllTags} target="_blank" rel="noopener noreferrer">popular tags</a>{"."}
         </React.Fragment>
       );
     const validationError = <p className="error">{validationErrorMessage} {suffix}</p>;
-    return {validationError,icon, className};
+    return { validationError, icon, className };
   }
-  const {validationError,icon, className} = showValidationResult();
+  const { validationError, icon, className } = showValidationResult();
+
+  function getElement(element: RenderedElement, index: number): React.ReactElement {
+    const isValid = !props.showValidationError || element.isValid;
+    return (element.type === "tag")
+      ? <Tag text={element.word} index={index} key={index} isValid={isValid} />
+      : <input type="text" key="input" ref={inputRef} className={isValid ? undefined : "invalid"} width={10}
+        onKeyDown={handleKeyDown} onChange={handleChange}
+        onFocus={e => handleFocus(e, true)} onBlur={e => handleFocus(e, false)} />
+  }
 
   return (
     <div id="tag-both" >
-      <div className="validated">
-        <div className={className} onClickCapture={handleEditorClick}>
-          {state.elements.map(getElement)}
-          {icon}
-        </div>
+      <div className={className} onClickCapture={handleEditorClick}>
+        {state.elements.map(getElement)}
+        {icon}
       </div>
       <ShowHints hints={state.hints} inputValue={state.inputValue} result={handleHintResult} />
       <ErrorMessage errorMessage={errorMessage} />

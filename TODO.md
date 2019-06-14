@@ -78,7 +78,6 @@ I'd like to do a little more before stopping, to make a good demo of the UI:
   - Search questions for [user] tagged [tag]
   - Edit tag information
   - List of tags
-- Validate the tags entered by the user
 - Deploy to Heroku
 
 - Use https://expressjs.com/en/api.html#res in mockSend and server/routes
@@ -89,3 +88,4 @@ More:
 - Make `getExerpt` markdown-aware, e.g. remove images and ignore the length of hyperlinks
 - Support writing to local storage -- https://github.com/donavon/use-dark-mode
 - Use Sass to implement stylesheets -- https://facebook.github.io/create-react-app/docs/adding-a-sass-stylesheet
+- A popup showing the full summary (and how many watchers etc.) when you hover over a tag in the list of all tags

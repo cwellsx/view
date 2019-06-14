@@ -23,7 +23,8 @@ const routeDiscussion: RouteT<IdName> = { resourceType: "Discussion", parts: ["i
 // SiteMap
 const routeSiteMap: Route = { resourceType: "SiteMap" };
 // Tag
-const routeTags: Route = { resourceType: "Tag" };
+const routeAllTags: Route = { resourceType: "Tag", word: "all" };
+const routeTags: Route = { resourceType: "Tag"};
 const routeTagDiscussions: RouteT<Key> = { resourceType: "Discussion", parts: ["tagged", "key"] }
 const routeTagInfo: RouteT<Key> = { resourceType: "Tag", parts: ["key", "info"] }
 const routeTagEdit: RouteT<Key> = { resourceType: "Tag", parts: ["key", "edit"] }
@@ -43,7 +44,7 @@ const routeEditUserProfile: RouteT<Id> = { resourceType: "User", parts: ["edit",
 
 export type ResourceType = "SiteMap" | "Login" | "Discussion" | "User" | "Image" | "Tag";
 
-type Keyword = "new" | "edit" | "tagged" | "info" | "answer" | "submit";
+type Keyword = "new" | "edit" | "tagged" | "info" | "answer" | "submit" | "all";
 
 function isKeyword(s: Keyword | any): s is Keyword {
   switch (s) {
@@ -53,6 +54,7 @@ function isKeyword(s: Keyword | any): s is Keyword {
     case "info":
     case "answer":
     case "submit":
+    case "all":
       return true;
     default:
       return false;
@@ -464,6 +466,55 @@ export function getImageUrl(image: IdName): string {
 }
 
 /*
+  Tabs page has two tabs (2 options)
+*/
+
+export type TagsSort = "Popular" | "Name";
+
+const tagsSort = new Pairs<TagsSort, string>([
+  ["Popular", "popular"],
+  ["Name", "name"]
+]);
+
+export interface TagsOptions {
+  sort?: TagsSort;
+  pagesize: 36
+  page?: number; //1-based
+}
+
+export function isTagsOptions(location: Location): TagsOptions | ParserError {
+  const elements = new Elements(location);
+  if (!elements.matches(routeTags)) {
+    return errorUnexpectedPath;
+  }
+  const sort = elements.getQuery("sort");
+  const page = elements.getQuery("page");
+  return {
+    sort: sort ? tagsSort.find1(sort) : undefined,
+    pagesize: 36,
+    page: page ? toNumber(page) : undefined,
+  };
+}
+
+export function isAllTags(location: Location): boolean {
+  const elements = new Elements(location);
+  return elements.matches(routeAllTags);
+}
+
+export function getTagsOptionsUrl(params: { sort?: TagsSort, page?: number }): string {
+  const options: TagsOptions = { ...params, pagesize: 36 }
+  const queries: Queries = new Queries();
+  if (options.sort) {
+    queries.push("sort", tagsSort.find0(options.sort));
+  }
+  if (options.page) {
+    queries.push("page", "" + options.page);
+  }
+  queries.push("pagesize", "" + options.pagesize);
+  return makeUrl(routeTags, queries);
+}
+
+/*
   Discussions page has two tabs (3 options)
 */
 
@@ -568,6 +619,7 @@ export function getDiscussionOptionsUrl(options: DiscussionOptions): string {
   Tags
 */
 
+export function getAllTagsUrl(): string { return makeUrl(routeAllTags); }
 export function getTagsUrl(): string { return makeUrl(routeTags); }
 export function getTagUrl(tag: Key): string { return getTagDiscussionsUrl(tag); }
 

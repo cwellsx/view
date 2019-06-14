@@ -331,10 +331,10 @@ export function Discussions(data: I.Discussions): Layout {
     </React.Fragment>
   );
 
-  const elements = summaries.map(summary => Summaries.getDiscussionSummary(summary));
-  elements.push({ element: footer, key: "footer" });
+  const content = summaries.map(summary => Summaries.getDiscussionSummary(summary));
+
   return {
-    main: { content: elements, title, subtitle },
+    main: { content, title, subtitle, footer },
     width: "Closed"
   };
 }
@@ -359,23 +359,99 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
   const content: KeyedItem[] = [];
   content.push(Summaries.getFirstMessage(first, tags));
   messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
-  if (range.nTotal > range.pageSize) {
-    const footer = (
-      <div className="footer">
-        <div className="index">
-          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
-            (page) => R.getDiscussionOptionsUrl({ discussion: data, page, sort: range.sort }))}
-        </div>
+
+  const footer = (range.nTotal > range.pageSize) ? (
+    <div className="footer">
+      <div className="index">
+        {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
+          (page) => R.getDiscussionOptionsUrl({ discussion: data, page, sort: range.sort }))}
       </div>
-    );
-    content.push({ element: footer, key: "footer" });
-  }
+    </div>
+  ) : undefined;
 
   const yourAnswer = <AnswerDiscussion discussionId={id} reload={extra.reload} />;
   content.push({ element: yourAnswer, key: "editor" });
 
   return {
-    main: { content, title: name, subTabs },
+    main: { content, title: name, subTabs, footer },
     width: "Open"
+  };
+}
+
+/*
+  Tags
+*/
+
+export function Tags(data: I.Tags): Layout {
+  const { range, tagCounts } = data;
+  const title = config.strTags;
+
+  // the header (subtitle) and footer are like (copy-and-pasted) those from the Discussions page
+
+  const subtitle = (
+    <React.Fragment>
+      <div className="minigrid">
+        <h1>{title}</h1>
+      </div>
+      <div className="minigrid subtitle">
+        <div className="count">{"(filter by tag name)"}</div>
+        <div className="sort">
+          <NavLink to={R.getTagsOptionsUrl({ sort: "Popular" })}
+            className={range.sort === "Popular" ? "selected" : undefined}>Popular</NavLink>
+          <NavLink to={R.getTagsOptionsUrl({ sort: "Name" })}
+            className={range.sort === "Name" ? "selected" : undefined}>Name</NavLink>
+        </div>
+      </div>
+    </React.Fragment>
+  );
+
+  const footer = (
+    <React.Fragment>
+      <div className="minigrid footer">
+      <div className="page"></div>
+        <div className="page">
+          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
+            (page) => R.getTagsOptionsUrl({ page, sort: range.sort }))}
+        </div>
+      </div>
+    </React.Fragment>
+  );
+
+  function getTagInfo(tagCount: I.TagCount) {
+    // similar to the ShowHint function in EditorTags.tsx
+    const key = tagCount.key;
+    const href = R.getTagDiscussionsUrl({ key });
+    const tag = <Link className="tag" to={href}>{key}</Link>;
+    const count = (tagCount.count) ? <span className="multiplier">×&nbsp;{tagCount.count}</span> : undefined;
+    const summary = (tagCount.summary) ? <div className="exerpt">{tagCount.summary}</div> : undefined;
+    const edit = (
+      <div>
+        <Link className="edit-link" to={R.getTagEditUrl({ key })}>edit</Link>
+      </div>
+    );
+
+    return (
+      <div className="tag-info" key={key}>
+        {tag}
+        {count}
+        {summary}
+        {edit}
+      </div>
+    );
+  }
+
+  // the content is like that of the User page
+  const contentTags: React.ReactElement = (
+    <div className="all-tags">
+      {tagCounts.map(tagCount => {
+        return getTagInfo(tagCount);
+      })
+      }
+    </div >
+  );
+
+  return {
+    main: { content: contentTags, title, subtitle, footer },
+    width: "Grid"
   };
 }

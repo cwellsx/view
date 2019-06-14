@@ -42,7 +42,9 @@ export function createNewTopic(
 }
 
 export function createStoredTopic(stored: BareTopic): NewTopic {
-  const posted: Post.NewTopic = { title: stored.title, summary: "" + stored.summary, markdown: "" + stored.markdown }
+  const summary = stored.summary ? stored.summary : "";
+  const markdown = stored.markdown ? stored.markdown : "";
+  const posted: Post.NewTopic = { title: stored.title, summary, markdown }
   return { type: "NewTopic", posted, dateTime: stored.dateTime, userId: stored.userId }
 }
 

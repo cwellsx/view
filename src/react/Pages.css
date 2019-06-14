@@ -42,16 +42,19 @@ div.features > span::before {
 
 /* users */
 
-div.all-users {
+div.all-users,
+div.all-tags {
   flex-wrap: wrap;
   display: grid;
   grid-gap: 8px;
   grid-template-columns: repeat( auto-fill, minmax(250px, 1fr) );
 }
 
-div.all-users > .user-info {
+div.all-users > .user-info,
+div.all-tags > .tag-info {
   flex: 1 1 25%;
   width: auto;
+  overflow: hidden;
 }
 
 /* tags -- similar to users */
@@ -70,6 +73,31 @@ div.tags > .topic {
 
 div.tags {
   margin-bottom: 2em;
+}
+
+.tag-info {
+  padding: 8px 4px 12px;
+  border-bottom: 1px solid rgb(228, 230, 232);
+}
+
+.tag-info > .exerpt {
+  font-size: 12px;
+  line-height: 14px;
+  height: 39px;
+  padding: 4px 8px 5px 0;
+  box-sizing: content-box;
+  margin: 0;
+  overflow: hidden;
+}
+
+.tag-info .edit-link {
+  display: none;
+  float: right;
+  font-size: 11px;
+}
+
+.tag-info:hover .edit-link {
+  display: block;
 }
 
 /* styles on user profile tabs */
