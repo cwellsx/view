@@ -287,7 +287,19 @@ function formatNumber(count: number, things: string) {
 
 export function Discussions(data: I.Discussions): Layout {
   const { range, summaries } = data;
-  const title = "All " + config.strQuestions;
+  const { pageNumber, nTotal, pageSize, sort, tag } = range;
+  const title = (!tag) ? `All ${config.strQuestions}` :
+    `${sort === "Newest" ? "Newest" : "Recently Active"} '${tag.key}' ${config.strQuestions}`;
+
+  const info = (!tag) ? undefined : <NavLink to={R.getTagInfoUrl(tag)}>Info</NavLink>;
+  const links = (!tag) ? undefined : (
+    <div className="minigrid links">
+      <ul>
+        <li><Link to={R.getTagInfoUrl(tag)}>Learn more…</Link></li>
+        <li><Link to={R.getTagEditUrl(tag)}>Improve tag info</Link></li>
+      </ul>
+    </div>
+  );
 
   const subtitle = (
     <React.Fragment>
@@ -297,32 +309,33 @@ export function Discussions(data: I.Discussions): Layout {
           <Link to={R.route.newDiscussion} className="linkbutton">{config.strNewQuestion.button}</Link>
         </div>
       </div>
+      {links}
       <div className="minigrid subtitle">
-        <div className="count">{formatNumber(range.nTotal, config.strQuestions)}</div>
+        <div className="count">{formatNumber(nTotal, config.strQuestions)}</div>
         <div className="sort">
-          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Newest" })}
-            className={range.sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
-          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Active" })}
-            className={range.sort === "Active" ? "selected" : undefined}>Active</NavLink>
+          {info}
+          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Newest", tag })}
+            className={sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
+          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Active", tag })}
+            className={sort === "Active" ? "selected" : undefined}>Active</NavLink>
         </div>
       </div>
     </React.Fragment>
   );
 
-  const sort = range.sort;
   const footer = (
     <React.Fragment>
       <div className="minigrid footer">
         <div className="page">
-          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
-            (page) => R.getDiscussionsOptionsUrl({ page, sort }))}
+          {Summaries.getPageNavLinks(pageNumber, nTotal, pageSize,
+            (page) => R.getDiscussionsOptionsUrl({ page, sort, tag }))}
         </div>
         <div className="page">
           {Summaries.getNavLinks(
             [15, 30, 50].map(n => { return { text: "" + n, n }; }),
-            (n: number) => R.getDiscussionsOptionsUrl({ pagesize: n as R.PageSize }),
+            (n: number) => R.getDiscussionsOptionsUrl({ pagesize: n as R.PageSize, tag }),
             (n: number) => `show ${n} items per page`,
-            range.pageSize,
+            pageSize,
             false
           )}
           <span className="dots">per page</span>
@@ -408,7 +421,7 @@ export function Tags(data: I.Tags): Layout {
   const footer = (
     <React.Fragment>
       <div className="minigrid footer">
-      <div className="page"></div>
+        <div className="page"></div>
         <div className="page">
           {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
             (page) => R.getTagsOptionsUrl({ page, sort: range.sort }))}
@@ -420,7 +433,7 @@ export function Tags(data: I.Tags): Layout {
   function getTagInfo(tagCount: I.TagCount) {
     // similar to the ShowHint function in EditorTags.tsx
     const key = tagCount.key;
-    const href = R.getTagDiscussionsUrl({ key });
+    const href = R.getTagUrl({ key });
     const tag = <Link className="tag" to={href}>{key}</Link>;
     const count = (tagCount.count) ? <span className="multiplier">×&nbsp;{tagCount.count}</span> : undefined;
     const summary = (tagCount.summary) ? <div className="exerpt">{tagCount.summary}</div> : undefined;

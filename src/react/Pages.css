@@ -100,6 +100,11 @@ div.tags {
   display: block;
 }
 
+.tag-info > .multiplier {
+  font-size: 13px;
+  color: rgb(132, 141, 149);
+}
+
 /* styles on user profile tabs */
 
 .user-profile.profile,
@@ -216,4 +221,13 @@ div.tags {
 
 .minigrid .linkbutton {
   display: inline-flex;
+}
+
+.minigrid.links ul {
+  list-style: none;
+  margin: 0 0 1em;
+}
+
+.minigrid.links ul > li {
+  margin: 0.5em;
 }

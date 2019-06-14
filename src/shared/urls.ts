@@ -24,8 +24,9 @@ const routeDiscussion: RouteT<IdName> = { resourceType: "Discussion", parts: ["i
 const routeSiteMap: Route = { resourceType: "SiteMap" };
 // Tag
 const routeAllTags: Route = { resourceType: "Tag", word: "all" };
-const routeTags: Route = { resourceType: "Tag"};
-const routeTagDiscussions: RouteT<Key> = { resourceType: "Discussion", parts: ["tagged", "key"] }
+const routeTags: Route = { resourceType: "Tag" };
+const routeDiscussionsTagged_: Route = { resourceType: "Discussion", word: "tagged" }
+const routeDiscussionsTagged: RouteT<Key> = { resourceType: "Discussion", parts: ["tagged", "key"] }
 const routeTagInfo: RouteT<Key> = { resourceType: "Tag", parts: ["key", "info"] }
 const routeTagEdit: RouteT<Key> = { resourceType: "Tag", parts: ["key", "edit"] }
 
@@ -515,6 +516,19 @@ export function getTagsOptionsUrl(params: { sort?: TagsSort, page?: number }): s
 }
 
 /*
+  Other Tags pages
+*/
+
+export function getAllTagsUrl(): string { return makeUrl(routeAllTags); }
+export function getTagsUrl(): string { return makeUrl(routeTags); }
+export function getTagUrl(tag: Key): string { return getDiscussionsTaggedUrl(tag); }
+
+export function getTagInfoUrl(tag: Key): string { return makeUrlT(routeTagInfo, tag); }
+export function getTagEditUrl(tag: Key): string { return makeUrlT(routeTagEdit, tag); }
+
+export function getDiscussionsTaggedUrl(tag: Key): string { return makeUrlT(routeDiscussionsTagged, tag); }
+
+/*
   Discussions page has two tabs (3 options)
 */
 
@@ -536,11 +550,13 @@ export interface DiscussionsOptions {
   sort?: DiscussionsSort;
   pagesize?: PageSize
   page?: number; //1-based
+  tag?: Key;
 }
 
 export function isDiscussionsOptions(location: Location): DiscussionsOptions | ParserError {
   const elements = new Elements(location);
-  if (!elements.matches(routeDiscussions)) {
+  const key = elements.matchesT(routeDiscussionsTagged);
+  if (!key && !elements.matches(routeDiscussions)) {
     return errorUnexpectedPath;
   }
   const sort = elements.getQuery("sort");
@@ -550,6 +566,7 @@ export function isDiscussionsOptions(location: Location): DiscussionsOptions | P
     sort: sort ? discussionsSort.find1(sort) : undefined,
     pagesize: pagesize ? pageSizes.find1(pagesize) : undefined,
     page: page ? toNumber(page) : undefined,
+    tag: key
   };
 }
 
@@ -564,7 +581,7 @@ export function getDiscussionsOptionsUrl(options: DiscussionsOptions): string {
   if (options.page) {
     queries.push("page", "" + options.page);
   }
-  return makeUrl(routeDiscussions, queries);
+  return (!options.tag) ? makeUrl(routeDiscussions, queries) : makeUrlT(routeDiscussionsTagged, options.tag, queries);
 }
 
 /*
@@ -614,18 +631,6 @@ export function getDiscussionOptionsUrl(options: DiscussionOptions): string {
   }
   return makeUrlT(routeDiscussion, options.discussion, queries);
 }
-
-/*
-  Tags
-*/
-
-export function getAllTagsUrl(): string { return makeUrl(routeAllTags); }
-export function getTagsUrl(): string { return makeUrl(routeTags); }
-export function getTagUrl(tag: Key): string { return getTagDiscussionsUrl(tag); }
-
-export function getTagDiscussionsUrl(tag: Key): string { return makeUrlT(routeTagDiscussions, tag); }
-export function getTagInfoUrl(tag: Key): string { return makeUrlT(routeTagInfo, tag); }
-export function getTagEditUrl(tag: Key): string { return makeUrlT(routeTagEdit, tag); }
 
 /*
   SiteMap
@@ -687,6 +692,7 @@ export const route = {
   login: makeUrl(routeLogin),
   siteMap: makeUrl(routeSiteMap),
   discussions: makeUrl(routeDiscussions),
+  discussionsTagged: makeUrl(routeDiscussionsTagged_),
   users: makeUrl(routeUsers),
   images: makeUrl(routeImages),
   newDiscussion: makeUrl(routeNewDiscussion),

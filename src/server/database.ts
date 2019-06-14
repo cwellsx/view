@@ -212,19 +212,32 @@ export function getDiscussions(options: R.DiscussionsOptions): WireDiscussions {
   const active = sort === "Active";
   // two collections of pre-sorted discussions (using different sort-orders) to choose from
   const sortedDiscussions: [number, number][] = (active) ? sortedDiscussionsActive : sortedDiscussionsNewest;
+  const tag = options.tag;
+  const filteredDiscussions = !tag ? sortedDiscussions : sortedDiscussions.filter(pair => {
+    const discussionId = pair[0];
+    const discussion = allDiscussions.get(discussionId)!;
+    for (const tagId of discussion.tags) {
+      const found: I.Key = getKeyFromTagId(tagId);
+      if (found.key === tag.key) {
+        return true;
+      }
+    }
+    return false;
+  });
   const getMessage: GetMessage = (active) ? getMessageEnded : getMessageStarted;
   const { range, selected } = getRange(
-    allDiscussions.size,
+    filteredDiscussions.length,
     sort,
     options.pagesize ? options.pagesize : 50,
     options.page ? options.page : 1,
-    sortedDiscussions
+    filteredDiscussions
   );
+  const discussionRange = { ...range, tag };
   const selectedDiscussions: BareDiscussion[] = selected.map((pair) => allDiscussions.get(pair[0])!);
   const discussionMessages: [BareDiscussion, BareMessage][] = selectedDiscussions.map(
     discussion => [discussion, getMessage(discussion)]);
   const { users, discussions } = wireSummaries(discussionMessages);
-  return { users, discussions, range };
+  return { users, discussions, range: discussionRange };
 }
 
 export function getDiscussion(options: R.DiscussionOptions): WireDiscussion | undefined {
