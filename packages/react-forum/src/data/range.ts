@@ -1,3 +1,4 @@
+import { Key } from "../data";
 import { DiscussionsSort, DiscussionSort, ActivitySort, TagsSort } from "../shared/urls";
 
 /*
@@ -13,7 +14,7 @@ interface Range<TSort> {
 
 export type DiscussionRange = Range<DiscussionSort>;
 
-export type DiscussionsRange = Range<DiscussionsSort>;
+export type DiscussionsRange = Range<DiscussionsSort> & { tag?: Key };
 
 export type ActivityRange = Range<ActivitySort>;
 

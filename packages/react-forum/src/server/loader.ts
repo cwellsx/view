@@ -191,26 +191,3 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
 
   return sorted.map(pair => pair[0]);
 }
-
-// type Crack<T extends object> = T & {
-//   //p: (keyof T | string)[];
-//   b: keyof T;
-// };
-
-// interface Foo {
-//   bar: number
-//   bit: string
-// };
-
-// const baz: Crack<Foo> = {
-//   //p:[],
-//   b: "bar",
-//   bar: 10,
-//   bit: "vv"
-// }
-
-
-// function w(x: Crack<Foo>) {
-//   const y = x.b;
-//   x[y] = 20;
-// }

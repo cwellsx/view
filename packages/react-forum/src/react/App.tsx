@@ -51,6 +51,7 @@ const AppRoutes: React.FunctionComponent = () => {
         <ReactRouter.Route exact path={R.route.newDiscussion} component={NewDiscussion} />
         <ReactRouter.Route exact path={R.route.users} component={Users} />
         <ReactRouter.Route exact path={R.route.tags} component={Tags} />
+        <ReactRouter.Route path={R.route.discussionsTagged} component={Discussions} />
         <ReactRouter.Route path={R.route.users} component={User} />
         <ReactRouter.Route path={R.route.images} component={Image} />
         <ReactRouter.Route path={R.route.discussions} component={Discussion} />
@@ -335,15 +336,15 @@ const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteC
   }
   // split options into its components instead of passing whole options
   // otherwise the eslint "react-hooks/exhaustive-deps" rule wil complain when we use useMemo
-  return <DiscussionsList sort={options.sort} pagesize={options.pagesize} page={options.page} />;
+  return <DiscussionsList sort={options.sort} pagesize={options.pagesize} page={options.page} tag={options.tag} />;
 }
 
 const DiscussionsList: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
 
-  const { sort, pagesize, page } = props;
+  const { sort, pagesize, page, tag } = props;
   const options: R.DiscussionsOptions = React.useMemo(
-    () => { return { sort, pagesize, page }; },
-    [sort, pagesize, page])
+    () => { return { sort, pagesize, page, tag }; },
+    [sort, pagesize, page, tag])
 
   return useGetLayout<I.Discussions, R.DiscussionsOptions>(
     IO.getDiscussions,
