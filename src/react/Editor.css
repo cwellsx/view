@@ -61,3 +61,17 @@ form.editor {
 .wmd-input.invalid {
   border-top-color: darkgray !important;
 }
+
+textarea {
+  width: 100%;
+}
+
+.editor.tag-wiki .hint {
+  margin: 0;
+  font-size: 13px;
+  color: #9199a1;
+}
+
+.editor.tag-wiki .hint.next {
+  margin-top: 5px;
+}

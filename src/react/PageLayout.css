@@ -28,6 +28,10 @@
   border-top: 1px solid rgb(214, 217, 220);
 }
 
+.column-text.none .content {
+  border-top: none;
+}
+
 .column-text .content .element,
 .tabbed .element {
   border-bottom: 1px solid rgb(239, 240, 241);

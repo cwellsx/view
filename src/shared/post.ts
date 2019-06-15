@@ -38,5 +38,10 @@ export interface NewDiscussion {
   tags: string[];
 }
 
+export interface EditTagInfo {
+  summary: string;
+  markdown: string;
+}
+
 // these are the <component>/<verb> paris which may be stored in the `post` member of the `Resource` instance
 export type PostUrls = "answer/submit";

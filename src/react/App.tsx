@@ -55,6 +55,7 @@ const AppRoutes: React.FunctionComponent = () => {
         <ReactRouter.Route path={R.route.users} component={User} />
         <ReactRouter.Route path={R.route.images} component={Image} />
         <ReactRouter.Route path={R.route.discussions} component={Discussion} />
+        <ReactRouter.Route path={R.route.tags} component={Tag} />
         <ReactRouter.Route component={NoMatch} />
       </ReactRouter.Switch>
     </React.Fragment>
@@ -425,7 +426,44 @@ const TagsList: React.FunctionComponent<R.TagsOptions> = (props: R.TagsOptions) 
 }
 
 /*
-NoMatch
+  Tag (key)
+*/
+
+const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+
+  const info = R.isTagInfo(props.location);
+  if (!R.isParserError(info)) {
+    return <TagId tag={info.key} word="info" history={props.history} />;
+  }
+  const edit = R.isTagEdit(props.location);
+  if (!R.isParserError(edit)) {
+    return <TagId tag={edit.key} word="edit" history={props.history} />;
+  }
+  return noMatch(props);
+
+}
+
+type TagIdProps = R.InfoOrEdit & { history: History, tag: string };
+const TagId: React.FunctionComponent<TagIdProps> = (props: TagIdProps) => {
+
+  const { tag, word, history } = props;
+
+  // include word as a dependency because we want to re-render if word changes,
+  // even though { word } isn't required in the TParam parameter passed to useGetLayout2
+  const key: I.Key & R.InfoOrEdit = React.useMemo(
+    () => { return { key: tag, word }; },
+    [tag, word]);
+
+  return useGetLayout2<I.TagInfo, I.Key, Page.TagExtra>(
+    IO.getTag,
+    Page.Tag,
+    key,
+    { word, history }
+  );
+}
+
+/*
+  NoMatch
 */
 
 const NoMatch: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {

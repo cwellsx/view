@@ -29,8 +29,6 @@ export interface BareTopic {
   dateTime: string;
 }
 
-export const summaryLength = { min: 20, max: 460 };
-
 export type BareTag = BareTopic & I.Key;
 
 // this isn't persisted on disk but is used like database might creates an index for a table

@@ -7,7 +7,7 @@ import './Pages.css';
 import * as Icon from "../icons";
 import { config } from '../config';
 import { NavLink, Link } from 'react-router-dom';
-import { AnswerDiscussion, EditUserSettings } from "./Editor";
+import { AnswerDiscussion, EditUserSettings, EditTagInfo } from "./Editor";
 import { toHtml } from "../io/markdownToHtml";
 import { History } from "history";
 
@@ -279,49 +279,13 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: R.UserTabType,
   Discussions
 */
 
-function formatNumber(count: number, things: string) {
-  // https://blog.abelotech.com/posts/number-currency-formatting-javascript/
-  const rc = count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + things.toLowerCase();
-  return ((count === 1) && (things[things.length - 1] === "s")) ? rc.substring(0, rc.length - 1) : rc;
-}
-
 export function Discussions(data: I.Discussions): Layout {
   const { range, summaries } = data;
   const { pageNumber, nTotal, pageSize, sort, tag } = range;
   const title = (!tag) ? `All ${config.strQuestions}` :
     `${sort === "Newest" ? "Newest" : "Recently Active"} '${tag.key}' ${config.strQuestions}`;
 
-  const info = (!tag) ? undefined : <NavLink to={R.getTagInfoUrl(tag)}>Info</NavLink>;
-  const links = (!tag) ? undefined : (
-    <div className="minigrid links">
-      <ul>
-        <li><Link to={R.getTagInfoUrl(tag)}>Learn more…</Link></li>
-        <li><Link to={R.getTagEditUrl(tag)}>Improve tag info</Link></li>
-      </ul>
-    </div>
-  );
-
-  const subtitle = (
-    <React.Fragment>
-      <div className="minigrid">
-        <h1>{title}</h1>
-        <div className="link">
-          <Link to={R.route.newDiscussion} className="linkbutton">{config.strNewQuestion.button}</Link>
-        </div>
-      </div>
-      {links}
-      <div className="minigrid subtitle">
-        <div className="count">{formatNumber(nTotal, config.strQuestions)}</div>
-        <div className="sort">
-          {info}
-          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Newest", tag })}
-            className={sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
-          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Active", tag })}
-            className={sort === "Active" ? "selected" : undefined}>Active</NavLink>
-        </div>
-      </div>
-    </React.Fragment>
-  );
+  const subtitle = getDiscussionsSubtitle(title, formatNumber(nTotal, config.strQuestions), tag, sort);
 
   const footer = (
     <React.Fragment>
@@ -350,6 +314,46 @@ export function Discussions(data: I.Discussions): Layout {
     main: { content, title, subtitle, footer },
     width: "Closed"
   };
+}
+
+function formatNumber(count: number, things: string) {
+  // https://blog.abelotech.com/posts/number-currency-formatting-javascript/
+  const rc = count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + things.toLowerCase();
+  return ((count === 1) && (things[things.length - 1] === "s")) ? rc.substring(0, rc.length - 1) : rc;
+}
+
+function getDiscussionsSubtitle(title: string, left: string, tag: I.Key | undefined, sort: R.DiscussionsSort | "info") {
+  const info = (!tag) ? undefined : <NavLink to={R.getTagInfoUrl(tag)}>Info</NavLink>;
+  const links = (!tag || (sort === "info")) ? undefined : (
+    <div className="minigrid links">
+      <ul>
+        <li><Link to={R.getTagInfoUrl(tag)}>Learn more…</Link></li>
+        <li><Link to={R.getTagEditUrl(tag)}>Improve tag info</Link></li>
+      </ul>
+    </div>
+  );
+
+  return (
+    <React.Fragment>
+      <div className="minigrid">
+        <h1>{title}</h1>
+        <div className="link">
+          <Link to={R.route.newDiscussion} className="linkbutton">{config.strNewQuestion.button}</Link>
+        </div>
+      </div>
+      {links}
+      <div className="minigrid subtitle">
+        <div className="count">{left}</div>
+        <div className="sort">
+          {info}
+          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Newest", tag })}
+            className={sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
+          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Active", tag })}
+            className={sort === "Active" ? "selected" : undefined}>Active</NavLink>
+        </div>
+      </div>
+    </React.Fragment>
+  );
 }
 
 /*
@@ -467,4 +471,42 @@ export function Tags(data: I.Tags): Layout {
     main: { content: contentTags, title, subtitle, footer },
     width: "Grid"
   };
+}
+
+/*
+  Tag
+*/
+
+export type TagExtra = R.InfoOrEdit & { history: History };
+export function Tag(data: I.TagInfo, extra: TagExtra): Layout {
+  const { word } = extra;
+
+  const title = (word === "edit") ? `Editing tag info for '${data.key}'` : `About '${data.key}'`;
+
+  const subtitle = (word === "edit") ? undefined : getDiscussionsSubtitle(title, "Tag Info", data, "info");
+
+  function infoContent() {
+    const summary = data.summary ? data.summary : "There is no summary for this tag … yet!";
+    const markdown = data.markdown ? <div dangerouslySetInnerHTML={toHtml(data.markdown)}></div>
+      : <div className="summary none">{"There is no information for this tag … yet!"}</div>
+    const buttonText = (!!data.summary && !!data.markdown) ? "Edit Tag info" : "Create Tag Info";
+    return (
+      <div className="tag-wiki">
+        <div className="summary">{summary}</div>
+        {markdown}
+        <div className="link">
+          <Link to={R.getTagEditUrl(data)} className="linkbutton">{buttonText}</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const content = (word === "edit")
+    ? <EditTagInfo tag={data.key} history={extra.history} summary={data.summary} markdown={data.markdown} />
+    : infoContent();
+  const layout: Layout = {
+    main: { content, title, subtitle },
+    width: "None"
+  };
+  return layout;
 }

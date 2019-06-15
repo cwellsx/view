@@ -111,6 +111,10 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
       if (!R.isParserError(options)) {
         return DB.getTags(options);
       }
+      const key = R.isTagKey(location);
+      if (!R.isParserError(key)) {
+        return DB.getTag(key);
+      }
       // should return 400 Bad Request
       return undefined;
     }
@@ -185,6 +189,15 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
         }
 
         return { error: "Unexpected User post" };
+      }
+
+      case "Tag": {
+        const tag = R.isEditTagInfo(location);
+        if (tag) {
+          const posted = json as Post.EditTagInfo;
+          return Action.createEditTagInfo(posted, dateTime, userId, tag);
+        }
+        return { error: "Unexpected Tag post" };
       }
 
       default:

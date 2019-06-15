@@ -167,10 +167,30 @@ export function extractNewMessage(action: NewMessage): { discussionId: number, m
 }
 
 /*
+  EditTagInfo
+*/
+
+export type EditTagInfo = ActionT<"EditTagInfo", Post.EditTagInfo> & { tag: string };
+
+export function createEditTagInfo(
+  posted: Post.EditTagInfo,
+  dateTime: string, userId: number,
+  // carried in the URL
+  tag: string)
+  : EditTagInfo {
+  return { type: "EditTagInfo", posted, dateTime, userId, tag }
+}
+
+export function extractEditTagInfo(action: EditTagInfo): { tag: string, posted: Post.EditTagInfo } {
+  const { tag, posted } = action;
+  return { tag, posted };
+}
+
+/*
   Any
 */
 
-export type Any = NewTopic | NewUser | EditUserProfile | NewMessage | NewDiscussion;
+export type Any = NewTopic | NewUser | EditUserProfile | NewMessage | NewDiscussion | EditTagInfo;
 
 export function getLoadPriority(action: Any): number {
   switch (action.type) {
@@ -179,6 +199,7 @@ export function getLoadPriority(action: Any): number {
     case "NewTopic": return 3;
     case "NewDiscussion": return 4;
     case "NewMessage": return 5;
+    case "EditTagInfo": return 6;
     default:
       throw new Error(`Unhandled type`);
   }

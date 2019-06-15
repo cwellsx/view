@@ -231,3 +231,21 @@ div.tags {
 .minigrid.links ul > li {
   margin: 0.5em;
 }
+
+/* styles on tag info */
+
+.tag-wiki .summary {
+  padding: 10px;
+  border: 2px solid #e4e6e8;
+  margin-bottom: 8px;
+}
+
+.tag-wiki .summary.none {
+  background-color: #fff5ee;
+  border-color: #ff8c00;
+  margin: 10px 0;
+}
+
+.tag-wiki .link .linkbutton {
+  display: inline-block;
+}
