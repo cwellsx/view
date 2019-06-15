@@ -29,6 +29,7 @@ const routeDiscussionsTagged_: Route = { resourceType: "Discussion", word: "tagg
 const routeDiscussionsTagged: RouteT<Key> = { resourceType: "Discussion", parts: ["tagged", "key"] }
 const routeTagInfo: RouteT<Key> = { resourceType: "Tag", parts: ["key", "info"] }
 const routeTagEdit: RouteT<Key> = { resourceType: "Tag", parts: ["key", "edit"] }
+const routeTagKey: RouteT<Key> = { resourceType: "Tag", parts: ["key"] }
 
 // POST not GET
 const routeLogin: Route = { resourceType: "Login" };
@@ -525,8 +526,29 @@ export function getTagUrl(tag: Key): string { return getDiscussionsTaggedUrl(tag
 
 export function getTagInfoUrl(tag: Key): string { return makeUrlT(routeTagInfo, tag); }
 export function getTagEditUrl(tag: Key): string { return makeUrlT(routeTagEdit, tag); }
+export function getTagKeyUrl(tag: Key): string { return makeUrlT(routeTagKey, tag); }
 
 export function getDiscussionsTaggedUrl(tag: Key): string { return makeUrlT(routeDiscussionsTagged, tag); }
+
+export interface InfoOrEdit { word: "info" | "edit" };
+
+export function isTagInfo(location: Location): Key | ParserError {
+  const elements: Elements = new Elements(location);
+  const key = elements.matchesT(routeTagInfo);
+  return key ? key : errorUnexpectedPath;
+}
+
+export function isTagEdit(location: Location): Key | ParserError {
+  const elements: Elements = new Elements(location);
+  const key = elements.matchesT(routeTagEdit);
+  return key ? key : errorUnexpectedPath;
+}
+
+export function isTagKey(location: Location): Key | ParserError {
+  const elements: Elements = new Elements(location);
+  const key = elements.matchesT(routeTagKey);
+  return key ? key : errorUnexpectedPath;
+}
 
 /*
   Discussions page has two tabs (3 options)
@@ -662,6 +684,10 @@ export function postEditUserProfileUrl(userId: number): string {
   return makeUrlT(routeEditUserProfile, { id: userId });
 }
 
+export function postEditTagInfoUrl(tag: string): string {
+  return makeUrlT(routeTagEdit, { key: tag });
+}
+
 export function isLogin(location: Location): boolean {
   const elements: Elements = new Elements(location);
   return elements.matches(routeLogin);
@@ -682,6 +708,12 @@ export function isEditUserProfile(location: Location): number | undefined {
   const elements: Elements = new Elements(location);
   const found = elements.matchesT(routeEditUserProfile);
   return found ? found.id : undefined;
+}
+
+export function isEditTagInfo(location: Location): string | undefined {
+  const elements: Elements = new Elements(location);
+  const found = elements.matchesT(routeTagEdit);
+  return found ? found.key : undefined;
 }
 
 /*

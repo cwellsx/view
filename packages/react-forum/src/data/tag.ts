@@ -11,3 +11,11 @@ export interface Tags {
   range: TagsRange;
   tagCounts: TagCount[];
 }
+
+export interface TagInfo extends Key {
+  title: string,
+  summary?: string;
+  markdown?: string;
+}
+
+export const tagSummaryLength = { min: 20, max: 460 };

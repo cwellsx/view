@@ -1,5 +1,5 @@
 import * as I from "../data";
-import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage, TagId } from "./bare";
+import { BareTag, BareTagCount, BareUser, BareDiscussion, BareMessage, TagId, isTag } from "./bare";
 import { loadImages, loadActions, KeyFromTagId } from "./loader";
 import { WireSummaries, WireDiscussions, WireDiscussion, WireUserActivity } from "../shared/wire";
 import { getExerpt } from "../shared/exerpt";
@@ -283,6 +283,29 @@ export function getTags(options: R.TagsOptions): I.Tags {
   return { range, tagCounts: selected };
 }
 
+export function getTag(tag: I.Key): I.TagInfo | undefined {
+  const tagId: TagId | undefined = tagDiscussions.find(tag.key);
+  if (!tagId) {
+    // should return 404 Not Found
+    return undefined;
+  }
+  if (isTag(tagId)) {
+    // ideally allags would be a map instead of an array, but in practice we don't have so many tags that it matters
+    // also we're targetting down-level JS so it's inconvenient to iterate map values
+    const found: BareTag = allTags.find(x => x.key === tagId.tag)!;
+    const { title, summary, markdown } = found;
+    return { title, summary, markdown, key: tag.key };
+  } else {
+    if (tagId.resourceType !== "Image") {
+      // should return 500 Internal Server Error
+      return undefined;
+    }
+    const image: I.Image = allImages.find(x => x.id === tagId.id)!;
+    const { name, summary, markdown } = image;
+    return { title: name, summary, markdown, key: tag.key };
+  }
+}
+
 /*
   POST functions
 */
@@ -392,6 +415,33 @@ function postNewMessage(action: Action.NewMessage): I.Message {
   return { userSummary: getUserSummary(message.userId), markdown: message.markdown, dateTime: message.dateTime };
 }
 
+function postEditTagInfo(action: Action.EditTagInfo): I.Key | undefined {
+  // this logic is similar to getTag()
+  const { tag, posted } = Action.extractEditTagInfo(action);
+  const { summary, markdown } = posted;
+  const tagId: TagId | undefined = tagDiscussions.find(tag);
+  if (!tagId) {
+    // should return 404 Not Found
+    return undefined;
+  }
+  if (isTag(tagId)) {
+    // ideally allags would be a map instead of an array, but in practice we don't have so many tags that it matters
+    // also we're targetting down-level JS so it's inconvenient to iterate map values
+    const found: BareTag = allTags.find(x => x.key === tagId.tag)!;
+    found.summary = summary.length ? summary : undefined;
+    found.markdown = markdown.length ? markdown : undefined;
+  } else {
+    if (tagId.resourceType !== "Image") {
+      // should return 500 Internal Server Error
+      return undefined;
+    }
+    const image: I.Image = allImages.find(x => x.id === tagId.id)!;
+    image.summary = summary;
+    image.markdown = markdown.length ? markdown : undefined;
+  }
+  return { key: tag };
+}
+
 export function handleAction(action: Action.Any) {
   switch (action.type) {
     case "NewUser":
@@ -404,6 +454,8 @@ export function handleAction(action: Action.Any) {
       return postNewDiscussion(action);
     case "NewMessage":
       return postNewMessage(action);
+    case "EditTagInfo":
+      return postEditTagInfo(action);
     default:
       return { error: "Unexpected post type" };
   }

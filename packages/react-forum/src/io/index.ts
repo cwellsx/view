@@ -104,6 +104,11 @@ export async function getTags(options: R.TagsOptions): Promise<I.Tags> {
   return getT<I.Tags>(url);
 }
 
+export async function getTag(tag: I.Key): Promise<I.TagInfo> {
+  const url = R.getTagKeyUrl(tag);
+  return getT<I.TagInfo>(url);
+}
+
 /*
   function to post data
 */
@@ -122,5 +127,9 @@ export async function newDiscussion(data: Post.NewDiscussion): Promise<I.IdName>
 
 export async function editUserProfile(userId: number, data: Post.EditUserProfile): Promise<I.IdName> {
   return getT<I.IdName>(R.postEditUserProfileUrl(userId), data);
+}
+
+export async function editTagInfo(tag: string, data: Post.EditTagInfo): Promise<I.Key> {
+  return getT<I.Key>(R.postEditTagInfoUrl(tag), data);
 }
 

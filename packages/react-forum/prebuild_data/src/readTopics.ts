@@ -1,4 +1,5 @@
-import { BareTopic, summaryLength } from "../../src/server/bare";
+import { tagSummaryLength } from "../../src/data/tag";
+import { BareTopic } from "../../src/server/bare";
 import { getTagText } from "../../src/server/tagids";
 
 function getSummary(paragraph: string[]): string | undefined {
@@ -6,7 +7,7 @@ function getSummary(paragraph: string[]): string | undefined {
   if (random > 0.66) {
     return undefined;
   }
-  const max = summaryLength.max;
+  const max = tagSummaryLength.max;
   const wanted = (random > 0.33) ? max : max * random;
   let rc = "";
   paragraph.forEach(x => {
@@ -18,10 +19,10 @@ function getSummary(paragraph: string[]): string | undefined {
     }
     rc += sentence;
   })
-  if (rc.length < summaryLength.min) {
+  if (rc.length < tagSummaryLength.min) {
     return undefined;
   }
-  if (rc.length > summaryLength.max) {
+  if (rc.length > tagSummaryLength.max) {
     throw new Error(rc);
   }
   return rc;
