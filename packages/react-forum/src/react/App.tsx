@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ReactRouter from 'react-router-dom';
-import { useLayout, Layout, loadingContents } from './PageLayout';
+import { useLayout, Layout, loadingContents, loadingError } from './PageLayout';
 import { Topbar } from './Topbar';
 import { Login } from './Login';
 import './App.css';
@@ -45,6 +45,8 @@ const AppRoutes: React.FunctionComponent = () => {
       <Topbar />
       <ReactRouter.Switch>
         <ReactRouter.Route exact path="/index" component={SiteMap} />
+        <ReactRouter.Route exact path="/" component={Home} />
+        <ReactRouter.Route exact path="/home" component={Home} />
         <ReactRouter.Route exact path={R.route.login} component={Login} />
         <ReactRouter.Route exact path={R.route.siteMap} component={SiteMap} />
         <ReactRouter.Route exact path={R.route.discussions} component={Discussions} />
@@ -158,6 +160,7 @@ function useGetLayout2<TData, TParam, TExtra extends {}>(
 
   const [prev, setParam] = React.useState<TParam | undefined>(undefined);
   const [data, setData] = React.useState<TData | undefined>(undefined);
+  const [error, setError] = React.useState<Error | undefined>(undefined);
 
   // we pass the reload function to the getLayout function so that it can force a reload e.g. after
   // posting a new message to the server. We force a reload because nothing has changed on the client --
@@ -177,6 +180,9 @@ function useGetLayout2<TData, TParam, TExtra extends {}>(
       .then((fetched) => {
         setData(fetched);
         setParam(param);
+      }).catch((reason) => {
+        console.log(`useEffect failed ${reason}`);
+        setError(reason);
       });
   }, [getData, getLayout, param, toggle]);
 
@@ -184,7 +190,9 @@ function useGetLayout2<TData, TParam, TExtra extends {}>(
 
   const layout: Layout = (data) && (prev === param)
     ? getLayout(data, extra2) // render the data
-    : loadingContents; // else no data yet to render
+    : (error)
+      ? loadingError(error)
+      : loadingContents; // else no data yet to render
 
   return useLayout(layout);
 }
@@ -203,6 +211,22 @@ const SiteMap: React.FunctionComponent = () => {
   return useGetLayout0<I.SiteMap>(
     IO.getSiteMap,
     Page.SiteMap
+  );
+}
+
+// these are used as TExtra types
+type FetchedIsHtml = { isHtml: boolean };
+
+const Home: React.FunctionComponent = () => {
+
+  const isHtml = false;
+  const filename = isHtml ? "home.html" : "home.md";
+
+  return useGetLayout2<string, string, FetchedIsHtml>(
+    IO.getPublic,
+    Page.Fetched,
+    filename,
+    { isHtml }
   );
 }
 

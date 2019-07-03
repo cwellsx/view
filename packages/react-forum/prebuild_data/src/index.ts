@@ -18,6 +18,8 @@ import { getTagText } from "../../src/server/tagids";
 
 // helper functions
 
+const tryAlt = false;
+
 function getAltInputDir(dirName: string): string {
   const root = path.join(__dirname, "../data");
   return path.join(root, dirName + ".alt");
@@ -25,9 +27,11 @@ function getAltInputDir(dirName: string): string {
 
 function getInputDir(dirName: string): string {
   const root = path.join(__dirname, "../data");
-  const alt: string = path.join(root, dirName + ".alt");
-  if (fs.existsSync(alt)) {
-    return alt;
+  if (tryAlt) {
+    const alt: string = path.join(root, dirName + ".alt");
+    if (fs.existsSync(alt)) {
+      return alt;
+    }
   }
   const rc: string = path.join(root, dirName);
   if (fs.existsSync(rc)) {
@@ -37,6 +41,7 @@ function getInputDir(dirName: string): string {
 }
 
 const rootOutputDir = path.join(__dirname, "../../src/server_data");
+const rootPublicDir = path.join(__dirname, "../../public");
 
 function getOutputFile(fileName: string, ext = ".json"): string {
   if (!fs.existsSync(rootOutputDir)) {
@@ -81,7 +86,7 @@ function getRandom(): string[][] {
 
 function getTopics(): { topicTitles: string[], tags: BareTopic[] } {
   const inputTopics = path.join(getAltInputDir("topics"), "topics.txt");
-  if (fs.existsSync(inputTopics)) {
+  if (tryAlt && fs.existsSync(inputTopics)) {
     const topicTitles: string[] = readTopicTitles(fs.readFileSync(inputTopics, "utf8"));
     const tags: BareTopic[] = addSummaries(topicTitles, getRandom());
     return { topicTitles, tags };
@@ -118,6 +123,14 @@ imageNames.forEach((imageName, index) => {
   imageTags.push({ id: index + 1, resourceType: "Image" })
 });
 
+let preferredKey: string = getTagText(!imageTags.length ? tagKeys[0] : imageNames[0]);
+
 const outputDiscussions = getOutputFile("discussions");
 const discussions = readDiscussions(getRandom(), users.length, tagKeys, imageTags);
 writeJson(discussions, outputDiscussions);
+
+const inputHome = path.join(getInputDir("home"), "home.md");
+const homeRaw = fs.readFileSync(inputHome, "utf8");
+const home = homeRaw.replace(/\{tag\}/g, preferredKey);
+const outputHome = path.join(rootPublicDir, "home.md");
+fs.writeFileSync(outputHome, home, "utf8");

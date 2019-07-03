@@ -17,6 +17,8 @@ export const Topbar: React.FunctionComponent = () => {
     <div className="topbar" >
       <div className="container">
         <ul className="icons">
+          <li className="icon"><NavLink to="/home" title="About">
+            <Icon.Home width="24" height="24" /></NavLink></li>
           <li className="icon"><NavLink to={route.tags} title={config.strTags}>
             <Icon.Search width="24" height="24" /></NavLink></li>
           {me ?

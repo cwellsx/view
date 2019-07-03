@@ -7,8 +7,10 @@
 # site-specific content not included in the default deploy for this project
 /prebuild_data/data/*.alt
 
+# content created by running the prebuild_data script
 /src/server_data/*
 !/src/server_data/README.md
+/public/home.md
 
 # dependencies
 /node_modules
