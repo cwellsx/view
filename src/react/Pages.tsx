@@ -10,11 +10,37 @@ import { NavLink, Link } from 'react-router-dom';
 import { AnswerDiscussion, EditUserSettings, EditTagInfo } from "./Editor";
 import { toHtml } from "../io/markdownToHtml";
 import { History } from "history";
+import { toReact } from "../io/htmlToReact";
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
   conversely this `Page.tsx` defines "presentational" components.
 */
+
+/*
+  Fetched
+*/
+
+export function Fetched(fetched: string, extra: { isHtml: boolean }): Layout {
+  const { isHtml } = extra;
+  function parse() {
+    const lines = fetched.split(/\r?\n/);
+    const found = lines.find(s => s.startsWith(isHtml ? "<h1>" : "# "));
+    if (found) {
+      const title = isHtml ? found.substring(4, found.length - 5).trim() : found.substring(2).trim();
+      const sliced = lines.slice(1).join("\r\n");
+
+      return { title, sliced };
+    } else {
+      return { title: "Untitled?", sliced: fetched };
+    }
+  }
+  const { title, sliced } = parse();
+  const html = isHtml ? sliced : toHtml(sliced).__html;
+  // toReact(html) replaces `<a>` with `<Link>` -- instead of using `<div dangerouslySetInnerHTML={{ __html: html }} />`
+  const content = toReact(html);
+  return { main: { title, content }, width: "Open" };
+}
 
 /*
   SiteMap
@@ -437,8 +463,7 @@ export function Tags(data: I.Tags): Layout {
   function getTagInfo(tagCount: I.TagCount) {
     // similar to the ShowHint function in EditorTags.tsx
     const key = tagCount.key;
-    const href = R.getTagUrl({ key });
-    const tag = <Link className="tag" to={href}>{key}</Link>;
+    const tag = Summaries.getTagLink(tagCount);
     const count = (tagCount.count) ? <span className="multiplier">×&nbsp;{tagCount.count}</span> : undefined;
     const summary = (tagCount.summary) ? <div className="exerpt">{tagCount.summary}</div> : undefined;
     const edit = (

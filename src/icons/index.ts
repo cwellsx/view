@@ -6,3 +6,4 @@ export { ReactComponent as Location } from "../icons/outline-location_on-24px.sv
 export { ReactComponent as Close } from "../icons/outline-close-24px.svg";
 export { ReactComponent as Info } from "../icons/outline-info-24px.svg";
 export { ReactComponent as Error } from "../icons/outline-error-24px.svg";
+export { ReactComponent as Home } from "../icons/outline-home-24px.svg";

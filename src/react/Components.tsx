@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import * as I from "../data";
 import { KeyedItem } from './PageLayout';
 import * as R from "../shared/urls";
@@ -66,6 +66,12 @@ export function getTagSummary(summary: I.SiteTagCount): KeyedItem {
   return { element, key: href };
 }
 
+export function getTagLink(tag: I.Key): React.ReactElement {
+  const href = R.getTagUrl(tag);
+  return <Link className="tag" to={href}>{tag.key}</Link>;
+
+}
+
 function toLocaleString(date: Date): string {
   const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()];
   const year = (new Date().getFullYear() === date.getFullYear()) ? "" : ` '${("" + date.getFullYear()).substring(2)}`;
@@ -80,14 +86,14 @@ export function getTagCount(tagCount: I.TagCount) {
   return <div className="topic" key={key}><span className="tag">{key}</span>{suffix}</div>;
 }
 
-// called from getDiscussionSummary, and getMessage (for each essage within discussion)
+// called from getDiscussionSummary, and getMessage (for each message within discussion)
 function getTags(tags: I.Key[]) {
   return (
     <div className="topic">
       {tags.map(tag => {
-        const { key } = tag;
+        const link = getTagLink(tag);
         // want whitespace between each tag
-        return <React.Fragment key={key}><span className="tag">{key}</span>&#32;</React.Fragment>;
+        return <React.Fragment key={tag.key}>{link}&#32;</React.Fragment>;
       })}
     </div>
   );

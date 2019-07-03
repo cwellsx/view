@@ -9,6 +9,7 @@
 
 .topbar .container {
   max-width: 1264px;
+  margin: 0 auto 0 auto;
 }
 
 .topbar .icons {
@@ -18,6 +19,10 @@
   padding: 0;
   float: right;
   align-items: center;
+}
+
+.topbar .icons.left {
+  float: left;
 }
 
 .topbar .icons li.icon {

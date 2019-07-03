@@ -1,0 +1,62 @@
+<h1>React Forum</h1>
+<p>
+  This is an experiment -- write a discussion forum, using React.
+</p>
+<p>
+  It is a "minimum viable" implementation, a proof of concept --
+  one could add more features, but the most essential are in place.
+</p>
+<p>
+  There are three types of data -- Discussions, Tags, and Users.
+</p>
+<table>
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Pages</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Discussions</td>
+      <td>
+        <ul>
+          <li>List of <a href="/discussions">All discussions</a> --
+            this can be sorted by "newest" (when it was created), or "active" (when its most recent message was posted);
+            and there's pagination (e.g. 50 per page).</li>
+          <li>Each discussion, <a href="/discussions/1">for example here</a> --
+            there's a text area at the end where you can post another answer.</li>
+          <li>Start a <a href="/discussions/new">New discussion</a> -- if you click the "Ask Question" button on that
+            page,
+            you'll see that the user's data entry is validated;
+            and there's a tag editor, which displays existing tags as hints.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>Tags</td>
+      <td>
+        <ul>
+          <li>List of <a href="/tags">All tags</a></li>
+          <li><a href="/discussions/tagged/mappa-mundi">Discussions for each tag</a></li>
+          <li><a href="/tags/mappa-mundi/info">Description of each tag</a></li>
+          <li>And a page to <a href="/tags/mappa-mundi/edit">Edit the description</a></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>Users</td>
+      <td>
+        <ul>
+          <li>List of <a href="/users">All users</a>.
+          <li>For each specific users, three tabs:
+            <ul>
+              <li><a href="/users/1">Profile</a></li>
+              <li><a href="/users/edit/1">Edit settings</a></li>
+              <li><a href="/users/1?tab=activity">Activity</a></li>
+            </ul>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>

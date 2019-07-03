@@ -89,6 +89,14 @@ function isUrlT<T extends object>(segments: string[], route: RouteT<T>): T | und
     return undefined;
   }
   if (segments.length !== 1 + parts.length) {
+    // handle it gracefully if the last "name" part of the URL is left offf
+    if (parts.length && (parts[parts.length - 1] === "name") && (segments.length === parts.length)) {
+      const short: RouteT<T> = { resourceType, parts: parts.slice(0, parts.length - 1) };
+      const found = isUrlT(segments, short);
+      if (found) {
+        return { ...found, name: "" };
+      }
+    }
     return undefined;
   }
   let rc = {};

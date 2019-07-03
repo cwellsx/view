@@ -133,3 +133,46 @@ export async function editTagInfo(tag: string, data: Post.EditTagInfo): Promise<
   return getT<I.Key>(R.postEditTagInfoUrl(tag), data);
 }
 
+/*
+  function to get markdown
+
+  it's difficult to import markdown into the server
+
+  for example `import home from "../server_data/home.md";` seem to work
+
+  this comment involves a babel macro which might work ...
+
+  https://github.com/facebook/create-react-app/issues/3722#issuecomment-458124126
+
+  ... but instead the following uses fetch to read the file from the public directory.
+*/
+
+export async function getPublic(filename: string): Promise<string> {
+
+  const headers: Headers = new Headers();
+  headers.append("Accept", "application/json");
+  headers.append("pragma", "no-cache");
+  headers.append("cache-control", "no-cache");
+  const init: RequestInit = {
+    headers
+  };
+  const promise: Promise<Response> = fetch(filename, init);
+  const result: Promise<string> = new Promise<string>((resolve, reject) => {
+    promise.then((response: Response) => {
+      if (!response.ok) {
+        const error = new Error(`${response.status} ${response.statusText}`);
+        (error as any).url = filename;
+        console.error(error.message);
+        reject(error);
+      }
+      response.text().then((text: string) => {
+        // console.log(text);
+        resolve(text);
+      });
+    }).catch((reason) => {
+      console.error(reason.error);
+      reject(reason);
+    });
+  });
+  return result;
+}

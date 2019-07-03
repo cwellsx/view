@@ -77,6 +77,18 @@ export interface Layout {
 
 export const loadingContents: Layout = { main: { title: "Loading...", content: "..." }, width: "Closed" };
 
+export function loadingError(error: Error): Layout {
+  const url = (error as any).url;
+  const what = (url) ? <p>URL: "{url}"</p> : { undefined };
+  const content = (
+    <React.Fragment>
+      {what}
+      <p>Error: {error.message}</p>
+    </React.Fragment>
+  );
+  return { main: { title: "Error", content }, width: "Open" }
+}
+
 function setTitle(title: string): void {
   document.title = `${title} - ${config.appname}`;
 }

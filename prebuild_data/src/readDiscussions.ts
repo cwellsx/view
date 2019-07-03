@@ -12,14 +12,14 @@ import { BareDiscussion, BareMessage, TagId } from "../../src/server/bare";
   - the number of messages per discussion
 */
 
-export function readDiscussions(input: string[][], nUsers: number, tagKeys: string[], imageTags: TagId[]): object {
+export function readDiscussions(input: string[][], nUsers: number, tagKeys: string[], imageTags: TagId[]): BareDiscussion[] {
 
   function random_userId(): number { return Math.floor(Math.random() * nUsers) + 1; };
   function random_1to10(): number { return Math.floor((Math.random() * 10) + 1); };
   function random_string(strings: string[]): string { return strings[Math.floor((Math.random() * strings.length))]; };
   function random_tag(): TagId {
-    if (imageTags.length && (Math.random() < 0.15)) {
-      return imageTags[0];
+    if (Math.random() < 0.15) {
+      return imageTags.length ? imageTags[0] : { tag: tagKeys[0] };
     }
     const tag = random_string(tagKeys);
     return { tag };
