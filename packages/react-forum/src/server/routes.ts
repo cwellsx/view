@@ -205,8 +205,19 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
     }
   }
 
-  if (resourceType === "Login") {
-    return loginUser();
+  // handle things which are implemented as a POST because they include JSON body data
+  // but which aren't a type of action which updates the database data
+  switch (resourceType) {
+    case "Login":
+      return loginUser();
+    case "Tag":
+      const options = R.isTagsOptions(location);
+      if (!R.isParserError(options)) {
+        return DB.getTags(options, (json as Post.SearchInput).searchInput);
+      }
+      break;
+    default:
+      break;
   }
 
   const action = getAction(resourceType);

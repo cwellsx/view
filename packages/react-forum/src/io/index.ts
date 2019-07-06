@@ -99,9 +99,9 @@ export async function getAllTags(): Promise<I.TagCount[]> {
   return getT<I.TagCount[]>(R.getAllTagsUrl());
 }
 
-export async function getTags(options: R.TagsOptions): Promise<I.Tags> {
+export async function getTags(options: R.TagsOptions, data?: Post.SearchInput): Promise<I.Tags> {
   const url = R.getTagsOptionsUrl(options);
-  return getT<I.Tags>(url);
+  return getT<I.Tags>(url, data);
 }
 
 export async function getTag(tag: I.Key): Promise<I.TagInfo> {

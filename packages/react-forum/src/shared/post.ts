@@ -45,3 +45,9 @@ export interface EditTagInfo {
 
 // these are the <component>/<verb> paris which may be stored in the `post` member of the `Resource` instance
 export type PostUrls = "answer/submit";
+
+// this is GET not POST but it's carried in the JSON data
+
+export interface SearchInput {
+  searchInput: string
+}

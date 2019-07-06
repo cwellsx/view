@@ -12,7 +12,7 @@ The following are complete, or at least well-begun.
   - [x] Pages share a reusable, configurable, extensible common layout
   - [x] Pages share reusable common elements (simple components)
   - [x] Further components when needed for any more complex user interactions
-  - [x] Some UI details, including "tabs", the sort-order and paging of lists
+  - [x] Some UI details, including "tabs", the sort-order and paging of lists, and search input
 - [x] System architecture -- share data type definitions, between the React front-end and the server back-end
 - [x] Server architecture -- implement the server's data types, and data processing
 
@@ -21,7 +21,6 @@ The following are complete, or at least well-begun.
 I won't list components -- like the "Top-bar" and the "Editor" -- but here's a list of the pages that are now complete
 (or they're at least implemented, and further functionality could be added):
 
-- Site map
 - Discussions
   - [x] List discussions
   - [x] Create new discussion
@@ -32,6 +31,11 @@ I won't list components -- like the "Top-bar" and the "Editor" -- but here's a l
   - [x] View user profile
   - [x] Edit profile and preferences
   - [x] View user activity
+- Tags
+  - [x] List tags
+  - [x] Discussions for each tag
+  - [x] View tag information
+  - [x] Edit tag information
 
 ## To do
 
@@ -69,19 +73,6 @@ required) -- I suspect React support IE, however I used slightly modern JavaScri
 - [ ] There's currently client-side validation but not server-side validation, e.g. of an edited user profile, so a
   malicious client could post invalid changes (e.g. a user profile which deletes the user name).
 
-### More
-
-I'd like to do a little more before stopping, to make a good demo of the UI:
-
-- Make the tags clickable, to support
-  - Question tagged [tag]
-  - Search questions for [user] tagged [tag]
-  - Edit tag information
-  - List of tags
-- Deploy to Heroku
-
-- Use https://expressjs.com/en/api.html#res in mockSend and server/routes
-
 More:
 
 - Alter the page margins if it's small-screen
@@ -89,3 +80,11 @@ More:
 - Support writing to local storage -- https://github.com/donavon/use-dark-mode
 - Use Sass to implement stylesheets -- https://facebook.github.io/create-react-app/docs/adding-a-sass-stylesheet
 - A popup showing the full summary (and how many watchers etc.) when you hover over a tag in the list of all tags
+
+### More
+
+I'd like to do a little more before stopping, to make a good demo of the UI:
+
+- Search questions for [user] tagged [tag]
+- Deploy to Heroku
+- Use https://expressjs.com/en/api.html#res in mockSend and server/routes

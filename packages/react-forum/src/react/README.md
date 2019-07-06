@@ -1,7 +1,7 @@
 # React components
 
 This directory contains all the React components
-(except there's one file, [`/src/index.tsx`](../index.tsx), in the root of the `/src` directory).
+(except there's one other file, [`/src/index.tsx`](../index.tsx), in the root of the `/src` directory).
 
 All other directories contain non-React TypeScript code
 (e.g. to define the server, and utilities and data interfaces shared with the server).
@@ -46,7 +46,7 @@ The most important files, and the sequence in which data is fetched and processe
 
    As a configuration option it can use a `mockFetch` function with the same API (and return type) as `fetch`,
    except that the `mockFetch` implementation gets its data by making a subroutine call into a copy of the server
-   that built-in to be resident in the browser.
+   that's built-in to be resident in the browser.
 
 ### [`/src/react/Pages.tsx`](./Pages.tsx) 
 
@@ -115,9 +115,10 @@ These include:
   (see also [`pagedown`](https://github.com/StackExchange/pagedown))
 - [`EditorTags.tsx`](./EditorTags.tsx) -- this is a surprisingly large component, which lets users create or edit the
   tags associated with a discussion (it has its own read-me, see [EDITORTAGS.md](./EDITORTAGS.md))
-- [`ErrorMessage.tsx`](./ErrorMessage.tsx) -- this is a tiny component to display an error message on a page
-  (invisible when there is no error message to display)
+- [`ErrorMessage.tsx`](./ErrorMessage.tsx) -- this is a component to display an error message on a page
+  (invisible when there is no error message to display), and a component to implement form validation
 - [`Login.tsx`](./Login.tsx) -- this is a place-holder for a Login form
 - [`Topbar.tsx`](./Topbar.tsx) -- this defines the navigation top-bar at the top of every page
   (the App includes it at the top of every page).
-
+- [`ThrottledInput.tsx`](./ThrottledInput.tsx) -- this implements an input text control,
+which makes API calls to the server, without flooding the server with excessively-many requests

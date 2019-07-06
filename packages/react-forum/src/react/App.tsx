@@ -14,6 +14,7 @@ import { loginUser } from "../io/mock";
 import { ErrorMessage } from "./ErrorMessage";
 import { NewDiscussion as NewDiscussionElement } from "./Editor";
 import { History } from "history";
+import { SearchInput } from "../shared/post";
 
 /*
   This defines the App's routes
@@ -125,11 +126,13 @@ type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
 */
 
 // this gets data from the server
-type IoGetDataT<TData, TParam> = (param: TParam) => Promise<TData>;
+type IoGetDataT<TData, TParam, TParam2 = void> = (param: TParam, param2?: TParam2) => Promise<TData>;
+
+// this defines two exra functions (named `reload` and `newData`) which are passed to the `getLayout` function
+type Extra<TParam> = { reload: () => void, newData: (param: TParam) => Promise<void> };
 
 // this uses data from the server, and optional extra data, to create a Layout object
-type Reload = () => void;
-type GetLayoutT<TData, TExtra> = (data: TData, extra: TExtra & { reload: Reload }) => Layout;
+type GetLayoutT<TData, TExtra, TParam> = (data: TData, extra: TExtra & Extra<TParam>) => Layout;
 
 // this value is passed as param to useGetLayout when TParam is void
 // or I could have implemented a copy-and-paste of useGetLayout without the TParam
@@ -138,14 +141,14 @@ const isVoid: void = (() => { })();
 // 1st overload, used when TParam is void
 function useGetLayout0<TData>(
   getData: IoGetDataT<TData, void>,
-  getLayout: GetLayoutT<TData, {}>): React.ReactElement {
+  getLayout: GetLayoutT<TData, {}, void>): React.ReactElement {
   return useGetLayout<TData, void>(getData, getLayout, isVoid);
 }
 
 // 2nd overload, used when TParam (passed to the IO function) is significant
 function useGetLayout<TData, TParam>(
   getData: IoGetDataT<TData, TParam>,
-  getLayout: GetLayoutT<TData, {}>,
+  getLayout: GetLayoutT<TData, {}, void>,
   param: TParam): React.ReactElement {
   return useGetLayout2<TData, TParam, {}>(getData, getLayout, param, {});
 }
@@ -153,7 +156,17 @@ function useGetLayout<TData, TParam>(
 // 3rd overload when there's TExtra parameter data to pass to the page layout function
 function useGetLayout2<TData, TParam, TExtra extends {}>(
   getData: IoGetDataT<TData, TParam>,
-  getLayout: GetLayoutT<TData, TExtra>,
+  getLayout: GetLayoutT<TData, TExtra, void>,
+  param: TParam,
+  extra: TExtra)
+  : React.ReactElement {
+  return useGetLayout3<TData, TParam, TExtra, void>(getData, getLayout, param, extra);
+}
+
+// 4th overload when there's a second TParam2 parameter passed to the IO function
+function useGetLayout3<TData, TParam, TExtra extends {}, TParam2>(
+  getData: IoGetDataT<TData, TParam, TParam2>,
+  getLayout: GetLayoutT<TData, TExtra, TParam2>,
   param: TParam,
   extra: TExtra)
   : React.ReactElement {
@@ -171,9 +184,31 @@ function useGetLayout2<TData, TParam, TExtra extends {}>(
     setToggle(!toggle); // toggle the state to force render
   }
 
+  // we pass a newData function to the getLayout function so that it can invoke the network I/O function again
+  // with a new parameter (see the ThrottledInput function) and store the new data and the new parameter back here
+  const newData = React.useMemo(() => {
+    const getDataAgain: (param2: TParam2) => Promise<void> = (param2: TParam2) => {
+      const promise = getData(param, param2);
+      const rc: Promise<void> = new Promise<void>((resolve, reject) => {
+        promise.then((fetched: TData) => {
+          // the layout function has fetched new data with a new parameter
+          // so redo now what was originally done at the end of useEffect
+          setData(fetched);
+          // setParam(param);
+          resolve();
+        })
+        promise.catch(error => {
+          reject(error);
+        });
+      });
+      return rc;
+    }
+    return getDataAgain;
+  }, [getData, param]);
+
   // add the reload function to the extra data which we pass as a parameter to the layout function
   // so that the layout function can call reload() if it wants to
-  const extra2: TExtra & { reload: Reload } = { ...extra, reload };
+  const extra2: TExtra & Extra<TParam2> = { ...extra, reload, newData };
 
   React.useEffect(() => {
     getData(param)
@@ -442,10 +477,11 @@ const TagsList: React.FunctionComponent<R.TagsOptions> = (props: R.TagsOptions) 
     () => { return { sort, pagesize, page }; },
     [sort, pagesize, page])
 
-  return useGetLayout<I.Tags, R.TagsOptions>(
+  return useGetLayout3<I.Tags, R.TagsOptions, {}, SearchInput>(
     IO.getTags,
     Page.Tags,
-    options
+    options,
+    {}
   );
 }
 
