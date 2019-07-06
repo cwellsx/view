@@ -57,6 +57,14 @@ div.all-tags > .tag-info {
   overflow: hidden;
 }
 
+div.all-users {
+  padding-top: 8px;
+}
+
+.user-info {
+  padding: 6px 6px 6px 7px;
+}
+
 /* tags -- similar to users */
 
 div.tags {
@@ -248,4 +256,24 @@ div.tags {
 
 .tag-wiki .link .linkbutton {
   display: inline-block;
+}
+
+/* style the search input */
+
+div.search {
+  position: relative;
+}
+
+div.search > input {
+  padding: 0.6em 0.7em 0.6em 32px;
+}
+
+div.search > svg {
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  margin-top: -9px;
+  left: 0.7em;
+  top: 50%;
+  fill: rgb(187, 192, 196);
 }

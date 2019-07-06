@@ -11,6 +11,8 @@ import { AnswerDiscussion, EditUserSettings, EditTagInfo } from "./Editor";
 import { toHtml } from "../io/markdownToHtml";
 import { History } from "history";
 import { toReact } from "../io/htmlToReact";
+import { ThrottledInput } from "./ThrottledInput";
+import { SearchInput } from "../shared/post";
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
@@ -425,11 +427,19 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
   Tags
 */
 
-export function Tags(data: I.Tags): Layout {
+export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Promise<void> }): Layout {
+
   const { range, tagCounts } = data;
   const title = config.strTags;
 
   // the header (subtitle) and footer are like (copy-and-pasted) those from the Discussions page
+
+  const search = (
+    <div className="search">
+      <ThrottledInput api={extra.newData} placeholder="Filter by tag name" />
+      <Icon.Search />
+    </div>
+  );
 
   const subtitle = (
     <React.Fragment>
@@ -437,7 +447,7 @@ export function Tags(data: I.Tags): Layout {
         <h1>{title}</h1>
       </div>
       <div className="minigrid subtitle">
-        <div className="count">{"(filter by tag name)"}</div>
+        <div className="count">{search}</div>
         <div className="sort">
           <NavLink to={R.getTagsOptionsUrl({ sort: "Popular" })}
             className={range.sort === "Popular" ? "selected" : undefined}>Popular</NavLink>

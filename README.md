@@ -7,18 +7,18 @@ try that to see how it behaves, and what it looks like.
 
 ## Why
 
-I wrote this project, to confirm my understanding of how to design and write an application using React.
+I wrote this project, to see how to design and write an application using React.
 
-The React API documentation shows small code examples --
-each a half-a-dozen lines of code -- whereas this larger project shows some example of:
+The React API documentation shows mostly small code examples,
+each a half-a-dozen lines of code -- this larger project shows some example of how to implement:
 
-- How to implement an application
+- An application
   -- [`./src/react/App.tsx`](./src/react/App.tsx)
-- How to implement something like a "master page template"
-  -- i.e. where different pages share similar but configurable, reusable layouts
-- How to implement a highly interactive component
+- Something like a "master page template"
+  -- i.e. where different pages share similar but configurable, reusable layouts with different content
+- A very interactive component
   -- [`./src/react/EditorTags.*`](./src/react/EDITORTAGS.md)
-- How to implement a Single Page Application
+- A Single Page Application
   -- by including the data, and perhaps a "mock" version of the server, in the code that's run inside the browser.
 
 The current size of this project is ...
@@ -28,16 +28,15 @@ rots --ext .css .md .ts .tsx
 ┌──────────────────────────────────────────────────────────────────────────────────────┐
 │ Language                Code       Comment         Blank         Lines         Files │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
-│ CSS                      603            17           145           765             7 │
-│ MarkDown                 294             0            93           387             6 │
-│ TypeScript              1583           344           339          2266            29 │
-│ TypeScript JSX          1662           393           325          2380            12 │
+│ CSS                      817            19           193          1029             9 │
+│ TypeScript              2292           433           436          3161            33 │
+│ TypeScript JSX          2624           603           469          3696            13 │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
-│ Total                   4142           754           902          5798            54 │
+│ Total                   5733          1055          1098          7886            55 │
 └──────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-In summary, React seems like a great way to write a whole application:
+In summary, React seems like a good way to write an application:
 
 - Nice tools -- including seamless integration between editing the source and browsing the result,
 and, VS Code's integration with TypeScript
@@ -71,7 +70,7 @@ You may not:
 - Modify it
 - Use it on a live web site
 
-Do contact me if you'd like to license or develop it further.
+Do contact me if you'd like to develop it further.
 
 https://github.com/cwellsx/react-forum
 

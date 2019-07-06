@@ -9,7 +9,6 @@ import * as Action from "./actions";
 import { TagIdCounts, TagIdDiscussions } from "./tagIds";
 import { configServer } from "../configServer";
 
-
 /*
   This is an in-RAM database
   or its API wraps an external database.
@@ -261,8 +260,8 @@ export function getAllTags(): I.TagCount[] {
   return tagDiscussions.tagCounts();
 }
 
-export function getTags(options: R.TagsOptions): I.Tags {
-  const tags: I.TagCount[] = getAllTags();
+export function getTags(options: R.TagsOptions, searchInput?: string): I.Tags {
+  const tags: I.TagCount[] = getAllTags().filter(tagCount => !searchInput ? true : tagCount.key.includes(searchInput));
   const sort: R.TagsSort = options.sort ? options.sort : "Popular";
   if (options.sort === "Name") {
     tags.sort((x, y) => x.key.localeCompare(y.key));
