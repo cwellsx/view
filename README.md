@@ -7,7 +7,7 @@ try that to see how it behaves, and what it looks like.
 
 ## Why
 
-I wrote this project, to see how to design and write an application using React.
+I wrote this project to see how to design and write an application using React.
 
 The React API documentation shows mostly small code examples,
 each a half-a-dozen lines of code -- this larger project shows some example of how to implement:
@@ -15,7 +15,7 @@ each a half-a-dozen lines of code -- this larger project shows some example of h
 - An application
   -- [`./src/react/App.tsx`](./src/react/App.tsx)
 - Something like a "master page template"
-  -- i.e. where different pages share similar but configurable, reusable layouts with different content
+  -- i.e. where different pages share similar layouts with different content
 - A very interactive component
   -- [`./src/react/EditorTags.*`](./src/react/EDITORTAGS.md)
 - A Single Page Application
@@ -85,3 +85,21 @@ to make this a product instead of a React demo and a proof-of-concept.
 
 "This project was bootstrapped with Create React App" so see
 the [CRA-README.md](./CRA-README.md) (renamed from `README.md`).
+
+## Integration with Express
+
+I did the minimum necessary to integrate with express:
+
+- Create a `server.js` which serves what's in the `build` directory
+- Add a new script named `express` to `package.json`
+- Added a script named `heroku-prebuild` (which runs the existing `prebuild-data` script)
+
+The express server can therefore be started by running the following scripts:
+
+```
+yarn build
+yarn express
+```
+
+I also defined a `profile` -- see Heroku's
+[Specifying a start script](https://devcenter.heroku.com/articles/deploying-nodejs#specifying-a-start-script).
