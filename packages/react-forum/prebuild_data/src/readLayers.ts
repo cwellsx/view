@@ -1,4 +1,4 @@
-import { ImageLayers, LayerNode } from "../../src/data/ImageLayers";
+import { ImageLayers, LayerNode } from "../../src/data/imageLayers";
 
 /*
   This processes a layers.txt file whose format is a tree of words,

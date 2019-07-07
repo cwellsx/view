@@ -1,6 +1,6 @@
 import { tagSummaryLength } from "../../src/data/tag";
 import { BareTopic } from "../../src/server/bare";
-import { getTagText } from "../../src/server/tagids";
+import { getTagText } from "../../src/server/tagIds";
 
 function getSummary(paragraph: string[], isFirst: boolean): string | undefined {
   const random = Math.random();

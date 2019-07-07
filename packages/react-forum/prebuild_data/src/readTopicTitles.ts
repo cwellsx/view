@@ -1,4 +1,4 @@
-import { getTagText } from "../../src/server/tagids";
+import { getTagText } from "../../src/server/tagIds";
 
 /*
   Assumes that topics may come from a spreadsheet
