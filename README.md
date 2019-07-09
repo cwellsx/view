@@ -2,8 +2,9 @@ This is forum/discussion software, written using React.js and TypeScript.
 
 ## Demo
 
-This software is running at `https://url-to-be-supplied.example.com` --
-try that to see how it behaves, and what it looks like.
+This software is running at https://react-forum2.herokuapp.com/discussions
+
+Try that to see how it behaves, and what it looks like.
 
 ## Why
 
@@ -21,21 +22,6 @@ each a half-a-dozen lines of code -- this larger project shows some example of h
 - A Single Page Application
   -- by including the data, and perhaps a "mock" version of the server, in the code that's run inside the browser.
 
-The current size of this project is ...
-
-```
-rots --ext .css .md .ts .tsx
-┌──────────────────────────────────────────────────────────────────────────────────────┐
-│ Language                Code       Comment         Blank         Lines         Files │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│ CSS                      817            19           193          1029             9 │
-│ TypeScript              2292           433           436          3161            33 │
-│ TypeScript JSX          2624           603           469          3696            13 │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│ Total                   5733          1055          1098          7886            55 │
-└──────────────────────────────────────────────────────────────────────────────────────┘
-```
-
 In summary, React seems like a good way to write an application:
 
 - Nice tools -- including seamless integration between editing the source and browsing the result,
@@ -46,10 +32,10 @@ and, VS Code's integration with TypeScript
 
 It also seems an adequate way to write some highly-interactive components.
 
-Using it with TypeScript instead of JavaScript also seems ideal -- for example,
+Using it with TypeScript also seems ideal -- for example,
 using TypeScript interfaces to define the format of data shared  between client and server,
 and used in the APIs of any reusable/shared components.
-Having strong types helps with refactoring as well.
+Having strong types helps with refactoring too.
 
 The source code all exists in two subdirectories:
 
@@ -86,13 +72,13 @@ to make this a product instead of a React demo and a proof-of-concept.
 "This project was bootstrapped with Create React App" so see
 the [CRA-README.md](./CRA-README.md) (renamed from `README.md`).
 
-## Integration with Express
+## Integration with Express and Heroku
 
 I did the minimum necessary to integrate with express:
 
-- Create a `server.js` which serves what's in the `build` directory
+- Create a `server.js` which serves what is in the `build` directory
 - Add a new script named `express` to `package.json`
-- Added a script named `heroku-prebuild` (which runs the existing `prebuild-data` script)
+- Added a script named `heroku-postbuild` (which runs the existing `prebuild-data` script)
 
 The express server can therefore be started by running the following scripts:
 
@@ -101,5 +87,5 @@ yarn build
 yarn express
 ```
 
-I also defined a `profile` -- see Heroku's
+I also defined a `Procfile` -- see Heroku's
 [Specifying a start script](https://devcenter.heroku.com/articles/deploying-nodejs#specifying-a-start-script).
