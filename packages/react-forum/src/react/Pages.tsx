@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 import * as I from "../data";
-import { KeyedItem, Layout, Tab, Tabs, SubTabs, MainContent } from './PageLayout';
+import { KeyedItem, Layout, Tab, Tabs, SubTabs, MainContent } from "./PageLayout";
 import * as Summaries from "./Components";
 import * as R from "../shared/urls";
-import './Pages.css';
+import "./Pages.css";
 import * as Icon from "../icons";
-import { config } from '../config';
-import { NavLink, Link } from 'react-router-dom';
+import { config } from "../config";
+import { NavLink, Link } from "react-router-dom";
 import { AnswerDiscussion, EditUserSettings, EditTagInfo } from "./Editor";
 import { toHtml } from "../io/markdownToHtml";
 import { History } from "history";
@@ -27,7 +27,7 @@ export function Fetched(fetched: string, extra: { isHtml: boolean }): Layout {
   const { isHtml } = extra;
   function parse() {
     const lines = fetched.split(/\r?\n/);
-    const found = lines.find(s => s.startsWith(isHtml ? "<h1>" : "# "));
+    const found = lines.find((s) => s.startsWith(isHtml ? "<h1>" : "# "));
     if (found) {
       const title = isHtml ? found.substring(4, found.length - 5).trim() : found.substring(2).trim();
       const sliced = lines.slice(1).join("\r\n");
@@ -65,13 +65,13 @@ export function SiteMap(data: I.SiteMap): Layout {
   */
 
   // render the images
-  data.images.forEach(x => content.push(Summaries.getImageSummary(x)));
+  data.images.forEach((x) => content.push(Summaries.getImageSummary(x)));
 
   const features = (
     <React.Fragment>
       <h2>Features</h2>
       <div className="features">
-        {data.tags.map(tag => {
+        {data.tags.map((tag) => {
           const content = Summaries.getTagSummary(tag);
           /*
             either we need to add whitespace between elements ...
@@ -80,11 +80,7 @@ export function SiteMap(data: I.SiteMap): Layout {
             ... or to add whitespace between spans ...
             - https://github.com/facebook/react/issues/1643#issuecomment-321439506
           */
-          return (
-            <span key={content.key}>
-              {content.element}
-            </span>
-          );
+          return <span key={content.key}>{content.element}</span>;
         })}
       </div>
     </React.Fragment>
@@ -100,27 +96,28 @@ export function SiteMap(data: I.SiteMap): Layout {
 */
 
 function getLayerKey(layer: I.LayerNode): string {
-  return (layer.alias)
-    ? layer.alias
-    : layer.name.toLowerCase().replace("&", "and").replace(" ", "-");
+  return layer.alias ? layer.alias : layer.name.toLowerCase().replace("&", "and").replace(" ", "-");
 }
 
 function handleLayerChange(event: React.ChangeEvent<HTMLInputElement>) {
   const target = event.target;
   const alias: string | null = target.getAttribute("name");
   const checked: boolean = target.checked;
-  alert(`In the non-prototype this would ${(checked) ? "show" : "hide"} the '${alias}' image layer`);
+  alert(`In the non-prototype this would ${checked ? "show" : "hide"} the '${alias}' image layer`);
 }
 
 function renderNode(node: I.LayerNode, alias: string): React.ReactElement {
   // https://stackoverflow.com/questions/26615779/react-checkbox-not-sending-onchange
-  return <label><input type="checkbox" defaultChecked={true} onChange={handleLayerChange} name={alias} />
-    {node.name}
-  </label>
+  return (
+    <label>
+      <input type="checkbox" defaultChecked={true} onChange={handleLayerChange} name={alias} />
+      {node.name}
+    </label>
+  );
 }
 
 function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement {
-  const className = (level === 0) ? "image-layers" : undefined;
+  const className = level === 0 ? "image-layers" : undefined;
   const listItems = layers.map((node) => {
     const alias = getLayerKey(node);
     return (
@@ -130,24 +127,27 @@ function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement 
       </li>
     );
   });
-  return (
-    <ul className={className}>
-      {listItems}
-    </ul>
-  )
+  return <ul className={className}>{listItems}</ul>;
 }
 
 export function Image(data: I.Image): Layout {
-  const images =
+  const images = (
     <div className="image-images">
       <img src={data.image.src} height={data.image.height} width={data.image.width} alt="" />
-    </div>;
-  const right = !data.layers ? undefined :
-    { element: renderLayers(data.layers, 0), width: data.layersWidth, showButtonLabel: "Show Layers", visible: true };
+    </div>
+  );
+  const right = !data.layers
+    ? undefined
+    : {
+        element: renderLayers(data.layers, 0),
+        width: data.layersWidth,
+        showButtonLabel: "Show Layers",
+        visible: true,
+      };
   return {
     main: { content: images, title: data.name },
     width: "Full",
-    right
+    right,
   };
 }
 
@@ -156,15 +156,16 @@ export function Image(data: I.Image): Layout {
 */
 
 export function Users(data: I.UserSummaryEx[]): Layout {
-  const users: React.ReactElement =
+  const users: React.ReactElement = (
     <div className="all-users">
-      {data.map(user => {
+      {data.map((user) => {
         return Summaries.getUserInfo(user, "big");
       })}
-    </div>;
+    </div>
+  );
   return {
     main: { content: users, title: "Users" },
-    width: "Grid"
+    width: "Grid",
   };
 }
 
@@ -173,7 +174,10 @@ export function Users(data: I.UserSummaryEx[]): Layout {
 */
 
 export function UserProfile(user: I.User, extra: { canEdit: boolean }): Layout {
-  const gravatar = Summaries.getUserSummary(user, { title: false, size: "huge" }).gravatar;
+  const gravatar = Summaries.getUserSummary(user, {
+    title: false,
+    size: "huge",
+  }).gravatar;
   const { aboutMe, location } = user;
   const aboutMeDiv = !aboutMe ? undefined : <div dangerouslySetInnerHTML={toHtml(aboutMe)} />;
   const content = (
@@ -181,7 +185,11 @@ export function UserProfile(user: I.User, extra: { canEdit: boolean }): Layout {
       {gravatar}
       <div className="column">
         <h1>{user.name}</h1>
-        {location ? <p className="location"><Icon.Location width="24" height="24" /> {location}</p> : undefined}
+        {location ? (
+          <p className="location">
+            <Icon.Location width="24" height="24" /> {location}
+          </p>
+        ) : undefined}
         <div className="about">
           <h3>About me</h3>
           {aboutMeDiv}
@@ -192,19 +200,28 @@ export function UserProfile(user: I.User, extra: { canEdit: boolean }): Layout {
   return useCommonUserLayout(user, "Profile", content, extra.canEdit);
 }
 
-export function UserSettings(user: I.User, extra: { canEdit: boolean, history: History }): Layout {
-  const gravatar = Summaries.getUserSummary(user, { title: false, size: "huge" }).gravatar;
-  // EditUserSettings is a separate function component instead of just being incide the getSettingsContent function 
+export function UserSettings(user: I.User, extra: { canEdit: boolean; history: History }): Layout {
+  const gravatar = Summaries.getUserSummary(user, {
+    title: false,
+    size: "huge",
+  }).gravatar;
+  // EditUserSettings is a separate function component instead of just being incide the getSettingsContent function
   // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
   const content = (
     <div className="user-profile settings">
-      <EditUserSettings history={extra.history} name={user.name} location={user.location} aboutMe={user.aboutMe}
-        email={user.preferences!.email} userId={user.id} gravatar={gravatar} />
+      <EditUserSettings
+        history={extra.history}
+        name={user.name}
+        location={user.location}
+        aboutMe={user.aboutMe}
+        email={user.preferences!.email}
+        userId={user.id}
+        gravatar={gravatar}
+      />
     </div>
   );
   return useCommonUserLayout(user, "EditSettings", content, extra.canEdit);
 }
-
 
 export function UserActivity(activity: I.UserActivity, extra: { canEdit: boolean }): Layout {
   function getActivityContent(): ReadonlyArray<KeyedItem> {
@@ -215,37 +232,42 @@ export function UserActivity(activity: I.UserActivity, extra: { canEdit: boolean
     const tags = (
       <React.Fragment>
         <h2>{`${activity.tagCounts.length} ${config.strTags}`}</h2>
-        <div className="tags">
-          {tagCounts.map(Summaries.getTagCount)}
-        </div>
+        <div className="tags">{tagCounts.map(Summaries.getTagCount)}</div>
       </React.Fragment>
     );
     const first: KeyedItem = { element: tags, key: "tags" };
-    const next: KeyedItem[] = activity.summaries.map(summary => Summaries.getDiscussionSummary(summary, true));
+    const next: KeyedItem[] = activity.summaries.map((summary) => Summaries.getDiscussionSummary(summary, true));
     return [first].concat(next);
   }
   const content = getActivityContent();
 
   function getActivityUrl(user: I.IdName, sort: R.ActivitySort) {
-    return R.getUserActivityUrl({ user, userTabType: "Activity", sort })
+    return R.getUserActivityUrl({ user, userTabType: "Activity", sort });
   }
   const subTabs: SubTabs = {
-    text: (activity.summaries.length === 1) ? "1 Message" : `${activity.summaries.length} Messages`,
-    selected: (activity.range.sort === "Newest") ? 0 : 1,
+    text: activity.summaries.length === 1 ? "1 Message" : `${activity.summaries.length} Messages`,
+    selected: activity.range.sort === "Newest" ? 0 : 1,
     tabs: [
       { text: "newest", href: getActivityUrl(activity.summary, "Newest") },
-      { text: "oldest", href: getActivityUrl(activity.summary, "Oldest") }
-    ]
+      { text: "oldest", href: getActivityUrl(activity.summary, "Oldest") },
+    ],
   };
 
   return useCommonUserLayout(activity.summary, "Activity", content, extra.canEdit, subTabs);
 }
 
 // create a Layout that's common to all three user tabs
-function useCommonUserLayout(summary: I.UserSummary, userTabType: R.UserTabType, content: MainContent, canEdit: boolean,
-  subTabs?: SubTabs): Layout {
-
-  const gravatarSmall = Summaries.getUserSummary(summary, { title: false, size: "small" }).gravatar;
+function useCommonUserLayout(
+  summary: I.UserSummary,
+  userTabType: R.UserTabType,
+  content: MainContent,
+  canEdit: boolean,
+  subTabs?: SubTabs
+): Layout {
+  const gravatarSmall = Summaries.getUserSummary(summary, {
+    title: false,
+    size: "small",
+  }).gravatar;
   const slug = (
     <React.Fragment>
       <h1>{summary.name}</h1>
@@ -256,21 +278,30 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: R.UserTabType,
   // the tab definitions
 
   const profile: Tab = {
-    navlink: { href: R.getUserOptionsUrl({ user: summary, userTabType: "Profile" }), text: "Profile" },
-    content: <p>To be supplied</p>
+    navlink: {
+      href: R.getUserOptionsUrl({ user: summary, userTabType: "Profile" }),
+      text: "Profile",
+    },
+    content: <p>To be supplied</p>,
   };
 
   const settings: Tab = {
-    navlink: { href: R.getUserOptionsUrl({ user: summary, userTabType: "EditSettings" }), text: "Edit" },
+    navlink: {
+      href: R.getUserOptionsUrl({ user: summary, userTabType: "EditSettings" }),
+      text: "Edit",
+    },
     content: <p>Not authorized</p>,
-    slug
+    slug,
   };
 
   const activity: Tab = {
-    navlink: { href: R.getUserOptionsUrl({ user: summary, userTabType: "Activity" }), text: "Activity" },
+    navlink: {
+      href: R.getUserOptionsUrl({ user: summary, userTabType: "Activity" }),
+      text: "Activity",
+    },
     content: <p>To be supplied</p>,
     subTabs,
-    slug
+    slug,
   };
 
   function getSelected(): number {
@@ -285,7 +316,7 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: R.UserTabType,
         return 1;
       case "Activity":
         activity.content = content;
-        return (canEdit) ? 2 : 1;
+        return canEdit ? 2 : 1;
       default:
         throw new Error("Unexpected userTabType");
     }
@@ -295,11 +326,12 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: R.UserTabType,
   const tabs: Tabs = {
     selected,
     title: summary.name,
-    tabbed: canEdit ? [profile, settings!, activity] : [profile, activity]
+    tabbed: canEdit ? [profile, settings!, activity] : [profile, activity],
   };
 
   return {
-    main: tabs, width: "Closed"
+    main: tabs,
+    width: "Closed",
   };
 }
 
@@ -310,8 +342,9 @@ function useCommonUserLayout(summary: I.UserSummary, userTabType: R.UserTabType,
 export function Discussions(data: I.Discussions): Layout {
   const { range, summaries } = data;
   const { pageNumber, nTotal, pageSize, sort, tag } = range;
-  const title = (!tag) ? `All ${config.strQuestions}` :
-    `${sort === "Newest" ? "Newest" : "Recently Active"} '${tag.key}' ${config.strQuestions}`;
+  const title = !tag
+    ? `All ${config.strQuestions}`
+    : `${sort === "Newest" ? "Newest" : "Recently Active"} '${tag.key}' ${config.strQuestions}`;
 
   const subtitle = getDiscussionsSubtitle(title, formatNumber(nTotal, config.strQuestions), tag, sort);
 
@@ -319,12 +352,15 @@ export function Discussions(data: I.Discussions): Layout {
     <React.Fragment>
       <div className="minigrid footer">
         <div className="page">
-          {Summaries.getPageNavLinks(pageNumber, nTotal, pageSize,
-            (page) => R.getDiscussionsOptionsUrl({ page, sort, tag }))}
+          {Summaries.getPageNavLinks(pageNumber, nTotal, pageSize, (page) =>
+            R.getDiscussionsOptionsUrl({ page, sort, tag })
+          )}
         </div>
         <div className="page">
           {Summaries.getNavLinks(
-            [15, 30, 50].map(n => { return { text: "" + n, n }; }),
+            [15, 30, 50].map((n) => {
+              return { text: "" + n, n };
+            }),
             (n: number) => R.getDiscussionsOptionsUrl({ pagesize: n as R.PageSize, tag }),
             (n: number) => `show ${n} items per page`,
             pageSize,
@@ -336,37 +372,44 @@ export function Discussions(data: I.Discussions): Layout {
     </React.Fragment>
   );
 
-  const content = summaries.map(summary => Summaries.getDiscussionSummary(summary));
+  const content = summaries.map((summary) => Summaries.getDiscussionSummary(summary));
 
   return {
     main: { content, title, subtitle, footer },
-    width: "Closed"
+    width: "Closed",
   };
 }
 
 function formatNumber(count: number, things: string) {
   // https://blog.abelotech.com/posts/number-currency-formatting-javascript/
-  const rc = count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + things.toLowerCase();
-  return ((count === 1) && (things[things.length - 1] === "s")) ? rc.substring(0, rc.length - 1) : rc;
+  const rc = count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,") + " " + things.toLowerCase();
+  return count === 1 && things[things.length - 1] === "s" ? rc.substring(0, rc.length - 1) : rc;
 }
 
 function getDiscussionsSubtitle(title: string, left: string, tag: I.Key | undefined, sort: R.DiscussionsSort | "info") {
-  const info = (!tag) ? undefined : <NavLink to={R.getTagInfoUrl(tag)}>Info</NavLink>;
-  const links = (!tag || (sort === "info")) ? undefined : (
-    <div className="minigrid links">
-      <ul>
-        <li><Link to={R.getTagInfoUrl(tag)}>Learn more…</Link></li>
-        <li><Link to={R.getTagEditUrl(tag)}>Improve tag info</Link></li>
-      </ul>
-    </div>
-  );
+  const info = !tag ? undefined : <NavLink to={R.getTagInfoUrl(tag)}>Info</NavLink>;
+  const links =
+    !tag || sort === "info" ? undefined : (
+      <div className="minigrid links">
+        <ul>
+          <li>
+            <Link to={R.getTagInfoUrl(tag)}>Learn more…</Link>
+          </li>
+          <li>
+            <Link to={R.getTagEditUrl(tag)}>Improve tag info</Link>
+          </li>
+        </ul>
+      </div>
+    );
 
   return (
     <React.Fragment>
       <div className="minigrid">
         <h1>{title}</h1>
         <div className="link">
-          <Link to={R.route.newDiscussion} className="linkbutton">{config.strNewQuestion.button}</Link>
+          <Link to={R.route.newDiscussion} className="linkbutton">
+            {config.strNewQuestion.button}
+          </Link>
         </div>
       </div>
       {links}
@@ -374,10 +417,18 @@ function getDiscussionsSubtitle(title: string, left: string, tag: I.Key | undefi
         <div className="count">{left}</div>
         <div className="sort">
           {info}
-          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Newest", tag })}
-            className={sort === "Newest" ? "selected" : undefined}>Newest</NavLink>
-          <NavLink to={R.getDiscussionsOptionsUrl({ sort: "Active", tag })}
-            className={sort === "Active" ? "selected" : undefined}>Active</NavLink>
+          <NavLink
+            to={R.getDiscussionsOptionsUrl({ sort: "Newest", tag })}
+            className={sort === "Newest" ? "selected" : undefined}
+          >
+            Newest
+          </NavLink>
+          <NavLink
+            to={R.getDiscussionsOptionsUrl({ sort: "Active", tag })}
+            className={sort === "Active" ? "selected" : undefined}
+          >
+            Active
+          </NavLink>
         </div>
       </div>
     </React.Fragment>
@@ -392,34 +443,54 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
   const { id, name, tags, first, range, messages } = data;
   const { nTotal } = range;
 
-  const subTabs: SubTabs | undefined = (!nTotal) ? undefined : {
-    text: (nTotal === 1) ? "1 Answer" : `${nTotal} Answers`,
-    selected: (data.range.sort === "Newest") ? 0 : 1,
-    tabs: [
-      { text: "newest", href: R.getDiscussionOptionsUrl({ discussion: data, sort: "Newest" }) },
-      { text: "oldest", href: R.getDiscussionOptionsUrl({ discussion: data, sort: "Oldest" }) }
-    ]
-  };
+  const subTabs: SubTabs | undefined = !nTotal
+    ? undefined
+    : {
+        text: nTotal === 1 ? "1 Answer" : `${nTotal} Answers`,
+        selected: data.range.sort === "Newest" ? 0 : 1,
+        tabs: [
+          {
+            text: "newest",
+            href: R.getDiscussionOptionsUrl({
+              discussion: data,
+              sort: "Newest",
+            }),
+          },
+          {
+            text: "oldest",
+            href: R.getDiscussionOptionsUrl({
+              discussion: data,
+              sort: "Oldest",
+            }),
+          },
+        ],
+      };
 
   const content: KeyedItem[] = [];
   content.push(Summaries.getFirstMessage(first, tags));
   messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
 
-  const footer = (range.nTotal > range.pageSize) ? (
-    <div className="footer">
-      <div className="index">
-        {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
-          (page) => R.getDiscussionOptionsUrl({ discussion: data, page, sort: range.sort }))}
+  const footer =
+    range.nTotal > range.pageSize ? (
+      <div className="footer">
+        <div className="index">
+          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
+            R.getDiscussionOptionsUrl({
+              discussion: data,
+              page,
+              sort: range.sort,
+            })
+          )}
+        </div>
       </div>
-    </div>
-  ) : undefined;
+    ) : undefined;
 
   const yourAnswer = <AnswerDiscussion discussionId={id} reload={extra.reload} />;
   content.push({ element: yourAnswer, key: "editor" });
 
   return {
     main: { content, title: name, subTabs, footer },
-    width: "Open"
+    width: "Open",
   };
 }
 
@@ -428,7 +499,6 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
 */
 
 export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Promise<void> }): Layout {
-
   const { range, tagCounts } = data;
   const title = config.strTags;
 
@@ -449,10 +519,18 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
       <div className="minigrid subtitle">
         <div className="count">{search}</div>
         <div className="sort">
-          <NavLink to={R.getTagsOptionsUrl({ sort: "Popular" })}
-            className={range.sort === "Popular" ? "selected" : undefined}>Popular</NavLink>
-          <NavLink to={R.getTagsOptionsUrl({ sort: "Name" })}
-            className={range.sort === "Name" ? "selected" : undefined}>Name</NavLink>
+          <NavLink
+            to={R.getTagsOptionsUrl({ sort: "Popular" })}
+            className={range.sort === "Popular" ? "selected" : undefined}
+          >
+            Popular
+          </NavLink>
+          <NavLink
+            to={R.getTagsOptionsUrl({ sort: "Name" })}
+            className={range.sort === "Name" ? "selected" : undefined}
+          >
+            Name
+          </NavLink>
         </div>
       </div>
     </React.Fragment>
@@ -463,8 +541,9 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
       <div className="minigrid footer">
         <div className="page"></div>
         <div className="page">
-          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize,
-            (page) => R.getTagsOptionsUrl({ page, sort: range.sort }))}
+          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
+            R.getTagsOptionsUrl({ page, sort: range.sort })
+          )}
         </div>
       </div>
     </React.Fragment>
@@ -474,11 +553,13 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
     // similar to the ShowHint function in EditorTags.tsx
     const key = tagCount.key;
     const tag = Summaries.getTagLink(tagCount);
-    const count = (tagCount.count) ? <span className="multiplier">×&nbsp;{tagCount.count}</span> : undefined;
-    const summary = (tagCount.summary) ? <div className="exerpt">{tagCount.summary}</div> : undefined;
+    const count = tagCount.count ? <span className="multiplier">×&nbsp;{tagCount.count}</span> : undefined;
+    const summary = tagCount.summary ? <div className="exerpt">{tagCount.summary}</div> : undefined;
     const edit = (
       <div>
-        <Link className="edit-link" to={R.getTagEditUrl({ key })}>edit</Link>
+        <Link className="edit-link" to={R.getTagEditUrl({ key })}>
+          edit
+        </Link>
       </div>
     );
 
@@ -495,16 +576,15 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
   // the content is like that of the User page
   const contentTags: React.ReactElement = (
     <div className="all-tags">
-      {tagCounts.map(tagCount => {
+      {tagCounts.map((tagCount) => {
         return getTagInfo(tagCount);
-      })
-      }
-    </div >
+      })}
+    </div>
   );
 
   return {
     main: { content: contentTags, title, subtitle, footer },
-    width: "Grid"
+    width: "Grid",
   };
 }
 
@@ -516,32 +596,40 @@ export type TagExtra = R.InfoOrEdit & { history: History };
 export function Tag(data: I.TagInfo, extra: TagExtra): Layout {
   const { word } = extra;
 
-  const title = (word === "edit") ? `Editing tag info for '${data.key}'` : `About '${data.key}'`;
+  const title = word === "edit" ? `Editing tag info for '${data.key}'` : `About '${data.key}'`;
 
-  const subtitle = (word === "edit") ? undefined : getDiscussionsSubtitle(title, "Tag Info", data, "info");
+  const subtitle = word === "edit" ? undefined : getDiscussionsSubtitle(title, "Tag Info", data, "info");
 
   function infoContent() {
     const summary = data.summary ? data.summary : "There is no summary for this tag … yet!";
-    const markdown = data.markdown ? <div dangerouslySetInnerHTML={toHtml(data.markdown)}></div>
-      : <div className="summary none">{"There is no information for this tag … yet!"}</div>
-    const buttonText = (!!data.summary && !!data.markdown) ? "Edit Tag info" : "Create Tag Info";
+    const markdown = data.markdown ? (
+      <div dangerouslySetInnerHTML={toHtml(data.markdown)}></div>
+    ) : (
+      <div className="summary none">{"There is no information for this tag … yet!"}</div>
+    );
+    const buttonText = !!data.summary && !!data.markdown ? "Edit Tag info" : "Create Tag Info";
     return (
       <div className="tag-wiki">
         <div className="summary">{summary}</div>
         {markdown}
         <div className="link">
-          <Link to={R.getTagEditUrl(data)} className="linkbutton">{buttonText}</Link>
+          <Link to={R.getTagEditUrl(data)} className="linkbutton">
+            {buttonText}
+          </Link>
         </div>
       </div>
     );
   }
 
-  const content = (word === "edit")
-    ? <EditTagInfo tag={data.key} history={extra.history} summary={data.summary} markdown={data.markdown} />
-    : infoContent();
+  const content =
+    word === "edit" ? (
+      <EditTagInfo tag={data.key} history={extra.history} summary={data.summary} markdown={data.markdown} />
+    ) : (
+      infoContent()
+    );
   const layout: Layout = {
     main: { content, title, subtitle },
-    width: "None"
+    width: "None",
   };
   return layout;
 }

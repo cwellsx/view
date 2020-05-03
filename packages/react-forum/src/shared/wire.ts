@@ -14,24 +14,22 @@ import { DiscussionsRange, DiscussionRange, ActivityRange } from "../data/range"
 export interface WireSummaries {
   users: UserSummary[];
   discussions: {
-    id: number,
-    name: string,
-    tags: Key[],
-    userId: number, // + user ID
+    id: number;
+    name: string;
+    tags: Key[];
+    userId: number; // + user ID
     // ownerId?: number, // plus ID of user who started the discussion, if this is a list of messages not of discussions
-    messageExerpt: string,
-    dateTime: string,
-    nAnswers: number
+    messageExerpt: string;
+    dateTime: string;
+    nAnswers: number;
   }[];
 }
 
 function unwireSummaries(input: WireSummaries): DiscussionSummary[] {
   // create a Map of the users
-  const users: Map<number, UserSummary> = new Map<number, UserSummary>(
-    input.users.map(user => [user.id, user])
-  );
+  const users: Map<number, UserSummary> = new Map<number, UserSummary>(input.users.map((user) => [user.id, user]));
 
-  const summaries: DiscussionSummary[] = input.discussions.map(wire => {
+  const summaries: DiscussionSummary[] = input.discussions.map((wire) => {
     return {
       id: wire.id,
       name: wire.name,
@@ -39,9 +37,9 @@ function unwireSummaries(input: WireSummaries): DiscussionSummary[] {
       messageSummary: {
         userSummary: users.get(wire.userId)!,
         messageExerpt: wire.messageExerpt,
-        dateTime: wire.dateTime
+        dateTime: wire.dateTime,
       },
-      nAnswers: wire.nAnswers
+      nAnswers: wire.nAnswers,
     };
   });
 
@@ -78,9 +76,7 @@ export interface WireDiscussion extends DiscussionMeta {
 }
 
 export function unwireDiscussion(input: WireDiscussion): Discussion {
-  const users: Map<number, UserSummary> = new Map<number, UserSummary>(
-    input.users.map(user => [user.id, user])
-  );
+  const users: Map<number, UserSummary> = new Map<number, UserSummary>(input.users.map((user) => [user.id, user]));
 
   const { id, name, tags, range, first, messages } = input;
 
@@ -88,7 +84,7 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
     return {
       userSummary: users.get(wire.userId)!,
       markdown: wire.markdown,
-      dateTime: wire.dateTime
+      dateTime: wire.dateTime,
     };
   }
 
@@ -98,7 +94,7 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
     tags,
     first: unwireMessage(first),
     range: range,
-    messages: messages.map(unwireMessage)
+    messages: messages.map(unwireMessage),
   };
 }
 
@@ -107,9 +103,9 @@ export function unwireDiscussion(input: WireDiscussion): Discussion {
 */
 
 export interface WireUserActivity extends WireSummaries {
-  range: ActivityRange,
-  tagCounts: TagCount[]
-};
+  range: ActivityRange;
+  tagCounts: TagCount[];
+}
 
 export function unwireUserActivity(input: WireUserActivity): UserActivity {
   const summaries = unwireSummaries(input);

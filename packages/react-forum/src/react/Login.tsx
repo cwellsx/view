@@ -1,30 +1,35 @@
-import React from 'react';
-import { useLayout, Layout } from './PageLayout';
+import React from "react";
+import { useLayout, Layout } from "./PageLayout";
 import * as I from "../data";
 import * as IO from "../io";
-import { AppContext, AppContextProps } from './AppContext';
+import { AppContext, AppContextProps } from "./AppContext";
 import * as Post from "../shared/post";
 import { ValidatedState, createValidated, Input, createInitialState, useReducer0 } from "./ErrorMessage";
-import "./Login.css"
+import "./Login.css";
 
 export const Login: React.FunctionComponent = () => {
-
   type T = Post.Login;
 
   function initialState(): ValidatedState<T> {
     const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
-      ["userName", {
-        label: "Username",
-        hideLabel: true,
-        options: {},
-        create: { type: "input", placeholder: "Username", attributes: {} }
-      }],
-      ["password", {
-        label: "Password",
-        hideLabel: true,
-        options: {},
-        create: { type: "input", placeholder: "Password", attributes: {} }
-      }],
+      [
+        "userName",
+        {
+          label: "Username",
+          hideLabel: true,
+          options: {},
+          create: { type: "input", placeholder: "Username", attributes: {} },
+        },
+      ],
+      [
+        "password",
+        {
+          label: "Password",
+          hideLabel: true,
+          options: {},
+          create: { type: "input", placeholder: "Password", attributes: {} },
+        },
+      ],
     ]);
     // reuse the default values for the initial state
     const state: T = { userName: "", password: "" };
@@ -44,7 +49,7 @@ export const Login: React.FunctionComponent = () => {
     IO.login(state.posted)
       .then((userSummary: I.UserSummary) => appContext.setMe(userSummary))
       .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
-  };
+  }
 
   // created the validated elements and the submit button
   const buttonText = { label: "Submit", noun: "login" };
@@ -71,5 +76,4 @@ export const Login: React.FunctionComponent = () => {
   );
   const layout: Layout = { main: { content, title: "Login" }, width: "Open" };
   return useLayout(layout);
-}
-
+};

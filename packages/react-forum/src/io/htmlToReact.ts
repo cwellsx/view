@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Link } from "react-router-dom";
 
 // this uses the "html-to-react" package, to transform <a> in the HTML string to <Link> elements
@@ -33,7 +33,7 @@ export function toReact(html: string): React.ReactElement {
   html = trimHtml(html);
   // console.log(html);
 
-  var { Parser, ProcessNodeDefinitions } = require('html-to-react');
+  var { Parser, ProcessNodeDefinitions } = require("html-to-react");
   var parser = new Parser();
   var processNodeDefinitions = new ProcessNodeDefinitions(React);
   var isValidNode = function () {
@@ -46,23 +46,21 @@ export function toReact(html: string): React.ReactElement {
     {
       // Custom <a> processing
       shouldProcessNode: function (node: any) {
-        return node.name === 'a';
+        return node.name === "a";
       },
       processNode: function (node: any, children: any) {
-        var href = node.attribs['href'];
+        var href = node.attribs["href"];
         return React.createElement(Link, { to: href }, children);
-      }
+      },
     },
     {
       // Anything else
       shouldProcessNode: function (node: Node) {
         return true;
       },
-      processNode: processNodeDefinitions.processDefaultNode
-    }
+      processNode: processNodeDefinitions.processDefaultNode,
+    },
   ];
   var reactElement = parser.parseWithInstructions(`<div>${html}</div>`, isValidNode, processingInstructions);
-  return (
-    reactElement
-  );
+  return reactElement;
 }

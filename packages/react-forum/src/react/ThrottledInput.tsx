@@ -1,5 +1,5 @@
-import React from 'react';
-import { ErrorMessage } from './ErrorMessage';
+import React from "react";
+import { ErrorMessage } from "./ErrorMessage";
 import { SearchInput } from "../shared/post";
 
 /*
@@ -20,16 +20,15 @@ import { SearchInput } from "../shared/post";
 const throttleDelay = 100;
 
 interface ThrottledInputProps {
-  api: (input: SearchInput) => Promise<void>,
-  placeholder: string
+  api: (input: SearchInput) => Promise<void>;
+  placeholder: string;
 }
 
 export const ThrottledInput: React.FunctionComponent<ThrottledInputProps> = (props: ThrottledInputProps) => {
-
   const { api, placeholder } = props;
 
-  const [value, setValue] = React.useState('');
-  const [handled, setHandled] = React.useState('');
+  const [value, setValue] = React.useState("");
+  const [handled, setHandled] = React.useState("");
   const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
 
   const isRunning = React.useRef<boolean>(false);
@@ -58,13 +57,15 @@ export const ThrottledInput: React.FunctionComponent<ThrottledInputProps> = (pro
     api({ searchInput: handling })
       .then(() => {
         // do nothing here -- data from the API call was already handled in the implementation of the newData function
-      }).catch((reason) => {
+      })
+      .catch((reason) => {
         setErrorMessage(reason.message);
-      }).finally(() => {
+      })
+      .finally(() => {
         // wait a bit (in order to "throttle") before allowing the next API call
         setTimeout(finished, throttleDelay, handling);
-      })
-  }, [value, handled, api])
+      });
+  }, [value, handled, api]);
 
   return (
     <React.Fragment>
@@ -72,4 +73,4 @@ export const ThrottledInput: React.FunctionComponent<ThrottledInputProps> = (pro
       <ErrorMessage errorMessage={errorMessage} />
     </React.Fragment>
   );
-}
+};

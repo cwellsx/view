@@ -1,8 +1,8 @@
-import React from 'react';
-import "./PageLayout.css"
-import { config } from "../config"
+import React from "react";
+import "./PageLayout.css";
+import { config } from "../config";
 import * as Icon from "../icons";
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 
 /*
   This module renders content into a page layout (e.g. into one or more columns of various widths).
@@ -20,15 +20,15 @@ export type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string
 
 // optional content shown in a column to the right of the page; if present the right column can be shown or hidden
 interface RightContent {
-  element: React.ReactElement,
-  width: string,
-  showButtonLabel: string, // label on the button which is used to show or hide the column
-  visible: boolean
+  element: React.ReactElement;
+  width: string;
+  showButtonLabel: string; // label on the button which is used to show or hide the column
+  visible: boolean;
 }
 
 // used e.g. for the user profile page, which has "Profile", "Edit", and "Activity" tabs
 export interface Tab {
-  navlink: { href: string, text: string }; // becomes a Navlink instance
+  navlink: { href: string; text: string }; // becomes a Navlink instance
   content: MainContent;
   subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
   slug?: React.ReactElement;
@@ -45,48 +45,54 @@ export interface Tabs {
 export interface SubTabs {
   text: string;
   selected: number; // index into tabbed
-  tabs: { href: string, text: string }[]; // becomes a Navlink instance
+  tabs: { href: string; text: string }[]; // becomes a Navlink instance
 }
 
 // specifies the width of the main column
-type Width = "Full" | // wide screen, no title, e.g. for images
-  "Grid" | // semi-wide grid e.g. for the lists of tags and user names, which are displayed as a grid
-  "Closed" | // semi-narrow text where horizontal rule touches vertical, e.g. for lists and site map
-  "Open" | // like "Closed" except horizontal rule doesn't touch vertical, e.g. for messages in a discussion
-  "None"; // like "Closed" except no horizontal rule, e.g. for new discussion
+type Width =
+  | "Full" // wide screen, no title, e.g. for images
+  | "Grid" // semi-wide grid e.g. for the lists of tags and user names, which are displayed as a grid
+  | "Closed" // semi-narrow text where horizontal rule touches vertical, e.g. for lists and site map
+  | "Open" // like "Closed" except horizontal rule doesn't touch vertical, e.g. for messages in a discussion
+  | "None"; // like "Closed" except no horizontal rule, e.g. for new discussion
 
 function isTabs(main: Tabs | any): main is Tabs {
   return (main as Tabs).tabbed !== undefined;
 }
 
 export interface Layout {
-  main: Tabs | {
-    title: string;
-    subtitle?: React.ReactElement;
-    footer?: React.ReactElement;
-    content: MainContent;
-    subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
-  };
+  main:
+    | Tabs
+    | {
+        title: string;
+        subtitle?: React.ReactElement;
+        footer?: React.ReactElement;
+        content: MainContent;
+        subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
+      };
   width: Width;
   right?: RightContent;
-};
+}
 
 /*
   Implementation details
 */
 
-export const loadingContents: Layout = { main: { title: "Loading...", content: "..." }, width: "Closed" };
+export const loadingContents: Layout = {
+  main: { title: "Loading...", content: "..." },
+  width: "Closed",
+};
 
 export function loadingError(error: Error): Layout {
   const url = (error as any).url;
-  const what = (url) ? <p>URL: "{url}"</p> : { undefined };
+  const what = url ? <p>URL: "{url}"</p> : { undefined };
   const content = (
     <React.Fragment>
       {what}
       <p>Error: {error.message}</p>
     </React.Fragment>
   );
-  return { main: { title: "Error", content }, width: "Open" }
+  return { main: { title: "Error", content }, width: "Open" };
 }
 
 function setTitle(title: string): void {
@@ -99,12 +105,11 @@ function renderSubTabs(subTabs: SubTabs) {
       <div className="tabs">
         <h2>{subTabs.text}</h2>
         <div>
-          {subTabs.tabs.map((tab, index) =>
-            <NavLink to={tab.href} key={"" + index}
-              className={(index === subTabs.selected) ? "selected" : undefined}>
+          {subTabs.tabs.map((tab, index) => (
+            <NavLink to={tab.href} key={"" + index} className={index === subTabs.selected ? "selected" : undefined}>
               {tab.text}
             </NavLink>
-          )}
+          ))}
         </div>
       </div>
     </div>
@@ -113,24 +118,26 @@ function renderSubTabs(subTabs: SubTabs) {
 
 function renderContent(content: MainContent, subTabs?: SubTabs, footer?: React.ReactElement) {
   if (Array.isArray(content)) {
-    const elements = (
-      content.map((x, index) => {
-        const subMenu = ((index === 1) && subTabs) ? renderSubTabs(subTabs) : undefined;
-        const className = ((index === 0) && subTabs) ? "element first" : "element";
-        return (
-          <React.Fragment key={"" + index}>
-            {subMenu}
-            <div className={className} key={x.key}>
-              {x.element}
-            </div>
-          </React.Fragment>
-        );
-      })
-    );
-    return (!footer) ? elements : (
+    const elements = content.map((x, index) => {
+      const subMenu = index === 1 && subTabs ? renderSubTabs(subTabs) : undefined;
+      const className = index === 0 && subTabs ? "element first" : "element";
+      return (
+        <React.Fragment key={"" + index}>
+          {subMenu}
+          <div className={className} key={x.key}>
+            {x.element}
+          </div>
+        </React.Fragment>
+      );
+    });
+    return !footer ? (
+      elements
+    ) : (
       <React.Fragment>
         {elements}
-        <div className="element" key="footer">{footer}</div>
+        <div className="element" key="footer">
+          {footer}
+        </div>
       </React.Fragment>
     );
   }
@@ -143,32 +150,33 @@ function renderContent(content: MainContent, subTabs?: SubTabs, footer?: React.R
 }
 
 function renderTabs(main: Tabs, isTop: boolean) {
-  const className = (!isTop) ? "tab-head" : "tab-head profile";
+  const className = !isTop ? "tab-head" : "tab-head profile";
   const slug = main.tabbed[main.selected].slug;
   const slugDiv = !slug ? undefined : <div className="slug">{slug}</div>;
   return (
     <React.Fragment>
       <div className={className}>
         <div className="tabs">
-          {main.tabbed.map((tab, index) =>
+          {main.tabbed.map((tab, index) => (
             <NavLink
               to={tab.navlink.href}
               key={"" + index}
-              className={(index === main.selected) ? "selected" : undefined}>
+              className={index === main.selected ? "selected" : undefined}
+            >
               {tab.navlink.text}
-            </NavLink>)}
+            </NavLink>
+          ))}
           {slugDiv}
         </div>
       </div>
       <div className="tabbed">
         {main.tabbed.map((tab, index) => {
           return (
-            <div className={(index !== main.selected) ? "hidden" : undefined} key={"" + index}>
+            <div className={index !== main.selected ? "hidden" : undefined} key={"" + index}>
               {renderContent(tab.content, tab.subTabs)}
             </div>
           );
-        })
-        }
+        })}
       </div>
     </React.Fragment>
   );
@@ -206,12 +214,16 @@ function renderRightColumn(right?: RightContent) {
   }
 
   function className(name: string, visible: boolean) {
-    return (visible) ? name : (name + " hidden");
+    return visible ? name : name + " hidden";
   }
 
   const rightButton = (
-    <button className={className("column-right-button", !right.visible)}
-      type="button" onClick={handleShowDiv} ref={refButton}>
+    <button
+      className={className("column-right-button", !right.visible)}
+      type="button"
+      onClick={handleShowDiv}
+      ref={refButton}
+    >
       {right.showButtonLabel}
     </button>
   );
@@ -223,7 +235,7 @@ function renderRightColumn(right?: RightContent) {
   );
 
   const rightColumn = (
-    <div className={className("column-right", right.visible)} style={{ width: right.width }} ref={refDiv} >
+    <div className={className("column-right", right.visible)} style={{ width: right.width }} ref={refDiv}>
       {closeButton}
       {right.element}
     </div>
@@ -237,12 +249,18 @@ function switchLayout(layout: Layout) {
 
   function getClassName(width: Width): string {
     switch (width) {
-      case "Full": return "column-wide";
-      case "Grid": return "column-text grid";
-      case "Closed": return "column-text closed";
-      case "Open": return "column-text open";
-      case "None": return "column-text none";
-      default: throw new Error("not implemented");
+      case "Full":
+        return "column-wide";
+      case "Grid":
+        return "column-text grid";
+      case "Closed":
+        return "column-text closed";
+      case "Open":
+        return "column-text open";
+      case "None":
+        return "column-text none";
+      default:
+        throw new Error("not implemented");
     }
   }
   const className = getClassName(layout.width);
@@ -250,11 +268,7 @@ function switchLayout(layout: Layout) {
   if (isTabs(layout.main)) {
     // tabs are located above the header and the header is inside the first tab
     setTitle(layout.main.title);
-    return (
-      <div className={className}>
-        {renderTabs(layout.main, true)}
-      </div>
-    );
+    return <div className={className}>{renderTabs(layout.main, true)}</div>;
   }
 
   const mainColumn = renderContent(layout.main.content, layout.main.subTabs, layout.main.footer);
@@ -267,12 +281,8 @@ function switchLayout(layout: Layout) {
       <React.Fragment>
         <div className={className}>
           {rightButton}
-          <div className="header">
-            {title}
-          </div>
-          <div className="content">
-            {mainColumn}
-          </div>
+          <div className="header">{title}</div>
+          <div className="content">{mainColumn}</div>
         </div>
         {rightColumn}
       </React.Fragment>
@@ -292,9 +302,5 @@ function switchLayout(layout: Layout) {
 
 export function useLayout(layout: Layout): React.ReactElement {
   const contents = switchLayout(layout);
-  return (
-    <div className="all-columns">
-      {contents}
-    </div>
-  );
+  return <div className="all-columns">{contents}</div>;
 }

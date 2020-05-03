@@ -11,10 +11,10 @@ interface SessionState {
   discussions?: {
     sort?: R.DiscussionsSort;
     pagesize?: R.PageSize;
-  },
+  };
   discussion?: {
     sort?: R.DiscussionSort;
-  }
+  };
 }
 
 const sessionData: Map<number, SessionState> = new Map<number, SessionState>();
@@ -54,7 +54,7 @@ export function getSetDiscussionsOptions(userId: number, options: R.DiscussionsO
       options.pagesize = old.pagesize;
     }
   }
-};
+}
 
 export function getSetDiscussionOptions(userId: number, options: R.DiscussionOptions) {
   const sessionState = getOrSet(userId);
@@ -76,4 +76,4 @@ export function getSetDiscussionOptions(userId: number, options: R.DiscussionOpt
       options.sort = old.sort;
     }
   }
-};
+}

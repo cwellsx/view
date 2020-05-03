@@ -1,5 +1,5 @@
 .error {
-  color: #C91D2E;
+  color: #c91d2e;
   padding: 2px;
   margin-top: 4px;
   font-size: 13px;
@@ -15,7 +15,7 @@
 }
 
 .invalid {
-  border: solid 1px #C91D2E !important;
+  border: solid 1px #c91d2e !important;
 }
 
 .focussed .tag-editor.invalid,

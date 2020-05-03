@@ -13,7 +13,7 @@ export interface Tags {
 }
 
 export interface TagInfo extends Key {
-  title: string,
+  title: string;
   summary?: string;
   markdown?: string;
 }

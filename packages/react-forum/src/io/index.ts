@@ -1,8 +1,8 @@
 import * as I from "../data";
-import * as W from "../shared/wire"
+import * as W from "../shared/wire";
 import * as Post from "../shared/post";
 import * as R from "../shared/urls";
-import { config } from "../config"
+import { config } from "../config";
 // only used for the mock
 import { SimpleResponse, mockFetch } from "../io/mock";
 
@@ -11,9 +11,7 @@ const isLogging = false;
 
 function get(url: string, body?: object): Promise<SimpleResponse> {
   // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-  const init: RequestInit = {
-
-  }
+  const init: RequestInit = {};
 
   if (body) {
     init.method = "POST";
@@ -35,13 +33,12 @@ function getT<T>(url: string, body?: object): Promise<T> {
   if (isLogging) {
     console.log(`getT(${url})`);
   }
-  return get(url, body)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      return response.json() as Promise<T>;
-    })
+  return get(url, body).then((response) => {
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+    return response.json() as Promise<T>;
+  });
 }
 
 /*
@@ -69,8 +66,8 @@ function convertPromise<TWire, TData>(promise: Promise<TWire>, convert: (wire: T
     promise.then((wire: TWire) => {
       const wanted: TData = convert(wire);
       resolve(wanted);
-    })
-    promise.catch(error => {
+    });
+    promise.catch((error) => {
       reject(error);
     });
   });
@@ -78,7 +75,7 @@ function convertPromise<TWire, TData>(promise: Promise<TWire>, convert: (wire: T
 }
 
 export async function getUserActivity(options: R.UserActivityOptions): Promise<I.UserActivity> {
-  const url = R.getUserActivityUrl(options)
+  const url = R.getUserActivityUrl(options);
   const wirePromise: Promise<W.WireUserActivity> = getT<W.WireUserActivity>(url);
   return convertPromise(wirePromise, W.unwireUserActivity);
 }
@@ -148,31 +145,32 @@ export async function editTagInfo(tag: string, data: Post.EditTagInfo): Promise<
 */
 
 export async function getPublic(filename: string): Promise<string> {
-
   const headers: Headers = new Headers();
   headers.append("Accept", "application/json");
   headers.append("pragma", "no-cache");
   headers.append("cache-control", "no-cache");
   const init: RequestInit = {
-    headers
+    headers,
   };
   const promise: Promise<Response> = fetch(filename, init);
   const result: Promise<string> = new Promise<string>((resolve, reject) => {
-    promise.then((response: Response) => {
-      if (!response.ok) {
-        const error = new Error(`${response.status} ${response.statusText}`);
-        (error as any).url = filename;
-        console.error(error.message);
-        reject(error);
-      }
-      response.text().then((text: string) => {
-        // console.log(text);
-        resolve(text);
+    promise
+      .then((response: Response) => {
+        if (!response.ok) {
+          const error = new Error(`${response.status} ${response.statusText}`);
+          (error as any).url = filename;
+          console.error(error.message);
+          reject(error);
+        }
+        response.text().then((text: string) => {
+          // console.log(text);
+          resolve(text);
+        });
+      })
+      .catch((reason) => {
+        console.error(reason.error);
+        reject(reason);
       });
-    }).catch((reason) => {
-      console.error(reason.error);
-      reject(reason);
-    });
   });
   return result;
 }

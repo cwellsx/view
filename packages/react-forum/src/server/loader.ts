@@ -62,7 +62,7 @@ function assertTypeT<T>(loaded: any, wanted: T, optional?: Set<string>, alternat
     }
     for (const key in wanted) {
       const expected = keyNames ? keyNames + "." + key : key;
-      if (typeof found[key] === 'undefined') {
+      if (typeof found[key] === "undefined") {
         if (!optional || !optional.has(expected)) {
           throw new Error(`assertType expected ${expected} in ${JSON.stringify(wanted)} is ${JSON.stringify(found)}`);
         }
@@ -85,15 +85,15 @@ function loadUsers(): Map<number, StoredUser> {
   const sample: [number, StoredUser] = [
     1,
     {
-      "name": "ChrisW",
-      "email": "cwellsx@gmail.com",
-      "dateTime": "Thu, 03 Jan 2019 22:35:05 GMT",
-      "profile": {
-        "location": "Normandy",
-        "aboutMe": "I wrote this!\n\nFurther details are to be supplied ..."
+      name: "ChrisW",
+      email: "cwellsx@gmail.com",
+      dateTime: "Thu, 03 Jan 2019 22:35:05 GMT",
+      profile: {
+        location: "Normandy",
+        aboutMe: "I wrote this!\n\nFurther details are to be supplied ...",
       },
-      "favourites": []
-    }
+      favourites: [],
+    },
   ];
   const optional: Set<string> = new Set<string>(["profile.aboutMe", "profile.location"]);
   const loaded: [number, StoredUser][] = assertTypeT(found, [sample], optional);
@@ -107,7 +107,7 @@ function loadTags(): BareTopic[] {
   const sample: BareTopic = {
     title: "foo",
     userId: 0,
-    dateTime: "Thu, 03 Jan 2019 22:35:05 GMT"
+    dateTime: "Thu, 03 Jan 2019 22:35:05 GMT",
   };
   const loaded: BareTopic[] = assertTypeT(found, [sample]);
   return loaded;
@@ -119,24 +119,24 @@ function loadDiscussions(): Map<number, BareDiscussion> {
     userId: 7,
     markdown: "Maecenas dignissim et ante sit amet fermentum.",
     dateTime: "Thu, 03 Jan 2019 22:35:05 GMT",
-    messageId: 1
+    messageId: 1,
   };
   const sample: BareDiscussion = {
     id: 1,
     name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?",
     tags: [{ tag: "foo" }],
     first: sampleMessage,
-    messages: [sampleMessage]
+    messages: [sampleMessage],
   };
   const alternate: Alternate = (wanted: any, found: any) => {
-    if ((wanted.tag) === undefined) {
+    if (wanted.tag === undefined) {
       // not the wanted we're trying to match
       return false;
     }
-    return ((found.id) !== undefined) && (found.resourceType !== undefined);
-  }
+    return found.id !== undefined && found.resourceType !== undefined;
+  };
   const loaded: BareDiscussion[] = assertTypeT(found, [sample], undefined, alternate);
-  return new Map<number, BareDiscussion>(loaded.map(x => [x.id, x]));
+  return new Map<number, BareDiscussion>(loaded.map((x) => [x.id, x]));
 }
 
 export type KeyFromTagId = (tagId: TagId) => Key;
@@ -145,7 +145,7 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
   const rc: Action.Any[] = [];
 
   const tags: BareTopic[] = loadTags();
-  rc.push(...tags.map(Action.createStoredTopic))
+  rc.push(...tags.map(Action.createStoredTopic));
 
   const users: Map<number, StoredUser> = loadUsers();
   function userToNewUser(userId: number, user: StoredUser): Action.NewUser {
@@ -162,12 +162,19 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
   });
 
   const discussions: Map<number, BareDiscussion> = loadDiscussions();
-  function discussionToNewDiscussion(discussionId: number, discussion: BareDiscussion, first: BareMessage)
-    : Action.NewDiscussion {
+  function discussionToNewDiscussion(
+    discussionId: number,
+    discussion: BareDiscussion,
+    first: BareMessage
+  ): Action.NewDiscussion {
     const title: string = discussion.name;
     const tags: Key[] = discussion.tags.map(getKeyFromTagId);
     const { markdown, messageId, dateTime, userId } = first;
-    const posted: Post.NewDiscussion = { title, tags: tags.map(tag => tag.key), markdown };
+    const posted: Post.NewDiscussion = {
+      title,
+      tags: tags.map((tag) => tag.key),
+      markdown,
+    };
     return Action.createNewDiscussion(posted, dateTime, userId, discussionId, messageId);
   }
   function messageToNewMessage(discussionId: number, message: BareMessage): Action.NewMessage {
@@ -178,16 +185,16 @@ export function loadActions(getKeyFromTagId: KeyFromTagId): Action.Any[] {
   discussions.forEach((discussion: BareDiscussion, discussionId: number) => {
     const { first, messages } = discussion;
     rc.push(discussionToNewDiscussion(discussionId, discussion, first));
-    rc.push(...messages.map(message => messageToNewMessage(discussionId, message)));
+    rc.push(...messages.map((message) => messageToNewMessage(discussionId, message)));
   });
 
-  const sorted: [Action.Any, number][] = rc.map(action => [action, (new Date(action.dateTime)).getTime()]);
+  const sorted: [Action.Any, number][] = rc.map((action) => [action, new Date(action.dateTime).getTime()]);
   sorted.sort((x, y) => {
     if (x[1] !== y[1]) {
       return x[1] - y[1];
     }
     return Action.getLoadPriority(x[0]) - Action.getLoadPriority(y[0]);
-  })
+  });
 
-  return sorted.map(pair => pair[0]);
+  return sorted.map((pair) => pair[0]);
 }

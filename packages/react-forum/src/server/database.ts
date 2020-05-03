@@ -32,7 +32,7 @@ const sortedDiscussionsActive: [number, number][] = [];
 
 // map userId to sorted array of messages
 const userMessages: Map<number, BareMessage[]> = new Map<number, BareMessage[]>();
-// map messageId to discussionId 
+// map messageId to discussionId
 const messageDiscussions: Map<number, number> = new Map<number, number>();
 
 const userTags: Map<number, TagIdCounts> = new Map<number, TagIdCounts>();
@@ -64,8 +64,8 @@ function getUserSummaryFrom(userId: number, data: BareUser): I.UserSummary {
     id: userId,
     name: data.name,
     gravatarHash: data.gravatarHash,
-    location: data.profile.location
-  }
+    location: data.profile.location,
+  };
 }
 
 function getUserSummary(userId: number): I.UserSummary {
@@ -77,7 +77,7 @@ function getMessageStarted(discussion: BareDiscussion): BareMessage {
 }
 
 function getMessageEnded(discussion: BareDiscussion): BareMessage {
-  return (discussion.messages.length) ? discussion.messages[discussion.messages.length - 1] : discussion.first;
+  return discussion.messages.length ? discussion.messages[discussion.messages.length - 1] : discussion.first;
 }
 
 type GetMessage = (x: BareDiscussion) => BareMessage;
@@ -89,10 +89,10 @@ function getDiscussionTime(discussion: BareDiscussion, getMessage: GetMessage): 
 function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): WireSummaries {
   const rc: WireSummaries = {
     users: [],
-    discussions: []
-  }
+    discussions: [],
+  };
   const userIds: Set<number> = new Set<number>();
-  discussionMessages.forEach(discussionMessage => {
+  discussionMessages.forEach((discussionMessage) => {
     const [discussion, message] = discussionMessage;
     const { id, name, tags } = discussion;
     userIds.add(message.userId);
@@ -103,10 +103,10 @@ function wireSummaries(discussionMessages: [BareDiscussion, BareMessage][]): Wir
       userId: message.userId,
       messageExerpt: getExerpt(message.markdown),
       dateTime: message.dateTime,
-      nAnswers: discussion.messages.length
+      nAnswers: discussion.messages.length,
     });
   });
-  userIds.forEach(userId => rc.users.push(getUserSummary(userId)));
+  userIds.forEach((userId) => rc.users.push(getUserSummary(userId)));
   return rc;
 }
 
@@ -119,13 +119,13 @@ function wireDiscussion(discussion: BareDiscussion, messages: BareMessage[], ran
     tags: tags.map(getKeyFromTagId),
     first,
     range,
-    messages
-  }
+    messages,
+  };
   const userIds: Set<number> = new Set<number>();
   userIds.add(discussion.first.userId);
-  messages.forEach(message => userIds.add(message.userId));
+  messages.forEach((message) => userIds.add(message.userId));
   userIds.add(rc.first.userId);
-  userIds.forEach(userId => rc.users.push(getUserSummary(userId)));
+  userIds.forEach((userId) => rc.users.push(getUserSummary(userId)));
   return rc;
 }
 
@@ -134,12 +134,13 @@ function getRange<TSort, TElement>(
   sort: TSort,
   pageSize: number,
   pageNumber: number,
-  array: TElement[]): {
-    range: { nTotal: number, sort: TSort, pageSize: number, pageNumber: number },
-    selected: TElement[]
-  } {
+  array: TElement[]
+): {
+  range: { nTotal: number; sort: TSort; pageSize: number; pageNumber: number };
+  selected: TElement[];
+} {
   const length = pageSize;
-  const start = ((pageNumber - 1) * pageSize);
+  const start = (pageNumber - 1) * pageSize;
   const selected = array.slice(start, start + length);
   return { range: { nTotal, sort, pageSize, pageNumber }, selected };
 }
@@ -151,12 +152,12 @@ function getRange<TSort, TElement>(
 export function getSiteMap(): I.SiteMap {
   return {
     images: allImages,
-    tags: tagDiscussions.siteTagCounts()
+    tags: tagDiscussions.siteTagCounts(),
   };
 }
 
 export function getImage(id: number): I.Image | undefined {
-  return allImages.find(image => image.id === id);
+  return allImages.find((image) => image.id === id);
 }
 
 export function getUserSummaries(): I.UserSummary[] {
@@ -170,14 +171,20 @@ export function getUser(userId: number, userIdLogin?: number): I.User | undefine
   if (!data) {
     return undefined;
   }
-  const preferences: I.UserPreferences | undefined = (userId !== userIdLogin) ? undefined : {
-    email: data.email
-  };
+  const preferences: I.UserPreferences | undefined =
+    userId !== userIdLogin
+      ? undefined
+      : {
+          email: data.email,
+        };
   const { id, name, gravatarHash, location } = getUserSummaryFrom(userId, data);
   return {
-    id, name, location, gravatarHash,
+    id,
+    name,
+    location,
+    gravatarHash,
     aboutMe: data.profile.aboutMe,
-    preferences: preferences
+    preferences: preferences,
   };
 }
 
@@ -186,17 +193,11 @@ export function getUserActivity(options: R.UserActivityOptions): WireUserActivit
   // like getDiscussion, we don't have two pre-sorted arrays to choose from, so may have to select from a reversed copy
   const userId = options.user.id;
   const messages: BareMessage[] = userMessages.get(userId)!;
-  const sort: R.ActivitySort = options.sort ? options.sort : "Oldest"
-  const sortedMessages = (sort === "Oldest") ? messages : messages.slice().reverse();
+  const sort: R.ActivitySort = options.sort ? options.sort : "Oldest";
+  const sortedMessages = sort === "Oldest" ? messages : messages.slice().reverse();
   // like getDiscussions
-  const { range, selected } = getRange(
-    messages.length,
-    sort,
-    30,
-    options.page ? options.page : 1,
-    sortedMessages
-  );
-  const discussionMessages: [BareDiscussion, BareMessage][] = selected.map(message => {
+  const { range, selected } = getRange(messages.length, sort, 30, options.page ? options.page : 1, sortedMessages);
+  const discussionMessages: [BareDiscussion, BareMessage][] = selected.map((message) => {
     const discussionId: number = messageDiscussions.get(message.messageId)!;
     const discussion: BareDiscussion = allDiscussions.get(discussionId)!;
     return [discussion, message];
@@ -207,23 +208,25 @@ export function getUserActivity(options: R.UserActivityOptions): WireUserActivit
 }
 
 export function getDiscussions(options: R.DiscussionsOptions): WireDiscussions {
-  const sort: R.DiscussionsSort = options.sort ? options.sort : "Active"
+  const sort: R.DiscussionsSort = options.sort ? options.sort : "Active";
   const active = sort === "Active";
   // two collections of pre-sorted discussions (using different sort-orders) to choose from
-  const sortedDiscussions: [number, number][] = (active) ? sortedDiscussionsActive : sortedDiscussionsNewest;
+  const sortedDiscussions: [number, number][] = active ? sortedDiscussionsActive : sortedDiscussionsNewest;
   const tag = options.tag;
-  const filteredDiscussions = !tag ? sortedDiscussions : sortedDiscussions.filter(pair => {
-    const discussionId = pair[0];
-    const discussion = allDiscussions.get(discussionId)!;
-    for (const tagId of discussion.tags) {
-      const found: I.Key = getKeyFromTagId(tagId);
-      if (found.key === tag.key) {
-        return true;
-      }
-    }
-    return false;
-  });
-  const getMessage: GetMessage = (active) ? getMessageEnded : getMessageStarted;
+  const filteredDiscussions = !tag
+    ? sortedDiscussions
+    : sortedDiscussions.filter((pair) => {
+        const discussionId = pair[0];
+        const discussion = allDiscussions.get(discussionId)!;
+        for (const tagId of discussion.tags) {
+          const found: I.Key = getKeyFromTagId(tagId);
+          if (found.key === tag.key) {
+            return true;
+          }
+        }
+        return false;
+      });
+  const getMessage: GetMessage = active ? getMessageEnded : getMessageStarted;
   const { range, selected } = getRange(
     filteredDiscussions.length,
     sort,
@@ -233,8 +236,10 @@ export function getDiscussions(options: R.DiscussionsOptions): WireDiscussions {
   );
   const discussionRange = { ...range, tag };
   const selectedDiscussions: BareDiscussion[] = selected.map((pair) => allDiscussions.get(pair[0])!);
-  const discussionMessages: [BareDiscussion, BareMessage][] = selectedDiscussions.map(
-    discussion => [discussion, getMessage(discussion)]);
+  const discussionMessages: [BareDiscussion, BareMessage][] = selectedDiscussions.map((discussion) => [
+    discussion,
+    getMessage(discussion),
+  ]);
   const { users, discussions } = wireSummaries(discussionMessages);
   return { users, discussions, range: discussionRange };
 }
@@ -244,8 +249,8 @@ export function getDiscussion(options: R.DiscussionOptions): WireDiscussion | un
   if (!discussion) {
     return undefined;
   }
-  const sort: R.DiscussionSort = options.sort ? options.sort : "Oldest"
-  const sortedMessages = (sort === "Oldest") ? discussion.messages : discussion.messages.slice().reverse();
+  const sort: R.DiscussionSort = options.sort ? options.sort : "Oldest";
+  const sortedMessages = sort === "Oldest" ? discussion.messages : discussion.messages.slice().reverse();
   const { range, selected } = getRange(
     discussion.messages.length,
     sort,
@@ -261,24 +266,18 @@ export function getAllTags(): I.TagCount[] {
 }
 
 export function getTags(options: R.TagsOptions, searchInput?: string): I.Tags {
-  const tags: I.TagCount[] = getAllTags().filter(tagCount => !searchInput ? true : tagCount.key.includes(searchInput));
+  const tags: I.TagCount[] = getAllTags().filter((tagCount) =>
+    !searchInput ? true : tagCount.key.includes(searchInput)
+  );
   const sort: R.TagsSort = options.sort ? options.sort : "Popular";
   if (options.sort === "Name") {
     tags.sort((x, y) => x.key.localeCompare(y.key));
   } else {
     tags.sort((x, y) => {
-      return (x.count === y.count)
-        ? x.key.localeCompare(y.key)
-        : y.count - x.count;
+      return x.count === y.count ? x.key.localeCompare(y.key) : y.count - x.count;
     });
   }
-  const { range, selected } = getRange(
-    tags.length,
-    sort,
-    options.pagesize,
-    options.page ? options.page : 1,
-    tags
-  );
+  const { range, selected } = getRange(tags.length, sort, options.pagesize, options.page ? options.page : 1, tags);
   return { range, tagCounts: selected };
 }
 
@@ -291,7 +290,7 @@ export function getTag(tag: I.Key): I.TagInfo | undefined {
   if (isTag(tagId)) {
     // ideally allags would be a map instead of an array, but in practice we don't have so many tags that it matters
     // also we're targetting down-level JS so it's inconvenient to iterate map values
-    const found: BareTag = allTags.find(x => x.key === tagId.tag)!;
+    const found: BareTag = allTags.find((x) => x.key === tagId.tag)!;
     const { title, summary, markdown } = found;
     return { title, summary, markdown, key: tag.key };
   } else {
@@ -299,7 +298,7 @@ export function getTag(tag: I.Key): I.TagInfo | undefined {
       // should return 500 Internal Server Error
       return undefined;
     }
-    const image: I.Image = allImages.find(x => x.id === tagId.id)!;
+    const image: I.Image = allImages.find((x) => x.id === tagId.id)!;
     const { name, summary, markdown } = image;
     return { title: name, summary, markdown, key: tag.key };
   }
@@ -330,7 +329,6 @@ function postEditUserProfile(action: Action.EditUserProfile): I.IdName {
 function postNewTopic(action: Action.NewTopic): I.Key {
   const tag: BareTag = Action.extractNewTopic(action);
   if (!tagDiscussions.addTag(tag.key)) {
-
     // FIXME
     console.error("!postNewTopic");
   }
@@ -347,7 +345,6 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
     let tagId = tagDiscussions.find(tag);
     if (!tagId) {
       if (!configServer.autoAddTag) {
-
         // FIXME
 
         console.error(`postNewDiscussion can't auto-add ${tag}`);
@@ -359,7 +356,6 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
       // try again to find it
       tagId = tagDiscussions.find(tag);
       if (!tagId) {
-
         // FIXME
 
         continue;
@@ -368,14 +364,14 @@ function postNewDiscussion(action: Action.NewDiscussion): I.IdName {
     tagIds.push(tagId);
   }
   // the discussion is associated with tags
-  tagIds.forEach(tagId => tagDiscussions.addDiscussionId(tagId, discussionId));
+  tagIds.forEach((tagId) => tagDiscussions.addDiscussionId(tagId, discussionId));
   // new discussion
   const discussion: BareDiscussion = {
     id: idName.id,
     name: idName.name,
     tags: tagIds,
     first: message,
-    messages: []
+    messages: [],
   };
   allDiscussions.set(discussionId, discussion);
   const active = getDiscussionTime(discussion, getMessageStarted);
@@ -408,10 +404,14 @@ function postNewMessage(action: Action.NewMessage): I.Message {
   activate(getDiscussionTime(discussion, getMessageEnded));
   // the user owns this message
   userMessages.get(message.userId)!.push(message);
-  discussion.tags.forEach(tagId => userTags.get(message.userId)!.add(tagId));
+  discussion.tags.forEach((tagId) => userTags.get(message.userId)!.add(tagId));
   // the message is associated with this discussion
   messageDiscussions.set(message.messageId, discussionId);
-  return { userSummary: getUserSummary(message.userId), markdown: message.markdown, dateTime: message.dateTime };
+  return {
+    userSummary: getUserSummary(message.userId),
+    markdown: message.markdown,
+    dateTime: message.dateTime,
+  };
 }
 
 function postEditTagInfo(action: Action.EditTagInfo): I.Key | undefined {
@@ -426,7 +426,7 @@ function postEditTagInfo(action: Action.EditTagInfo): I.Key | undefined {
   if (isTag(tagId)) {
     // ideally allags would be a map instead of an array, but in practice we don't have so many tags that it matters
     // also we're targetting down-level JS so it's inconvenient to iterate map values
-    const found: BareTag = allTags.find(x => x.key === tagId.tag)!;
+    const found: BareTag = allTags.find((x) => x.key === tagId.tag)!;
     found.summary = summary.length ? summary : undefined;
     found.markdown = markdown.length ? markdown : undefined;
   } else {
@@ -434,7 +434,7 @@ function postEditTagInfo(action: Action.EditTagInfo): I.Key | undefined {
       // should return 500 Internal Server Error
       return undefined;
     }
-    const image: I.Image = allImages.find(x => x.id === tagId.id)!;
+    const image: I.Image = allImages.find((x) => x.id === tagId.id)!;
     image.summary = summary;
     image.markdown = markdown.length ? markdown : undefined;
   }
@@ -474,7 +474,7 @@ function onLoad(): void {
       console.error(`onLoad assert ${what}Id ${first} ${second}`);
     }
   }
-  actions.forEach(action => {
+  actions.forEach((action) => {
     // assert that the embedded IDs are in the expected sequence
     switch (action.type) {
       case "NewUser":

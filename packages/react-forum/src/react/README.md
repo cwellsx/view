@@ -16,7 +16,7 @@ The most important files, and the sequence in which data is fetched and processe
 1. [`App.tsx`](./App.tsx) defines the routes (i.e. the URLs expected), and maps them to components.
 
    For example, the `/discussions` URL is mapped to a function component named
-  `Discussions` (still within `App.tsx`).
+   `Discussions` (still within `App.tsx`).
 
 2. The function component identifies a pair of functions:
 
@@ -34,7 +34,7 @@ The most important files, and the sequence in which data is fetched and processe
 
    TypeScript template parameters ensure that the type of data fetched from the server matches the type of data
    expected as an input parameter to the "Page" function -- for example:
-   
+
    - The `IO.getDiscussions` function returns data of type `Promise<I.Discussions>`.
    - The `Page.Discussions` function expects `data: I.Discussions` as its input parameter.
 
@@ -48,11 +48,11 @@ The most important files, and the sequence in which data is fetched and processe
    except that the `mockFetch` implementation gets its data by making a subroutine call into a copy of the server
    that's built-in to be resident in the browser.
 
-### [`/src/react/Pages.tsx`](./Pages.tsx) 
+### [`/src/react/Pages.tsx`](./Pages.tsx)
 
 5. The `useEffect` custom hooks passes the returned data as an input parameter to the "Page" function.
 
-   The "Page" function creates React elements from the data (i.e. to display the data), 
+   The "Page" function creates React elements from the data (i.e. to display the data),
    and stores and returns them in an interface named `Layout`.
 
 ### [`/src/react/Components.tsx`](./Components.tsx)
@@ -62,7 +62,7 @@ The most important files, and the sequence in which data is fetched and processe
    These define various small, reusable components which may exist in various pages --
    e.g. the "gravatars" which are used as a signature for messages, for discussion summaries, on the user profile, etc.
 
-### [`/src/react/PageLayout.tsx`](./PageLayout.tsx) 
+### [`/src/react/PageLayout.tsx`](./PageLayout.tsx)
 
 7. The `Layout` interface is defined in the `PageLayout` module.
    It acts as the module's public interface, because it's the input data passed to that module's only exported function,
@@ -121,4 +121,4 @@ These include:
 - [`Topbar.tsx`](./Topbar.tsx) -- this defines the navigation top-bar at the top of every page
   (the App includes it at the top of every page).
 - [`ThrottledInput.tsx`](./ThrottledInput.tsx) -- this implements an input text control,
-which makes API calls to the server, without flooding the server with excessively-many requests
+  which makes API calls to the server, without flooding the server with excessively-many requests

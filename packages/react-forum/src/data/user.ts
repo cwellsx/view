@@ -44,4 +44,4 @@ export interface User extends UserSummary, UserProfile {
   // preferences is present or not present depending on whether this is another user's profile
   // in future could refine this into PublicPreference | PrivatePreferences if we want any preferences to be public
   preferences?: UserPreferences;
-};
+}

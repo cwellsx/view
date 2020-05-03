@@ -1,6 +1,7 @@
 /* image layers */
 
-ul.image-layers, ul.image-layers ul {
+ul.image-layers,
+ul.image-layers ul {
   list-style-type: none;
   padding-left: 1.5em;
 }
@@ -37,7 +38,7 @@ div.image-images > img {
 /* features */
 
 div.features > span::before {
-  content: ' ';
+  content: " ";
 }
 
 /* users */
@@ -47,7 +48,7 @@ div.all-tags {
   flex-wrap: wrap;
   display: grid;
   grid-gap: 8px;
-  grid-template-columns: repeat( auto-fill, minmax(250px, 1fr) );
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
 div.all-users > .user-info,
@@ -71,7 +72,7 @@ div.tags {
   flex-wrap: wrap;
   display: grid;
   grid-gap: 8px;
-  grid-template-columns: repeat( auto-fill, minmax(150px, 1fr) );
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 
 div.tags > .topic {
@@ -131,7 +132,7 @@ div.tags {
 
 .user-profile.profile > .gravatar,
 .user-profile.settings .gravatar {
-    margin-right: 2em;
+  margin-right: 2em;
 }
 
 .user-profile.profile .location,
@@ -219,7 +220,8 @@ div.tags {
   padding-left: 16px;
 }
 
-.minigrid.footer, .minigrid.subtitle {
+.minigrid.footer,
+.minigrid.subtitle {
   align-items: center;
 }
 

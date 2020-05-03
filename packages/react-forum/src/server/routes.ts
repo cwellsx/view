@@ -103,7 +103,6 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
     }
 
     case "Tag": {
-
       if (R.isAllTags(location)) {
         return DB.getAllTags();
       }
@@ -142,13 +141,12 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
     return undefined;
   }
 
-  const dateTime: string = (new Date()).toUTCString();
+  const dateTime: string = new Date().toUTCString();
 
   // convert from resource: Resource plus json: any to Action.Any
   function getAction(resourceType: R.ResourceType): Action.Any | R.ParserError {
     switch (resourceType) {
       case "Discussion": {
-
         // new answer
         {
           // get the discussionId from the URL

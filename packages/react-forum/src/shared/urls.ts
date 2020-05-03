@@ -12,30 +12,60 @@ import { IdName, Key } from "../data";
 
 // User
 const routeUsers: Route = { resourceType: "User" };
-const routeUser: RouteT<IdName> = { resourceType: "User", parts: ["id", "name"] };
-const routeUserEdit: RouteT<IdName> = { resourceType: "User", parts: ["edit", "id", "name"] };
+const routeUser: RouteT<IdName> = {
+  resourceType: "User",
+  parts: ["id", "name"],
+};
+const routeUserEdit: RouteT<IdName> = {
+  resourceType: "User",
+  parts: ["edit", "id", "name"],
+};
 // Image
 const routeImages: Route = { resourceType: "Image" };
-const routeImage: RouteT<IdName> = { resourceType: "Image", parts: ["id", "name"] };
+const routeImage: RouteT<IdName> = {
+  resourceType: "Image",
+  parts: ["id", "name"],
+};
 // Discussion
 const routeDiscussions: Route = { resourceType: "Discussion" };
-const routeDiscussion: RouteT<IdName> = { resourceType: "Discussion", parts: ["id", "name"] };
+const routeDiscussion: RouteT<IdName> = {
+  resourceType: "Discussion",
+  parts: ["id", "name"],
+};
 // SiteMap
 const routeSiteMap: Route = { resourceType: "SiteMap" };
 // Tag
 const routeAllTags: Route = { resourceType: "Tag", word: "all" };
 const routeTags: Route = { resourceType: "Tag" };
-const routeDiscussionsTagged_: Route = { resourceType: "Discussion", word: "tagged" }
-const routeDiscussionsTagged: RouteT<Key> = { resourceType: "Discussion", parts: ["tagged", "key"] }
-const routeTagInfo: RouteT<Key> = { resourceType: "Tag", parts: ["key", "info"] }
-const routeTagEdit: RouteT<Key> = { resourceType: "Tag", parts: ["key", "edit"] }
-const routeTagKey: RouteT<Key> = { resourceType: "Tag", parts: ["key"] }
+const routeDiscussionsTagged_: Route = {
+  resourceType: "Discussion",
+  word: "tagged",
+};
+const routeDiscussionsTagged: RouteT<Key> = {
+  resourceType: "Discussion",
+  parts: ["tagged", "key"],
+};
+const routeTagInfo: RouteT<Key> = {
+  resourceType: "Tag",
+  parts: ["key", "info"],
+};
+const routeTagEdit: RouteT<Key> = {
+  resourceType: "Tag",
+  parts: ["key", "edit"],
+};
+const routeTagKey: RouteT<Key> = { resourceType: "Tag", parts: ["key"] };
 
 // POST not GET
 const routeLogin: Route = { resourceType: "Login" };
 const routeNewDiscussion: Route = { resourceType: "Discussion", word: "new" };
-const routeNewAnswer: RouteT<Id> = { resourceType: "Discussion", parts: ["id", "answer", "submit"] };
-const routeEditUserProfile: RouteT<Id> = { resourceType: "User", parts: ["edit", "id"] };
+const routeNewAnswer: RouteT<Id> = {
+  resourceType: "Discussion",
+  parts: ["id", "answer", "submit"],
+};
+const routeEditUserProfile: RouteT<Id> = {
+  resourceType: "User",
+  parts: ["edit", "id"],
+};
 
 /*
   Definitions of a route (see instances above) -- URLs contain:
@@ -85,13 +115,16 @@ interface RouteT<T extends object> {
 
 function isUrlT<T extends object>(segments: string[], route: RouteT<T>): T | undefined {
   const { resourceType, parts } = route;
-  if (!segments.length || (segments[0] !== getRoot(resourceType))) {
+  if (!segments.length || segments[0] !== getRoot(resourceType)) {
     return undefined;
   }
   if (segments.length !== 1 + parts.length) {
     // handle it gracefully if the last "name" part of the URL is left offf
-    if (parts.length && (parts[parts.length - 1] === "name") && (segments.length === parts.length)) {
-      const short: RouteT<T> = { resourceType, parts: parts.slice(0, parts.length - 1) };
+    if (parts.length && parts[parts.length - 1] === "name" && segments.length === parts.length) {
+      const short: RouteT<T> = {
+        resourceType,
+        parts: parts.slice(0, parts.length - 1),
+      };
       const found = isUrlT(segments, short);
       if (found) {
         return { ...found, name: "" };
@@ -136,7 +169,7 @@ function isUrlT<T extends object>(segments: string[], route: RouteT<T>): T | und
 
 function isUrl(pathSegments: string[], route: Route): boolean {
   const { resourceType, word } = route;
-  if (!pathSegments.length || (pathSegments[0] !== getRoot(resourceType))) {
+  if (!pathSegments.length || pathSegments[0] !== getRoot(resourceType)) {
     return false;
   }
   return (pathSegments.length === 1 && !word) || (pathSegments.length === 2 && pathSegments[1] === word);
@@ -144,29 +177,32 @@ function isUrl(pathSegments: string[], route: Route): boolean {
 
 function toNumber(s: string): number | undefined {
   const rc: number = +s;
-  return (typeof rc === "number") ? rc : undefined;
+  return typeof rc === "number" ? rc : undefined;
 }
 
 // getTagText reuses this function
 export function slugify(title: string) {
   // preserve only alphanumeric and whitespace and hyphen, then convert all whitespace, then toLower
-  return title.replace(/[^A-Za-z0-9\- ]/g, "").replace(/ /g, "-").toLocaleLowerCase();
+  return title
+    .replace(/[^A-Za-z0-9\- ]/g, "")
+    .replace(/ /g, "-")
+    .toLocaleLowerCase();
 }
 
 function makeUrlT<T extends object>(route: RouteT<T>, data: T, queries?: Queries): string {
   const { resourceType, parts } = route;
   const rc: string[] = [];
   rc.push(getRoot(resourceType));
-  parts.forEach(part => {
+  parts.forEach((part) => {
     if (isKeyword(part)) {
       rc.push(part);
     } else {
       const key: keyof T = part;
       const value = "" + data[key]; // convert to string if it's a number
-      const safe = (key === "name") ? resourceType === "User" ? encodeURIComponent(value) : slugify(value) : value;
+      const safe = key === "name" ? (resourceType === "User" ? encodeURIComponent(value) : slugify(value)) : value;
       rc.push(safe);
     }
-  })
+  });
   return "/" + rc.join("/") + (queries ? queries.search() : "");
 }
 
@@ -192,11 +228,11 @@ class Pairs<T0, T1> {
     this.array = array;
   }
   find0(wanted: T0): T1 | undefined {
-    const found = this.array.find(x => x[0] === wanted);
+    const found = this.array.find((x) => x[0] === wanted);
     return !!found ? found[1] : undefined;
   }
   find1(wanted: T1): T0 | undefined {
-    const found = this.array.find(x => x[1] === wanted);
+    const found = this.array.find((x) => x[1] === wanted);
     return !!found ? found[0] : undefined;
   }
 }
@@ -252,7 +288,7 @@ export function getLocation(url: string): Location {
   }
 
   const splitQuery = url.indexOf("?");
-  const query = (splitQuery !== -1) ? url.substring(splitQuery) : "";
+  const query = splitQuery !== -1 ? url.substring(splitQuery) : "";
   if (splitQuery !== -1) {
     url = url.substring(0, splitQuery);
   }
@@ -274,13 +310,13 @@ class Elements {
   constructor(location: Location) {
     // split the input parameters
     const { pathname, search } = location;
-    if (search && (search[0] !== "?")) {
+    if (search && search[0] !== "?") {
       throw new Error("Expected search to start with `?`");
     }
     if (pathname[0] !== "/") {
       throw new Error("Expected pathname to start with `/`");
     }
-    this.segments = (pathname.length === 1) ? [] : pathname.substring(1).split("/");
+    this.segments = pathname.length === 1 ? [] : pathname.substring(1).split("/");
     this.queries = new Queries(location);
   }
 
@@ -338,18 +374,20 @@ class Queries {
   constructor(location?: Location) {
     if (location && location.search) {
       const split = location.search.substring(1).split("&");
-      this.params = split.filter(s => s.length > 0).map(s => {
-        const parts = s.split("=");
-        return (parts.length > 1) ? [parts[0], parts[1]] : [parts[0], undefined];
-      });
+      this.params = split
+        .filter((s) => s.length > 0)
+        .map((s) => {
+          const parts = s.split("=");
+          return parts.length > 1 ? [parts[0], parts[1]] : [parts[0], undefined];
+        });
     } else {
       this.params = [];
     }
   }
 
   get(name: string): string | undefined {
-    const found = this.params.find(x => x[0] === name);
-    return (!!found) ? found[1] : undefined;
+    const found = this.params.find((x) => x[0] === name);
+    return !!found ? found[1] : undefined;
   }
   push(name: string, value?: string): void {
     if (!value) {
@@ -358,8 +396,9 @@ class Queries {
     this.params.push([name, value]);
   }
   search(): string {
-    return !this.params.length ? "" :
-      "?" + this.params.map(pair => pair[1] ? pair[0] + "=" + pair[1] : pair[0]).join("&");
+    return !this.params.length
+      ? ""
+      : "?" + this.params.map((pair) => (pair[1] ? pair[0] + "=" + pair[1] : pair[0])).join("&");
   }
 }
 
@@ -373,7 +412,10 @@ const userTabTypes = new Pairs<UserTabType, string>([
 ]);
 
 export type UserTabType = "Profile" | "EditSettings" | "Activity";
-export interface UserOptions { user: IdName, userTabType?: UserTabType };
+export interface UserOptions {
+  user: IdName;
+  userTabType?: UserTabType;
+}
 
 export type ActivitySort = "Oldest" | "Newest";
 export interface UserActivityOptions {
@@ -381,7 +423,7 @@ export interface UserActivityOptions {
   userTabType: "Activity";
   sort?: ActivitySort;
   page?: number; //1-based
-};
+}
 
 export function isUsers(location: Location): boolean {
   const elements = new Elements(location);
@@ -427,7 +469,7 @@ export function isUserActivityOptions(location: Location): UserActivityOptions |
     const page = queries.get("page");
     return {
       sort: sort ? discussionSort.find1(sort) : undefined,
-      page: page ? toNumber(page) : undefined
+      page: page ? toNumber(page) : undefined,
     };
   }
   const { sort, page } = getActivityoptions(new Queries(location));
@@ -444,14 +486,14 @@ export function getUserOptionsUrl(options: UserOptions): string {
   }
   const queries: Queries = new Queries();
   if (options.userTabType) {
-    queries.push("tab", userTabTypes.find0(options.userTabType))
+    queries.push("tab", userTabTypes.find0(options.userTabType));
   }
   return makeUrlT(routeUser, options.user, queries);
 }
 
 export function getUserActivityUrl(options: UserActivityOptions): string {
   const queries: Queries = new Queries();
-  queries.push("tab", userTabTypes.find0("Activity"))
+  queries.push("tab", userTabTypes.find0("Activity"));
   if (options.sort) {
     queries.push("sort", discussionSort.find0(options.sort));
   }
@@ -483,12 +525,12 @@ export type TagsSort = "Popular" | "Name";
 
 const tagsSort = new Pairs<TagsSort, string>([
   ["Popular", "popular"],
-  ["Name", "name"]
+  ["Name", "name"],
 ]);
 
 export interface TagsOptions {
   sort?: TagsSort;
-  pagesize: 36
+  pagesize: 36;
   page?: number; //1-based
 }
 
@@ -511,8 +553,8 @@ export function isAllTags(location: Location): boolean {
   return elements.matches(routeAllTags);
 }
 
-export function getTagsOptionsUrl(params: { sort?: TagsSort, page?: number }): string {
-  const options: TagsOptions = { ...params, pagesize: 36 }
+export function getTagsOptionsUrl(params: { sort?: TagsSort; page?: number }): string {
+  const options: TagsOptions = { ...params, pagesize: 36 };
   const queries: Queries = new Queries();
   if (options.sort) {
     queries.push("sort", tagsSort.find0(options.sort));
@@ -528,17 +570,33 @@ export function getTagsOptionsUrl(params: { sort?: TagsSort, page?: number }): s
   Other Tags pages
 */
 
-export function getAllTagsUrl(): string { return makeUrl(routeAllTags); }
-export function getTagsUrl(): string { return makeUrl(routeTags); }
-export function getTagUrl(tag: Key): string { return getDiscussionsTaggedUrl(tag); }
+export function getAllTagsUrl(): string {
+  return makeUrl(routeAllTags);
+}
+export function getTagsUrl(): string {
+  return makeUrl(routeTags);
+}
+export function getTagUrl(tag: Key): string {
+  return getDiscussionsTaggedUrl(tag);
+}
 
-export function getTagInfoUrl(tag: Key): string { return makeUrlT(routeTagInfo, tag); }
-export function getTagEditUrl(tag: Key): string { return makeUrlT(routeTagEdit, tag); }
-export function getTagKeyUrl(tag: Key): string { return makeUrlT(routeTagKey, tag); }
+export function getTagInfoUrl(tag: Key): string {
+  return makeUrlT(routeTagInfo, tag);
+}
+export function getTagEditUrl(tag: Key): string {
+  return makeUrlT(routeTagEdit, tag);
+}
+export function getTagKeyUrl(tag: Key): string {
+  return makeUrlT(routeTagKey, tag);
+}
 
-export function getDiscussionsTaggedUrl(tag: Key): string { return makeUrlT(routeDiscussionsTagged, tag); }
+export function getDiscussionsTaggedUrl(tag: Key): string {
+  return makeUrlT(routeDiscussionsTagged, tag);
+}
 
-export interface InfoOrEdit { word: "info" | "edit" };
+export interface InfoOrEdit {
+  word: "info" | "edit";
+}
 
 export function isTagInfo(location: Location): Key | ParserError {
   const elements: Elements = new Elements(location);
@@ -567,18 +625,18 @@ export type PageSize = 15 | 30 | 50;
 
 const discussionsSort = new Pairs<DiscussionsSort, string>([
   ["Active", "active"],
-  ["Newest", "newest"]
+  ["Newest", "newest"],
 ]);
 
 const pageSizes = new Pairs<PageSize, string>([
   [15, "15"],
   [30, "30"],
-  [50, "50"]
+  [50, "50"],
 ]);
 
 export interface DiscussionsOptions {
   sort?: DiscussionsSort;
-  pagesize?: PageSize
+  pagesize?: PageSize;
   page?: number; //1-based
   tag?: Key;
 }
@@ -596,7 +654,7 @@ export function isDiscussionsOptions(location: Location): DiscussionsOptions | P
     sort: sort ? discussionsSort.find1(sort) : undefined,
     pagesize: pagesize ? pageSizes.find1(pagesize) : undefined,
     page: page ? toNumber(page) : undefined,
-    tag: key
+    tag: key,
   };
 }
 
@@ -611,7 +669,7 @@ export function getDiscussionsOptionsUrl(options: DiscussionsOptions): string {
   if (options.page) {
     queries.push("page", "" + options.page);
   }
-  return (!options.tag) ? makeUrl(routeDiscussions, queries) : makeUrlT(routeDiscussionsTagged, options.tag, queries);
+  return !options.tag ? makeUrl(routeDiscussions, queries) : makeUrlT(routeDiscussionsTagged, options.tag, queries);
 }
 
 /*
@@ -622,7 +680,7 @@ export type DiscussionSort = "Oldest" | "Newest";
 
 const discussionSort = new Pairs<DiscussionSort, string>([
   ["Oldest", "oldest"],
-  ["Newest", "newest"]
+  ["Newest", "newest"],
 ]);
 
 export interface DiscussionOptions {
@@ -643,7 +701,7 @@ export function isDiscussionOptions(location: Location): DiscussionOptions | Par
   return {
     discussion,
     sort: sort ? discussionSort.find1(sort) : undefined,
-    page: page ? toNumber(page) : undefined
+    page: page ? toNumber(page) : undefined,
   };
 }
 
@@ -666,15 +724,17 @@ export function getDiscussionOptionsUrl(options: DiscussionOptions): string {
   SiteMap
 */
 
-export function getSiteMapUrl(): string { return makeUrl(routeSiteMap); }
+export function getSiteMapUrl(): string {
+  return makeUrl(routeSiteMap);
+}
 
 /*
   Posts
 */
 
 interface Id {
-  id: number,
-};
+  id: number;
+}
 
 export function postLoginUrl(): string {
   return route.login;
@@ -736,5 +796,5 @@ export const route = {
   users: makeUrl(routeUsers),
   images: makeUrl(routeImages),
   newDiscussion: makeUrl(routeNewDiscussion),
-  tags: makeUrl(routeTags)
-}
+  tags: makeUrl(routeTags),
+};
