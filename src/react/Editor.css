@@ -12,7 +12,8 @@ form.editor {
   border: none;
 }
 
-.wmd-input, .wmd-preview {
+.wmd-input,
+.wmd-preview {
   background-color: white;
 }
 
@@ -28,7 +29,7 @@ form.editor {
 .editor.settings > h2 {
   margin-top: 1.5em;
   padding-top: 0.5em;
-  border-top: 1px solid rgb(234, 234, 234);;
+  border-top: 1px solid rgb(234, 234, 234);
   font-size: 18px;
 }
 

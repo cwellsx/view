@@ -40,7 +40,7 @@ export interface BareTagCount extends I.Key {
 // otherwise it identifies e.g. an Image (or possibly some other type of content)
 // TagId is used instead of Key in BareDiscussion, so discussions can be associated with tags or, e.g. with images.
 export type Tag = { tag: string };
-export type TagId = Tag | { resourceType: ResourceType, id: number };
+export type TagId = Tag | { resourceType: ResourceType; id: number };
 
 export function isTag(tag: TagId): tag is Tag {
   return (tag as Tag).tag !== undefined;

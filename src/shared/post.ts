@@ -5,8 +5,8 @@
 // tell the difference between an element beng omitted (unspecified) versus an element being deleted
 
 export interface Login {
-  userName: string,
-  password: string
+  userName: string;
+  password: string;
 }
 
 export interface NewUser {
@@ -49,5 +49,5 @@ export type PostUrls = "answer/submit";
 // this is GET not POST but it's carried in the JSON data
 
 export interface SearchInput {
-  searchInput: string
+  searchInput: string;
 }

@@ -49,13 +49,13 @@
 }
 
 .column-text.closed .content .element {
-  padding-left: 0.5rem
+  padding-left: 0.5rem;
 }
 
 .column-text.open .content,
 .column-text.none .content,
-.column-text.grid .content  {
-  padding-left: 1.5rem
+.column-text.grid .content {
+  padding-left: 1.5rem;
 }
 
 .column-text .content .element.first,
@@ -171,7 +171,8 @@
   margin-right: 0;
 }
 
-.tab-head:after, .tabs::after {
+.tab-head:after,
+.tabs::after {
   content: "";
   display: table;
   clear: both;
@@ -197,7 +198,7 @@
 }
 
 .tabs a:hover {
-  background-color: rgba(132,141,149,0.05);
+  background-color: rgba(132, 141, 149, 0.05);
 }
 
 .tabs a.selected:hover {

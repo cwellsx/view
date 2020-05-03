@@ -44,11 +44,11 @@ The source code all exists in two subdirectories:
 
 ## No license
 
-Copyright 2019 Christopher Wells
+    © 2019-2020 Christopher Wells
 
-This software can not be copied and/or distributed without the express permission of Christopher Wells.
+This software may not be copied without the express permission of Christopher Wells.
 
-You may review this software on your computer and try it.
+You may review this software -- i.e. read it and run it.
 
 You may not:
 
@@ -56,9 +56,8 @@ You may not:
 - Modify it
 - Use it on a live web site
 
-Do contact me if you'd like to develop it further.
-
-https://github.com/cwellsx/react-forum
+Do contact me if you'd like to develop it further --
+cwellsx@gmail.com
 
 ## Change log
 

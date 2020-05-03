@@ -25,7 +25,7 @@ function getTagKey(key: string, images: IdName[]): string {
     const resourceType: ResourceType = split[1] as ResourceType;
     switch (resourceType) {
       case "Image":
-        const foundImage = images.find(idName => idName.id === id);
+        const foundImage = images.find((idName) => idName.id === id);
         if (!foundImage) {
           // shouldn't happen -- was the image deleted or something?
           console.error(`TagIdCounts.read -- image not found "${key}"`);
@@ -79,7 +79,9 @@ export class TagIdCounts extends TagIdMap<number> {
   }
   read(): BareTagCount[] {
     const rc: (Key & { value: number })[] = super.getKeyPairs();
-    return rc.map(o => { return { key: o.key, count: o.value }; });
+    return rc.map((o) => {
+      return { key: o.key, count: o.value };
+    });
   }
 }
 
@@ -142,17 +144,21 @@ export class TagIdDiscussions extends TagIdMap<number[]> {
   // called from getAllTags which wants tags and images
   tagCounts(): TagCount[] {
     // same as siteTagCounts() except no title
-    return this.allTags.map((tag: BareTag) => {
-      const { key, summary } = tag;
-      const count = super.get(getMapKey({ tag: key }))!.length;
-      return { key, summary, count };
-    }).concat(this.allImages.map((image) => {
-      const { summary, id } = image;
-      const tagId: TagId = { id, resourceType: "Image" };
-      const count = super.get(getMapKey(tagId))!.length;
-      const key = this.getKey(tagId).key;
-      return { key, summary, count };
-    }));
+    return this.allTags
+      .map((tag: BareTag) => {
+        const { key, summary } = tag;
+        const count = super.get(getMapKey({ tag: key }))!.length;
+        return { key, summary, count };
+      })
+      .concat(
+        this.allImages.map((image) => {
+          const { summary, id } = image;
+          const tagId: TagId = { id, resourceType: "Image" };
+          const count = super.get(getMapKey(tagId))!.length;
+          const key = this.getKey(tagId).key;
+          return { key, summary, count };
+        })
+      );
   }
   // called from various places
   // assumes the images exist but doesn't assume a tag exists
@@ -165,9 +171,25 @@ export class TagIdDiscussions extends TagIdMap<number[]> {
 
 // https://titlecaseconverter.com/rules/
 const titleCase: string[] = [
-  "at", "by", "in", "of", "on", "up", "to",
-  "but", "for", "off", "out", "via",
-  "for", "and", "nor", "but", "or", "yet", "so"
+  "at",
+  "by",
+  "in",
+  "of",
+  "on",
+  "up",
+  "to",
+  "but",
+  "for",
+  "off",
+  "out",
+  "via",
+  "for",
+  "and",
+  "nor",
+  "but",
+  "or",
+  "yet",
+  "so",
 ];
 
 // used when auto-adding a tag

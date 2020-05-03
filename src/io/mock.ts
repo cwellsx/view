@@ -1,4 +1,4 @@
-import { config } from "../config"
+import { config } from "../config";
 import { routeOnGet, routeOnPost, loginUser } from "../server/routes";
 
 export { loginUser } from "../server/routes";
@@ -25,7 +25,7 @@ export function mockFetch(url: string, init: RequestInit): Promise<SimpleRespons
         const failure: SimpleResponse = {
           ok: false,
           statusText: "Unauthorized",
-          json: () => failPromise
+          json: () => failPromise,
         };
         resolve(failure);
         return;
@@ -53,7 +53,7 @@ export function mockFetch(url: string, init: RequestInit): Promise<SimpleRespons
       const response: SimpleResponse = {
         ok: true,
         statusText: "OK",
-        json: () => jsonPromise
+        json: () => jsonPromise,
       };
       resolve(response);
     }, config.mockdelay);

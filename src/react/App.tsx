@@ -1,15 +1,15 @@
-import React from 'react';
-import * as ReactRouter from 'react-router-dom';
-import { useLayout, Layout, loadingContents, loadingError } from './PageLayout';
-import { Topbar } from './Topbar';
-import { Login } from './Login';
-import './App.css';
+import React from "react";
+import * as ReactRouter from "react-router-dom";
+import { useLayout, Layout, loadingContents, loadingError } from "./PageLayout";
+import { Topbar } from "./Topbar";
+import { Login } from "./Login";
+import "./App.css";
 import * as I from "../data";
 import * as IO from "../io";
 import * as Page from "./Pages";
 import * as R from "../shared/urls";
-import { AppContext, useMe } from './AppContext';
-import { config } from "../config"
+import { AppContext, useMe } from "./AppContext";
+import { config } from "../config";
 import { loginUser } from "../io/mock";
 import { ErrorMessage } from "./ErrorMessage";
 import { NewDiscussion as NewDiscussionElement } from "./Editor";
@@ -37,7 +37,7 @@ const App: React.FunctionComponent = () => {
       </ReactRouter.BrowserRouter>
     </AppContext.Provider>
   );
-}
+};
 
 const AppRoutes: React.FunctionComponent = () => {
   // https://reacttraining.com/react-router/web/api/Switch
@@ -63,7 +63,7 @@ const AppRoutes: React.FunctionComponent = () => {
       </ReactRouter.Switch>
     </React.Fragment>
   );
-}
+};
 
 type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
 
@@ -129,19 +129,23 @@ type RouteComponentProps = ReactRouter.RouteComponentProps<any>;
 type IoGetDataT<TData, TParam, TParam2 = void> = (param: TParam, param2?: TParam2) => Promise<TData>;
 
 // this defines two exra functions (named `reload` and `newData`) which are passed to the `getLayout` function
-type Extra<TParam> = { reload: () => void, newData: (param: TParam) => Promise<void> };
+type Extra<TParam> = {
+  reload: () => void;
+  newData: (param: TParam) => Promise<void>;
+};
 
 // this uses data from the server, and optional extra data, to create a Layout object
 type GetLayoutT<TData, TExtra, TParam> = (data: TData, extra: TExtra & Extra<TParam>) => Layout;
 
 // this value is passed as param to useGetLayout when TParam is void
 // or I could have implemented a copy-and-paste of useGetLayout without the TParam
-const isVoid: void = (() => { })();
+const isVoid: void = (() => {})();
 
 // 1st overload, used when TParam is void
 function useGetLayout0<TData>(
   getData: IoGetDataT<TData, void>,
-  getLayout: GetLayoutT<TData, {}, void>): React.ReactElement {
+  getLayout: GetLayoutT<TData, {}, void>
+): React.ReactElement {
   return useGetLayout<TData, void>(getData, getLayout, isVoid);
 }
 
@@ -149,7 +153,8 @@ function useGetLayout0<TData>(
 function useGetLayout<TData, TParam>(
   getData: IoGetDataT<TData, TParam>,
   getLayout: GetLayoutT<TData, {}, void>,
-  param: TParam): React.ReactElement {
+  param: TParam
+): React.ReactElement {
   return useGetLayout2<TData, TParam, {}>(getData, getLayout, param, {});
 }
 
@@ -158,8 +163,8 @@ function useGetLayout2<TData, TParam, TExtra extends {}>(
   getData: IoGetDataT<TData, TParam>,
   getLayout: GetLayoutT<TData, TExtra, void>,
   param: TParam,
-  extra: TExtra)
-  : React.ReactElement {
+  extra: TExtra
+): React.ReactElement {
   return useGetLayout3<TData, TParam, TExtra, void>(getData, getLayout, param, extra);
 }
 
@@ -168,9 +173,8 @@ function useGetLayout3<TData, TParam, TExtra extends {}, TParam2>(
   getData: IoGetDataT<TData, TParam, TParam2>,
   getLayout: GetLayoutT<TData, TExtra, TParam2>,
   param: TParam,
-  extra: TExtra)
-  : React.ReactElement {
-
+  extra: TExtra
+): React.ReactElement {
   const [prev, setParam] = React.useState<TParam | undefined>(undefined);
   const [data, setData] = React.useState<TData | undefined>(undefined);
   const [error, setError] = React.useState<Error | undefined>(undefined);
@@ -196,13 +200,13 @@ function useGetLayout3<TData, TParam, TExtra extends {}, TParam2>(
           setData(fetched);
           // setParam(param);
           resolve();
-        })
-        promise.catch(error => {
+        });
+        promise.catch((error) => {
           reject(error);
         });
       });
       return rc;
-    }
+    };
     return getDataAgain;
   }, [getData, param]);
 
@@ -215,7 +219,8 @@ function useGetLayout3<TData, TParam, TExtra extends {}, TParam2>(
       .then((fetched) => {
         setData(fetched);
         setParam(param);
-      }).catch((reason) => {
+      })
+      .catch((reason) => {
         console.log(`useEffect failed ${reason}`);
         setError(reason);
       });
@@ -223,9 +228,10 @@ function useGetLayout3<TData, TParam, TExtra extends {}, TParam2>(
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
-  const layout: Layout = (data) && (prev === param)
-    ? getLayout(data, extra2) // render the data
-    : (error)
+  const layout: Layout =
+    data && prev === param
+      ? getLayout(data, extra2) // render the data
+      : error
       ? loadingError(error)
       : loadingContents; // else no data yet to render
 
@@ -242,35 +248,24 @@ function useGetLayout3<TData, TParam, TExtra extends {}, TParam2>(
 */
 
 const SiteMap: React.FunctionComponent = () => {
-
-  return useGetLayout0<I.SiteMap>(
-    IO.getSiteMap,
-    Page.SiteMap
-  );
-}
+  return useGetLayout0<I.SiteMap>(IO.getSiteMap, Page.SiteMap);
+};
 
 // these are used as TExtra types
 type FetchedIsHtml = { isHtml: boolean };
 
 const Home: React.FunctionComponent = () => {
-
   const isHtml = false;
   const filename = isHtml ? "home.html" : "home.md";
 
-  return useGetLayout2<string, string, FetchedIsHtml>(
-    IO.getPublic,
-    Page.Fetched,
-    filename,
-    { isHtml }
-  );
-}
+  return useGetLayout2<string, string, FetchedIsHtml>(IO.getPublic, Page.Fetched, filename, { isHtml });
+};
 
 /*
   Image
 */
 
 const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-
   const parsed = R.isImage(props.location);
   if (R.isParserError(parsed)) {
     return noMatch(props, parsed.error);
@@ -281,34 +276,31 @@ const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteCompone
   // of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
   // So far as I can tell from testing, what really matters is the array of dependencies passed to useEffects.
   return <ImageId id={parsed.id} name={parsed.name} />;
+};
+
+interface ImageIdProps {
+  id: number;
+  name: string;
 }
-
-interface ImageIdProps { id: number, name: string };
 const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => {
-
   // ImageId is a separate function component because there's an `if` statement at the top of the Image cmpnent
   // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
 
   const { id, name } = props;
-  const idName = React.useMemo<I.IdName>(() => { return { id, name }; }, [id, name]);
+  const idName = React.useMemo<I.IdName>(() => {
+    return { id, name };
+  }, [id, name]);
 
-  return useGetLayout<I.Image, I.IdName>(
-    IO.getImage,
-    Page.Image,
-    idName
-  );
-}
+  return useGetLayout<I.Image, I.IdName>(IO.getImage, Page.Image, idName);
+};
 
 /*
   Users
 */
 
 const Users: React.FunctionComponent = () => {
-  return useGetLayout0<I.UserSummaryEx[]>(
-    IO.getUsers,
-    Page.Users
-  );
-}
+  return useGetLayout0<I.UserSummaryEx[]>(IO.getUsers, Page.Users);
+};
 
 /*
   User (with 2 or 3 different tabs)
@@ -340,7 +332,7 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
     default:
       return noMatch(props, "Unexpected userTabType");
   }
-}
+};
 
 // these are used as TExtra types
 type UserCanEdit = { canEdit: boolean };
@@ -349,40 +341,40 @@ type UserCanEditAndHistory = UserCanEdit & { history: History };
 type UserProps = RouteComponentProps & I.IdName & UserCanEdit;
 const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps) => {
   const { id, name } = props;
-  const idName = React.useMemo<I.IdName>(() => { return { id, name }; }, [id, name]);
-  return useGetLayout2<I.User, I.IdName, UserCanEdit>(
-    IO.getUser,
-    Page.UserProfile,
-    idName,
-    { canEdit: props.canEdit }
-  );
-}
+  const idName = React.useMemo<I.IdName>(() => {
+    return { id, name };
+  }, [id, name]);
+  return useGetLayout2<I.User, I.IdName, UserCanEdit>(IO.getUser, Page.UserProfile, idName, { canEdit: props.canEdit });
+};
 
 const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) => {
   const { id, name } = props;
-  const idName = React.useMemo<I.IdName>(() => { return { id, name }; }, [id, name]);
-  return useGetLayout2<I.User, I.IdName, UserCanEditAndHistory>(
-    IO.getUser,
-    Page.UserSettings,
-    idName,
-    { canEdit: props.canEdit, history: props.history }
-  );
-}
+  const idName = React.useMemo<I.IdName>(() => {
+    return { id, name };
+  }, [id, name]);
+  return useGetLayout2<I.User, I.IdName, UserCanEditAndHistory>(IO.getUser, Page.UserSettings, idName, {
+    canEdit: props.canEdit,
+    history: props.history,
+  });
+};
 
-type UserActivityProps = RouteComponentProps & { options: R.UserActivityOptions } & UserCanEdit;
+type UserActivityProps = RouteComponentProps & {
+  options: R.UserActivityOptions;
+} & UserCanEdit;
 const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
   // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
   const { user, userTabType, sort, page } = props.options;
   const { id, name } = user;
-  const options = React.useMemo<R.UserActivityOptions>(
-    () => { return { user: { id, name }, userTabType, sort, page }; }, [id, name, userTabType, sort, page]);
+  const options = React.useMemo<R.UserActivityOptions>(() => {
+    return { user: { id, name }, userTabType, sort, page };
+  }, [id, name, userTabType, sort, page]);
   return useGetLayout2<I.UserActivity, R.UserActivityOptions, UserCanEdit>(
     IO.getUserActivity,
     Page.UserActivity,
     options,
     { canEdit: props.canEdit }
   );
-}
+};
 
 /*
   Discussions
@@ -397,65 +389,57 @@ const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteC
   // split options into its components instead of passing whole options
   // otherwise the eslint "react-hooks/exhaustive-deps" rule wil complain when we use useMemo
   return <DiscussionsList sort={options.sort} pagesize={options.pagesize} page={options.page} tag={options.tag} />;
-}
+};
 
 const DiscussionsList: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
-
   const { sort, pagesize, page, tag } = props;
-  const options: R.DiscussionsOptions = React.useMemo(
-    () => { return { sort, pagesize, page, tag }; },
-    [sort, pagesize, page, tag])
+  const options: R.DiscussionsOptions = React.useMemo(() => {
+    return { sort, pagesize, page, tag };
+  }, [sort, pagesize, page, tag]);
 
-  return useGetLayout<I.Discussions, R.DiscussionsOptions>(
-    IO.getDiscussions,
-    Page.Discussions,
-    options
-  );
-}
+  return useGetLayout<I.Discussions, R.DiscussionsOptions>(IO.getDiscussions, Page.Discussions, options);
+};
 
 /*
   Discussion (id)
 */
 
 const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-
   const parsed = R.isDiscussionOptions(props.location);
   if (R.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
 
   return <DiscussionId discussion={parsed.discussion} sort={parsed.sort} page={parsed.page} />;
-}
+};
 
 const DiscussionId: React.FunctionComponent<R.DiscussionOptions> = (props: R.DiscussionOptions) => {
-
   const { sort, discussion, page } = props;
-  const options: R.DiscussionOptions = React.useMemo(
-    () => { return { sort, page, discussion: { id: discussion.id, name: discussion.name } }; },
-    [sort, discussion.id, discussion.name, page])
+  const options: R.DiscussionOptions = React.useMemo(() => {
+    return {
+      sort,
+      page,
+      discussion: { id: discussion.id, name: discussion.name },
+    };
+  }, [sort, discussion.id, discussion.name, page]);
 
-  return useGetLayout<I.Discussion, R.DiscussionOptions>(
-    IO.getDiscussion,
-    Page.Discussion,
-    options
-  );
-}
+  return useGetLayout<I.Discussion, R.DiscussionOptions>(IO.getDiscussion, Page.Discussion, options);
+};
 
 /*
   Discussion (new)
 */
 
 const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-
   // this is unusual because we don't need to fetch data before rendering this element
   const content = <NewDiscussionElement history={props.history} />;
   const title = config.strNewQuestion.title;
   const layout: Layout = {
     main: { content, title },
-    width: "None"
+    width: "None",
   };
   return useLayout(layout);
-}
+};
 
 /*
   Tags
@@ -468,29 +452,22 @@ const Tags: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
     return noMatch(props, options.error);
   }
   return <TagsList sort={options.sort} pagesize={options.pagesize} page={options.page} />;
-}
+};
 
 const TagsList: React.FunctionComponent<R.TagsOptions> = (props: R.TagsOptions) => {
-
   const { sort, pagesize, page } = props;
-  const options: R.TagsOptions = React.useMemo(
-    () => { return { sort, pagesize, page }; },
-    [sort, pagesize, page])
+  const options: R.TagsOptions = React.useMemo(() => {
+    return { sort, pagesize, page };
+  }, [sort, pagesize, page]);
 
-  return useGetLayout3<I.Tags, R.TagsOptions, {}, SearchInput>(
-    IO.getTags,
-    Page.Tags,
-    options,
-    {}
-  );
-}
+  return useGetLayout3<I.Tags, R.TagsOptions, {}, SearchInput>(IO.getTags, Page.Tags, options, {});
+};
 
 /*
   Tag (key)
 */
 
 const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-
   const info = R.isTagInfo(props.location);
   if (!R.isParserError(info)) {
     return <TagId tag={info.key} word="info" history={props.history} />;
@@ -500,27 +477,20 @@ const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponent
     return <TagId tag={edit.key} word="edit" history={props.history} />;
   }
   return noMatch(props);
+};
 
-}
-
-type TagIdProps = R.InfoOrEdit & { history: History, tag: string };
+type TagIdProps = R.InfoOrEdit & { history: History; tag: string };
 const TagId: React.FunctionComponent<TagIdProps> = (props: TagIdProps) => {
-
   const { tag, word, history } = props;
 
   // include word as a dependency because we want to re-render if word changes,
   // even though { word } isn't required in the TParam parameter passed to useGetLayout2
-  const key: I.Key & R.InfoOrEdit = React.useMemo(
-    () => { return { key: tag, word }; },
-    [tag, word]);
+  const key: I.Key & R.InfoOrEdit = React.useMemo(() => {
+    return { key: tag, word };
+  }, [tag, word]);
 
-  return useGetLayout2<I.TagInfo, I.Key, Page.TagExtra>(
-    IO.getTag,
-    Page.Tag,
-    key,
-    { word, history }
-  );
-}
+  return useGetLayout2<I.TagInfo, I.Key, Page.TagExtra>(IO.getTag, Page.Tag, key, { word, history });
+};
 
 /*
   NoMatch
@@ -528,14 +498,16 @@ const TagId: React.FunctionComponent<TagIdProps> = (props: TagIdProps) => {
 
 const NoMatch: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   return noMatch(props);
-}
+};
 
 function noMatch(props: RouteComponentProps, error?: string) {
   const pathname = props.location.pathname;
   return (
     <div>
       <h3>Not Found</h3>
-      <p>No page found for <code>{pathname}</code></p>
+      <p>
+        No page found for <code>{pathname}</code>
+      </p>
       <ErrorMessage errorMessage={error} />
     </div>
   );

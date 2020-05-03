@@ -1,3 +1,3 @@
 export const configServer = {
-  autoAddTag: false
+  autoAddTag: false,
 };

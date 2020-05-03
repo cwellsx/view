@@ -18,26 +18,36 @@ however all words except the currently-selected word have some visible style app
 It's implemented as a `<div>` like this:
 
 ```tsx
-  function getElement(element: RenderedElement, index: number): React.ReactElement {
-    const isValid = !props.showValidationError || element.isValid;
-    return (element.type === "tag")
-      ? <Tag text={element.word} index={index} key={index} isValid={isValid} />
-      : <input type="text" key="input" ref={inputRef} className={isValid ? undefined : "invalid"} width={10}
-        onKeyDown={handleKeyDown} onChange={handleChange}
-        onFocus={e => handleFocus(e, true)} onBlur={e => handleFocus(e, false)} />
-  }
-
-  return (
-    <div id="tag-both" >
-      <div className={className} onClickCapture={handleEditorClick}>
-        {state.elements.map(getElement)}
-        {icon}
-      </div>
-      <ShowHints hints={state.hints} inputValue={state.inputValue} result={handleHintResult} />
-      <ErrorMessage errorMessage={errorMessage} />
-      {validationError}
-    </div>
+function getElement(element: RenderedElement, index: number): React.ReactElement {
+  const isValid = !props.showValidationError || element.isValid;
+  return element.type === "tag" ? (
+    <Tag text={element.word} index={index} key={index} isValid={isValid} />
+  ) : (
+    <input
+      type="text"
+      key="input"
+      ref={inputRef}
+      className={isValid ? undefined : "invalid"}
+      width={10}
+      onKeyDown={handleKeyDown}
+      onChange={handleChange}
+      onFocus={(e) => handleFocus(e, true)}
+      onBlur={(e) => handleFocus(e, false)}
+    />
   );
+}
+
+return (
+  <div id="tag-both">
+    <div className={className} onClickCapture={handleEditorClick}>
+      {state.elements.map(getElement)}
+      {icon}
+    </div>
+    <ShowHints hints={state.hints} inputValue={state.inputValue} result={handleHintResult} />
+    <ErrorMessage errorMessage={errorMessage} />
+    {validationError}
+  </div>
+);
 ```
 
 The `<div>` -- and the `state.elements` array shown above -- contains:
@@ -60,10 +70,10 @@ There's quite a bit of state (i.e. member data) associated with this component:
 
 - A `state.buffer` string whose value equals the current string or array of words (i.e. tags) being edited
 - A `state.selection` index or range, that identifies which word is currently being edited --
-this is a `start` and `end` range, because you can select a range of text,
-e.g. by pressing the <kbd>Shift</kbd> key when you use the cursor keys
+  this is a `start` and `end` range, because you can select a range of text,
+  e.g. by pressing the <kbd>Shift</kbd> key when you use the cursor keys
 - The `elements` array, which is calculated from the buffer and the selection range, and which identifies which word is
-associated with the `<input>` element and which other words are associated with the `<Tag>` elements.
+  associated with the `<input>` element and which other words are associated with the `<Tag>` elements.
 - The `inputValue` which identifies the current value of the `<input>` element
 - A `hints` array which lists the possible tags which might be a match for the input value
 - A `validationError` message if the current tags are invalid and deserve an error message
@@ -74,10 +84,10 @@ associated with the `<input>` element and which other words are associated with 
 interface State {
   // the selection range within the buffer
   // this may even span multiple words, in which case all the selected words are in the <input> element
-  readonly selection: { readonly start: number, readonly end: number },
+  readonly selection: { readonly start: number; readonly end: number };
   // the words (i.e. the tags when this is split on whitespace)
-  readonly buffer: string
-};
+  readonly buffer: string;
+}
 
 // this interface identifies the array of <input> and <Tag> elements to be rendered, and the word associated with each
 interface RenderedElement {
@@ -87,7 +97,7 @@ interface RenderedElement {
   readonly type: "tag" | "input";
   // whether this word matches an existing tag in the dictionary
   readonly isValid: boolean;
-};
+}
 
 // this interface combines the two states, and is what's stored using useReducer
 interface RenderedState {
@@ -125,7 +135,7 @@ I think the following observations are true:
 
 - `inputRef` must be defined before `input`
 - `inputRef.current` is undefined until after the `input` is defined, **and** has been rendered into the DOM --
-it exists when an event-handler is invoked, but never when the function component is being run (i.e. before each render)
+  it exists when an event-handler is invoked, but never when the function component is being run (i.e. before each render)
 - `state` must be defined before `input` (because the `<input value={state.inputValue} />` property depends on `state`)
 - `state` is defined using `useReducer` which will invoke the `initialState` function (to get the initial state)
 
@@ -137,24 +147,24 @@ Furthermore:
 - TypeScript class definitions behave like data definitions, i.e. the class must be defined before it's instantiated.
 - The location of a function definition doesn't matter because "function statements are subject to hoisting".
 - However it's an error if a function is invoked, if the function references `const` state data -- and/or if it
-instantiates a TypeScript class -- which hasn't yet been defined at the location where the function was called from.
+  instantiates a TypeScript class -- which hasn't yet been defined at the location where the function was called from.
 
 ### Solution as implemented
 
 So, to avoid compile-time and run-time errors, I use the following strategy:
 
 - Because the `initialState` and therefore the `renderState` functions are called when the `state` is initialized and
-before `inputRef.current` exists, this function and anything called from this function cannot reference the state data.
+  before `inputRef.current` exists, this function and anything called from this function cannot reference the state data.
 - To ensure they don't reference the state data, they're defined in the `EditorTabs.tsx` module (for convenience),
-but defined outside the `EditorTags` function component inside which the state data are defined, so that the compiler
-would error if they were referenced from those functions.
+  but defined outside the `EditorTags` function component inside which the state data are defined, so that the compiler
+  would error if they were referenced from those functions.
 
 So the following are defined outside the function component:
 
 - The `initialState` and `renderState` functions
 - Any TypeScript class definitions which these functions use
 - Any other TypeScript type definitions which these functions or classes use -- so, for simplicity, every TypeScript
-type definition.
+  type definition.
 - Any small helper/utility functions which these functions use -- and so, for simplicity, all helper/utility functions
 - Because a reducer should be stateless or pure, it too is defined outside the function component
 - And therefore also the TypeScript type definitions of the action types, and the corresponding user-defined type guards
@@ -164,18 +174,42 @@ So the following remain inside the function component:
 - All state data
 - All event handlers (which delegate to the reducer, and which may reference `inputRef.current`)
 - The `assert` function depends on the `setErrorMessage` function, which is state -- so the `assert` function too is
-defined inside the function component, and is passed as a parameter to any function which needs it.
+  defined inside the function component, and is passed as a parameter to any function which needs it.
 
 Data that's stored inside the function component, and which isn't stored as state,
 is passed to the reducer in the "action".
 
 ```typescript
-interface ActionEditorClick { type: "EditorClick", context: Context };
-interface ActionHintResult { type: "HintResult", context: Context, hint: string, inputIndex: number };
-interface ActionDeleteTag { type: "DeleteTag", context: Context, index: number };
-interface ActionTagClick { type: "TagClick", context: Context, index: number };
-interface ActionKeyDown { type: "KeyDown", context: Context, key: string, shiftKey: boolean };
-interface ActionChange { type: "Change", context: Context };
+interface ActionEditorClick {
+  type: "EditorClick";
+  context: Context;
+}
+interface ActionHintResult {
+  type: "HintResult";
+  context: Context;
+  hint: string;
+  inputIndex: number;
+}
+interface ActionDeleteTag {
+  type: "DeleteTag";
+  context: Context;
+  index: number;
+}
+interface ActionTagClick {
+  type: "TagClick";
+  context: Context;
+  index: number;
+}
+interface ActionKeyDown {
+  type: "KeyDown";
+  context: Context;
+  key: string;
+  shiftKey: boolean;
+}
+interface ActionChange {
+  type: "Change";
+  context: Context;
+}
 ```
 
 All the `Action` types include an `InputElement` (which is created by the event handler which generates the action),
@@ -192,7 +226,7 @@ interface Context {
   result: ParentCallback;
   tagDictionary?: TagDictionary;
   validation: Validation;
-};
+}
 ```
 
 ## Controlling the `<input>` element
@@ -229,9 +263,9 @@ So, instead, the `setInput` function writes into the `value` property of the und
 
 - I worried that doing this might trigger another `onChange` event, but it doesn't seem to.
 - An alternative might be to use `useEffect` to alter the selection of the input (to match the selection specified in
-the state), after it's rendered.
-That seems like even more of a kluge, though -- making it "semi-controlled" instead, i.e. writing to the DOM element,
-seems neater.
+  the state), after it's rendered.
+  That seems like even more of a kluge, though -- making it "semi-controlled" instead, i.e. writing to the DOM element,
+  seems neater.
 
 The `inputValue` element also still exists as an alement of the `RenderedState` data,
 but it's write-only -- i.e. it's up-to-date (and a opy of what was written into the DOM element).
@@ -262,15 +296,15 @@ instead I use `onfocus` and `onBlur` handlers to simulate `:focus-within`
 There's also complexity in deciding whether something has lost focus.
 
 - The problem is that, using React's synthetic events, `onBlur` fires before `onFocus` --
-so focus seems lost when focus moves from `.tag-editor input` to one of the `.hint` elements.
+  so focus seems lost when focus moves from `.tag-editor input` to one of the `.hint` elements.
 - The right the right way to support this functionality would be to use the `focusin` event as described in
-[Focus Event Order](https://www.w3.org/TR/2014/WD-DOM-Level-3-Events-20140925/#events-focusevent-event-order),
-however React's synthetic events don't support `focusin` -- https://github.com/facebook/react/issues/6410
+  [Focus Event Order](https://www.w3.org/TR/2014/WD-DOM-Level-3-Events-20140925/#events-focusevent-event-order),
+  however React's synthetic events don't support `focusin` -- https://github.com/facebook/react/issues/6410
 
 Solutions like ...
 
 - [Dealing with focus and blur in a composite widget in
-React](https://medium.com/@jessebeach/dealing-with-focus-and-blur-in-a-composite-widget-in-react-90d3c3b49a9b)
+  React](https://medium.com/@jessebeach/dealing-with-focus-and-blur-in-a-composite-widget-in-react-90d3c3b49a9b)
 - The [`react-focus-within`](https://www.npmjs.com/package/react-focus-within) package
 
 ... solve this using a timer in some way --
@@ -280,6 +314,6 @@ So instead I use a solution (see the `handleFocus` function) which depends on th
 
 - That works on my machine (Windows 10), at least, using Chrome, Firefox, and Edge.
 - https://github.com/facebook/react/issues/3751 warns that apparently this won't work with IE 9 through IE 11,
-though comments there say that document.activeElement might help make it work on IE
+  though comments there say that document.activeElement might help make it work on IE
 
 Otherwise, if support for IE (not just Edge) is needed, one of the other solutions listed earlier above might be better.

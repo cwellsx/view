@@ -55,7 +55,6 @@ This `src` directory includes the following subdirectories.
   </td>
 </tr>
 
-
 <tr>
 <td colspan="2">
 <p>The directories listed above define code which only runs in the client-side browser.</p>
@@ -91,7 +90,6 @@ The directories listed below define code which is shared (used) by the client-si
     <p>This and the <code>./data</code> directory are the only directories shared between the client and the server.</p>
   </td>
 </tr>
-
 
 <tr>
 <td colspan="2">

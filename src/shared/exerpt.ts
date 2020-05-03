@@ -7,11 +7,11 @@ export function getExerpt(markdown: string): string {
     if (!word.length) {
       continue;
     }
-    if (rc && (rc.length + word.length > config.exerptlength)) {
+    if (rc && rc.length + word.length > config.exerptlength) {
       rc += " ...";
       break;
     }
-    rc = rc ? (rc + " " + word): word;
+    rc = rc ? rc + " " + word : word;
   }
   return rc ? rc : "(no message)";
 }

@@ -74,7 +74,7 @@
 }
 
 .tag-hints > .hint:hover {
-    background-color: rgb(223, 230, 235);
+  background-color: rgb(223, 230, 235);
 }
 
 .tag-hints > .hint > .tag {
@@ -99,11 +99,10 @@
   font-size: 11px;
 }
 
-@media (max-width: 479px)
-{
+@media (max-width: 479px) {
   .tag-hints > .hint > p {
     display: none;
-  }    
+  }
 }
 
 .tag-hints > .hint > .multiplier {
