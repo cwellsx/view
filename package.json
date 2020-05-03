@@ -1,0 +1,15 @@
+{
+  "name": "views",
+  "version": "1.0.0",
+  "description": "Demonstrate multiple view implementations",
+  "main": "index.js",
+  "author": "cwellsx <cwellsx@gmail.com>",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "private": true,
+  "devDependencies": {
+    "lerna": "^3.20.2"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}
