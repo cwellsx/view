@@ -11,5 +11,12 @@
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "install": "lerna bootstrap",
+    "clean": "lerna run clean && rimraf node_modules",
+    "test": "lerna run test",
+    "build": "lerna run build",
+    "start": "lerna run --scope ui-react start"
+  }
 }
