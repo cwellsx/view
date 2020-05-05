@@ -1,6 +1,6 @@
 {
   "name": "views",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Demonstrate multiple view implementations",
   "main": "index.js",
   "author": "cwellsx <cwellsx@gmail.com>",
@@ -17,6 +17,10 @@
     "clean": "lerna run clean && rimraf node_modules",
     "test": "lerna run test",
     "build": "lerna run build",
-    "start": "lerna run --scope ui-react start"
+    "unbuild": "lerna run unbuild",
+    "watch-lib": "lerna run --parallel --ignore ui* watch",
+    "watch-ui": "lerna run --scope ui-react watch",
+    "start": "lerna run build --ignore ui* && lerna run --parallel watch",
+    "watch": "lerna run --parallel watch"
   }
 }
