@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.shared",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "lib"
+    // "baseUrl": "..",
+    // "paths": {
+    //   "bare": ["server/src/bare"],
+    //   "data": ["shared-lib/src/data"]
+    // }
+  },
+  "include": ["src"]
+}

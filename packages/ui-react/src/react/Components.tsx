@@ -1,10 +1,8 @@
 import React, { ReactElement } from "react";
 import { NavLink, Link } from "react-router-dom";
-import * as I from "../data";
+import { Url, Data, toHtml } from "client";
 import { KeyedItem } from "./PageLayout";
-import * as R from "../shared/urls";
 import "./Components.css";
-import { toHtml } from "../io/markdownToHtml";
 
 /*
   This module defines components which exist within larger content.
@@ -12,8 +10,8 @@ import { toHtml } from "../io/markdownToHtml";
   They're currently defined as functions, however.
 */
 
-export function getImageSummary(summary: I.ImageSummary): KeyedItem {
-  const href = R.getImageUrl(summary);
+export function getImageSummary(summary: Data.ImageSummary): KeyedItem {
+  const href = Url.getImageUrl(summary);
   const element: React.ReactElement = (
     <React.Fragment>
       <h3>
@@ -28,10 +26,10 @@ export function getImageSummary(summary: I.ImageSummary): KeyedItem {
 type GravatarSize = "small" | "big" | "huge";
 
 export function getUserSummary(
-  summary: I.UserSummary,
+  summary: Data.UserSummary,
   option: { title: boolean; size: GravatarSize }
 ): { userName: React.ReactElement; gravatar: React.ReactElement; key: string } {
-  const href = R.getUserUrl(summary);
+  const href = Url.getUserUrl(summary);
   const userName = <NavLink to={href}>{summary.name}</NavLink>;
   const size = option.size === "small" ? 32 : option.size === "big" ? 48 : 164;
   // https://en.gravatar.com/site/implement/images/
@@ -50,7 +48,7 @@ function getWhen(when: string) {
   return <div className="when">{when}</div>;
 }
 
-export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: string): ReactElement {
+export function getUserInfo(summary: Data.UserSummary, size: GravatarSize, when?: string): ReactElement {
   const { userName, gravatar, key } = getUserSummary(summary, {
     title: false,
     size,
@@ -70,15 +68,15 @@ export function getUserInfo(summary: I.UserSummary, size: GravatarSize, when?: s
 
 const nbsp = "\u00A0";
 
-export function getTagSummary(summary: I.SiteTagCount): KeyedItem {
-  const href = R.getTagUrl(summary);
+export function getTagSummary(summary: Data.SiteTagCount): KeyedItem {
+  const href = Url.getTagUrl(summary);
   const label = summary.title.replace(" ", nbsp);
   const element = <NavLink to={href}>{label}</NavLink>;
   return { element, key: href };
 }
 
-export function getTagLink(tag: I.Key): React.ReactElement {
-  const href = R.getTagUrl(tag);
+export function getTagLink(tag: Data.Key): React.ReactElement {
+  const href = Url.getTagUrl(tag);
   return (
     <Link className="tag" to={href}>
       {tag.key}
@@ -94,7 +92,7 @@ function toLocaleString(date: Date): string {
 }
 
 // called from getActivityContent (nested in User)
-export function getTagCount(tagCount: I.TagCount) {
+export function getTagCount(tagCount: Data.TagCount) {
   const { key, count } = tagCount;
   const suffix = count && count !== 1 ? ` x ${count}` : undefined;
   return (
@@ -106,7 +104,7 @@ export function getTagCount(tagCount: I.TagCount) {
 }
 
 // called from getDiscussionSummary, and getMessage (for each message within discussion)
-function getTags(tags: I.Key[]) {
+function getTags(tags: Data.Key[]) {
   return (
     <div className="topic">
       {tags.map((tag) => {
@@ -118,8 +116,8 @@ function getTags(tags: I.Key[]) {
   );
 }
 
-export function getDiscussionSummary(summary: I.DiscussionSummary, short: boolean = false): KeyedItem {
-  const href = R.getDiscussionUrl(summary);
+export function getDiscussionSummary(summary: Data.DiscussionSummary, short: boolean = false): KeyedItem {
+  const href = Url.getDiscussionUrl(summary);
   const when = toLocaleString(new Date(summary.messageSummary.dateTime));
   const stats = short ? undefined : (
     <div className="stats">
@@ -223,7 +221,7 @@ export function getPageNavLinks(
   return getNavLinks(wanted, href, (n) => "go to page " + n, current, true);
 }
 
-function getMessage(message: I.Message, index: number, tags?: I.Key[]): KeyedItem {
+function getMessage(message: Data.Message, index: number, tags?: Data.Key[]): KeyedItem {
   const topic = tags ? getTags(tags) : undefined; // only the first message in a discussion has associated tags
   const when = toLocaleString(new Date(message.dateTime));
   const element = (
@@ -238,10 +236,10 @@ function getMessage(message: I.Message, index: number, tags?: I.Key[]): KeyedIte
   return { key: "" + index, element };
 }
 
-export function getFirstMessage(message: I.Message, tags: I.Key[]): KeyedItem {
+export function getFirstMessage(message: Data.Message, tags: Data.Key[]): KeyedItem {
   return getMessage(message, 0, tags);
 }
 
-export function getNextMessage(message: I.Message, index: number): KeyedItem {
+export function getNextMessage(message: Data.Message, index: number): KeyedItem {
   return getMessage(message, index + 1);
 }

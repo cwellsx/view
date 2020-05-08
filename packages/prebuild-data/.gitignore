@@ -1,0 +1,4 @@
+lib/
+
+# site-specific content not included in the default deploy for this project
+data/*.alt

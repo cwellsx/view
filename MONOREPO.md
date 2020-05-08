@@ -1,7 +1,7 @@
 This is what is called a "monorepo".
 Several projects/packages are contained in this one repository.
 
-For more information, search the web using words like "monorepo", "lerna", "yarn workspace".
+For more information, search the web using words like "`monorepo`", "`lerna`", "`yarn workspace`".
 
 ## Creating the repo
 
@@ -10,12 +10,12 @@ I used the following commands to create the initial repo.
 - `git init`
 - `yarn init` (including `"private": true')
 - `lerna init`
-- Edit [lerna.json](./lerna.json) to add
+- Edit [`lerna.json`](./lerna.json) to add
   ```
   "npmClient": "yarn",
   "useWorkspaces": true`
   ```
-- Edit [package.json](./package.json) to add
+- Edit [`package.jso`n](./package.json) to add
   ```
   "private": true,
   "workspaces": [
@@ -23,7 +23,7 @@ I used the following commands to create the initial repo.
   ]
   ```
 - `lerna import` to import an existing monolithic repository
-- Edit [package.json](./package.json) to add `scripts`,
+- Edit [`package.json`](./package.json) to add `scripts`,
   which are implemented using `lerna run`,
   which invoke scripts either in all packages or scoped to specific packages.
 
@@ -55,6 +55,8 @@ I used the following commands to create the initial repo.
   - https://github.com/biernacki/cra-monorepo
   - [Monorepos: Lerna, TypeScript, CRA and Storybook combined](https://dev.to/shnydercom/monorepos-lerna-typescript-cra-and-storybook-combined-4hli) and https://github.com/shnydercom/lerna-typescript-cra-uilib-starter/tree/master/packages
 
+  The configuration of this repo is based on the first of these i.e. `monorepo-demo`.
+
 ## Package names
 
 In theory the packages names might be scoped, with names like `@monorepo/ui-react` or `@cwellsx/ui-react`.
@@ -64,3 +66,19 @@ so they will not be uploaded to npmjs.com -- and so it doesn't matter that the p
 may conflict with some already-published package.
 
 If this is changed in future to add a scope, beware that various configuration files and script parameters sometimes need a package name, sometimes a directory name.
+
+## Module type
+
+The `tsconfig.shared.json` specifies
+
+```
+"module": "commonjs"
+```
+
+Other projects often specify `"module": "esnext"` which works because Babel converts it to old-style modules under the hood.
+
+In this repository the `prebuild-data` project is built and run and Node.js and isn't processed by Babel,
+so we specify the old-style modules using the TypeScript option.
+
+Alternatively this wouldn't be needed if the project depended on using a relatively new version of Node.js -- see
+[How can I use an es6 import in node?(https://stackoverflow.com/a/45854500/49942)

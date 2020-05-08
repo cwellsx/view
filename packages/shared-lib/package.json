@@ -12,6 +12,7 @@
     "lib"
   ],
   "scripts": {
+    "build-data": "yarn run build",
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -p tsconfig.json --watch",
     "clean": "rimraf node_modules",

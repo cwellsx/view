@@ -1,18 +1,18 @@
 import React from "react";
-import * as I from "../data";
+import { Data } from "client";
 
 export type AppContextProps = {
-  me?: I.UserSummary;
-  setMe(me: I.UserSummary | undefined): void;
+  me?: Data.UserSummary;
+  setMe(me: Data.UserSummary | undefined): void;
 };
 
 // https://fettblog.eu/typescript-react/context/
 export const AppContext = React.createContext<AppContextProps>({
   me: undefined,
-  setMe: (me: I.UserSummary | undefined) => {},
+  setMe: (me: Data.UserSummary | undefined) => {},
 });
 
-export function useMe(): I.UserSummary | undefined {
+export function useMe(): Data.UserSummary | undefined {
   const appContext: AppContextProps = React.useContext(AppContext);
   return appContext.me;
 }

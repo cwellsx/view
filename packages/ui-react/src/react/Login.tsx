@@ -1,9 +1,7 @@
 import React from "react";
 import { useLayout, Layout } from "./PageLayout";
-import * as I from "../data";
-import * as IO from "../io";
+import { Data, Api, Post } from "client";
 import { AppContext, AppContextProps } from "./AppContext";
-import * as Post from "../shared/post";
 import { ValidatedState, createValidated, Input, createInitialState, useReducer0 } from "./ErrorMessage";
 import "./Login.css";
 
@@ -46,8 +44,8 @@ export const Login: React.FunctionComponent = () => {
       // error messages are already displayed
       return;
     }
-    IO.login(state.posted)
-      .then((userSummary: I.UserSummary) => appContext.setMe(userSummary))
+    Api.login(state.posted)
+      .then((userSummary: Data.UserSummary) => appContext.setMe(userSummary))
       .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
   }
 

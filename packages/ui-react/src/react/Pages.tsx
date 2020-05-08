@@ -1,18 +1,15 @@
 import React from "react";
-import * as I from "../data";
+import { Data, Url } from "client";
 import { KeyedItem, Layout, Tab, Tabs, SubTabs, MainContent } from "./PageLayout";
 import * as Summaries from "./Components";
-import * as R from "../shared/urls";
 import "./Pages.css";
 import * as Icon from "../icons";
-import { config } from "../config";
+import { config, SearchInput, toHtml } from "client";
 import { NavLink, Link } from "react-router-dom";
 import { AnswerDiscussion, EditUserSettings, EditTagInfo } from "./Editor";
-import { toHtml } from "../io/markdownToHtml";
 import { History } from "history";
-import { toReact } from "../io/htmlToReact";
+import { toReact } from "./htmlToReact";
 import { ThrottledInput } from "./ThrottledInput";
-import { SearchInput } from "../shared/post";
 
 /*
   While `App.tsx` defines "container" components, which manage routes and state,
@@ -48,7 +45,7 @@ export function Fetched(fetched: string, extra: { isHtml: boolean }): Layout {
   SiteMap
 */
 
-export function SiteMap(data: I.SiteMap): Layout {
+export function SiteMap(data: Data.SiteMap): Layout {
   const content: KeyedItem[] = [];
 
   /*
@@ -95,7 +92,7 @@ export function SiteMap(data: I.SiteMap): Layout {
   Image
 */
 
-function getLayerKey(layer: I.LayerNode): string {
+function getLayerKey(layer: Data.LayerNode): string {
   return layer.alias ? layer.alias : layer.name.toLowerCase().replace("&", "and").replace(" ", "-");
 }
 
@@ -106,7 +103,7 @@ function handleLayerChange(event: React.ChangeEvent<HTMLInputElement>) {
   alert(`In the non-prototype this would ${checked ? "show" : "hide"} the '${alias}' image layer`);
 }
 
-function renderNode(node: I.LayerNode, alias: string): React.ReactElement {
+function renderNode(node: Data.LayerNode, alias: string): React.ReactElement {
   // https://stackoverflow.com/questions/26615779/react-checkbox-not-sending-onchange
   return (
     <label>
@@ -116,7 +113,7 @@ function renderNode(node: I.LayerNode, alias: string): React.ReactElement {
   );
 }
 
-function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement {
+function renderLayers(layers: Data.ImageLayers, level: number): React.ReactElement {
   const className = level === 0 ? "image-layers" : undefined;
   const listItems = layers.map((node) => {
     const alias = getLayerKey(node);
@@ -130,7 +127,7 @@ function renderLayers(layers: I.ImageLayers, level: number): React.ReactElement 
   return <ul className={className}>{listItems}</ul>;
 }
 
-export function Image(data: I.Image): Layout {
+export function Image(data: Data.Image): Layout {
   const images = (
     <div className="image-images">
       <img src={data.image.src} height={data.image.height} width={data.image.width} alt="" />
@@ -155,7 +152,7 @@ export function Image(data: I.Image): Layout {
   Users
 */
 
-export function Users(data: I.UserSummaryEx[]): Layout {
+export function Users(data: Data.UserSummaryEx[]): Layout {
   const users: React.ReactElement = (
     <div className="all-users">
       {data.map((user) => {
@@ -173,7 +170,7 @@ export function Users(data: I.UserSummaryEx[]): Layout {
   User
 */
 
-export function UserProfile(user: I.User, extra: { canEdit: boolean }): Layout {
+export function UserProfile(user: Data.User, extra: { canEdit: boolean }): Layout {
   const gravatar = Summaries.getUserSummary(user, {
     title: false,
     size: "huge",
@@ -200,7 +197,7 @@ export function UserProfile(user: I.User, extra: { canEdit: boolean }): Layout {
   return useCommonUserLayout(user, "Profile", content, extra.canEdit);
 }
 
-export function UserSettings(user: I.User, extra: { canEdit: boolean; history: History }): Layout {
+export function UserSettings(user: Data.User, extra: { canEdit: boolean; history: History }): Layout {
   const gravatar = Summaries.getUserSummary(user, {
     title: false,
     size: "huge",
@@ -223,7 +220,7 @@ export function UserSettings(user: I.User, extra: { canEdit: boolean; history: H
   return useCommonUserLayout(user, "EditSettings", content, extra.canEdit);
 }
 
-export function UserActivity(activity: I.UserActivity, extra: { canEdit: boolean }): Layout {
+export function UserActivity(activity: Data.UserActivity, extra: { canEdit: boolean }): Layout {
   function getActivityContent(): ReadonlyArray<KeyedItem> {
     if (!activity.summaries.length) {
       return [{ element: <p>This user has not posted any messages.</p>, key: "none" }];
@@ -241,8 +238,8 @@ export function UserActivity(activity: I.UserActivity, extra: { canEdit: boolean
   }
   const content = getActivityContent();
 
-  function getActivityUrl(user: I.IdName, sort: R.ActivitySort) {
-    return R.getUserActivityUrl({ user, userTabType: "Activity", sort });
+  function getActivityUrl(user: Data.IdName, sort: Url.ActivitySort) {
+    return Url.getUserActivityUrl({ user, userTabType: "Activity", sort });
   }
   const subTabs: SubTabs = {
     text: activity.summaries.length === 1 ? "1 Message" : `${activity.summaries.length} Messages`,
@@ -258,8 +255,8 @@ export function UserActivity(activity: I.UserActivity, extra: { canEdit: boolean
 
 // create a Layout that's common to all three user tabs
 function useCommonUserLayout(
-  summary: I.UserSummary,
-  userTabType: R.UserTabType,
+  summary: Data.UserSummary,
+  userTabType: Url.UserTabType,
   content: MainContent,
   canEdit: boolean,
   subTabs?: SubTabs
@@ -279,7 +276,7 @@ function useCommonUserLayout(
 
   const profile: Tab = {
     navlink: {
-      href: R.getUserOptionsUrl({ user: summary, userTabType: "Profile" }),
+      href: Url.getUserOptionsUrl({ user: summary, userTabType: "Profile" }),
       text: "Profile",
     },
     content: <p>To be supplied</p>,
@@ -287,7 +284,7 @@ function useCommonUserLayout(
 
   const settings: Tab = {
     navlink: {
-      href: R.getUserOptionsUrl({ user: summary, userTabType: "EditSettings" }),
+      href: Url.getUserOptionsUrl({ user: summary, userTabType: "EditSettings" }),
       text: "Edit",
     },
     content: <p>Not authorized</p>,
@@ -296,7 +293,7 @@ function useCommonUserLayout(
 
   const activity: Tab = {
     navlink: {
-      href: R.getUserOptionsUrl({ user: summary, userTabType: "Activity" }),
+      href: Url.getUserOptionsUrl({ user: summary, userTabType: "Activity" }),
       text: "Activity",
     },
     content: <p>To be supplied</p>,
@@ -339,7 +336,7 @@ function useCommonUserLayout(
   Discussions
 */
 
-export function Discussions(data: I.Discussions): Layout {
+export function Discussions(data: Data.Discussions): Layout {
   const { range, summaries } = data;
   const { pageNumber, nTotal, pageSize, sort, tag } = range;
   const title = !tag
@@ -353,7 +350,7 @@ export function Discussions(data: I.Discussions): Layout {
       <div className="minigrid footer">
         <div className="page">
           {Summaries.getPageNavLinks(pageNumber, nTotal, pageSize, (page) =>
-            R.getDiscussionsOptionsUrl({ page, sort, tag })
+            Url.getDiscussionsOptionsUrl({ page, sort, tag })
           )}
         </div>
         <div className="page">
@@ -361,7 +358,7 @@ export function Discussions(data: I.Discussions): Layout {
             [15, 30, 50].map((n) => {
               return { text: "" + n, n };
             }),
-            (n: number) => R.getDiscussionsOptionsUrl({ pagesize: n as R.PageSize, tag }),
+            (n: number) => Url.getDiscussionsOptionsUrl({ pagesize: n as Url.PageSize, tag }),
             (n: number) => `show ${n} items per page`,
             pageSize,
             false
@@ -386,17 +383,22 @@ function formatNumber(count: number, things: string) {
   return count === 1 && things[things.length - 1] === "s" ? rc.substring(0, rc.length - 1) : rc;
 }
 
-function getDiscussionsSubtitle(title: string, left: string, tag: I.Key | undefined, sort: R.DiscussionsSort | "info") {
-  const info = !tag ? undefined : <NavLink to={R.getTagInfoUrl(tag)}>Info</NavLink>;
+function getDiscussionsSubtitle(
+  title: string,
+  left: string,
+  tag: Data.Key | undefined,
+  sort: Url.DiscussionsSort | "info"
+) {
+  const info = !tag ? undefined : <NavLink to={Url.getTagInfoUrl(tag)}>Info</NavLink>;
   const links =
     !tag || sort === "info" ? undefined : (
       <div className="minigrid links">
         <ul>
           <li>
-            <Link to={R.getTagInfoUrl(tag)}>Learn more…</Link>
+            <Link to={Url.getTagInfoUrl(tag)}>Learn more…</Link>
           </li>
           <li>
-            <Link to={R.getTagEditUrl(tag)}>Improve tag info</Link>
+            <Link to={Url.getTagEditUrl(tag)}>Improve tag info</Link>
           </li>
         </ul>
       </div>
@@ -407,7 +409,7 @@ function getDiscussionsSubtitle(title: string, left: string, tag: I.Key | undefi
       <div className="minigrid">
         <h1>{title}</h1>
         <div className="link">
-          <Link to={R.route.newDiscussion} className="linkbutton">
+          <Link to={Url.route.newDiscussion} className="linkbutton">
             {config.strNewQuestion.button}
           </Link>
         </div>
@@ -418,13 +420,13 @@ function getDiscussionsSubtitle(title: string, left: string, tag: I.Key | undefi
         <div className="sort">
           {info}
           <NavLink
-            to={R.getDiscussionsOptionsUrl({ sort: "Newest", tag })}
+            to={Url.getDiscussionsOptionsUrl({ sort: "Newest", tag })}
             className={sort === "Newest" ? "selected" : undefined}
           >
             Newest
           </NavLink>
           <NavLink
-            to={R.getDiscussionsOptionsUrl({ sort: "Active", tag })}
+            to={Url.getDiscussionsOptionsUrl({ sort: "Active", tag })}
             className={sort === "Active" ? "selected" : undefined}
           >
             Active
@@ -439,7 +441,7 @@ function getDiscussionsSubtitle(title: string, left: string, tag: I.Key | undefi
   Discussion
 */
 
-export function Discussion(data: I.Discussion, extra: { reload: () => void }): Layout {
+export function Discussion(data: Data.Discussion, extra: { reload: () => void }): Layout {
   const { id, name, tags, first, range, messages } = data;
   const { nTotal } = range;
 
@@ -451,14 +453,14 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
         tabs: [
           {
             text: "newest",
-            href: R.getDiscussionOptionsUrl({
+            href: Url.getDiscussionOptionsUrl({
               discussion: data,
               sort: "Newest",
             }),
           },
           {
             text: "oldest",
-            href: R.getDiscussionOptionsUrl({
+            href: Url.getDiscussionOptionsUrl({
               discussion: data,
               sort: "Oldest",
             }),
@@ -475,7 +477,7 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
       <div className="footer">
         <div className="index">
           {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
-            R.getDiscussionOptionsUrl({
+            Url.getDiscussionOptionsUrl({
               discussion: data,
               page,
               sort: range.sort,
@@ -498,7 +500,7 @@ export function Discussion(data: I.Discussion, extra: { reload: () => void }): L
   Tags
 */
 
-export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Promise<void> }): Layout {
+export function Tags(data: Data.Tags, extra: { newData: (param2: SearchInput) => Promise<void> }): Layout {
   const { range, tagCounts } = data;
   const title = config.strTags;
 
@@ -520,13 +522,13 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
         <div className="count">{search}</div>
         <div className="sort">
           <NavLink
-            to={R.getTagsOptionsUrl({ sort: "Popular" })}
+            to={Url.getTagsOptionsUrl({ sort: "Popular" })}
             className={range.sort === "Popular" ? "selected" : undefined}
           >
             Popular
           </NavLink>
           <NavLink
-            to={R.getTagsOptionsUrl({ sort: "Name" })}
+            to={Url.getTagsOptionsUrl({ sort: "Name" })}
             className={range.sort === "Name" ? "selected" : undefined}
           >
             Name
@@ -542,14 +544,14 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
         <div className="page"></div>
         <div className="page">
           {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
-            R.getTagsOptionsUrl({ page, sort: range.sort })
+            Url.getTagsOptionsUrl({ page, sort: range.sort })
           )}
         </div>
       </div>
     </React.Fragment>
   );
 
-  function getTagInfo(tagCount: I.TagCount) {
+  function getTagInfo(tagCount: Data.TagCount) {
     // similar to the ShowHint function in EditorTags.tsx
     const key = tagCount.key;
     const tag = Summaries.getTagLink(tagCount);
@@ -557,7 +559,7 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
     const summary = tagCount.summary ? <div className="exerpt">{tagCount.summary}</div> : undefined;
     const edit = (
       <div>
-        <Link className="edit-link" to={R.getTagEditUrl({ key })}>
+        <Link className="edit-link" to={Url.getTagEditUrl({ key })}>
           edit
         </Link>
       </div>
@@ -592,8 +594,8 @@ export function Tags(data: I.Tags, extra: { newData: (param2: SearchInput) => Pr
   Tag
 */
 
-export type TagExtra = R.InfoOrEdit & { history: History };
-export function Tag(data: I.TagInfo, extra: TagExtra): Layout {
+export type TagExtra = Url.InfoOrEdit & { history: History };
+export function Tag(data: Data.TagInfo, extra: TagExtra): Layout {
   const { word } = extra;
 
   const title = word === "edit" ? `Editing tag info for '${data.key}'` : `About '${data.key}'`;
@@ -613,7 +615,7 @@ export function Tag(data: I.TagInfo, extra: TagExtra): Layout {
         <div className="summary">{summary}</div>
         {markdown}
         <div className="link">
-          <Link to={R.getTagEditUrl(data)} className="linkbutton">
+          <Link to={Url.getTagEditUrl(data)} className="linkbutton">
             {buttonText}
           </Link>
         </div>

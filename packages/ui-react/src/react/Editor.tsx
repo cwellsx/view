@@ -2,12 +2,9 @@ import React, { useEffect } from "react";
 import "pagedown-editor/sample-bundle";
 import "pagedown-editor/pagedown.css";
 import "./Editor.css";
-import * as IO from "../io";
-import * as I from "../data";
+import { Api, Data, Url, Post, config } from "client";
 import { EditorTags, OutputTags } from "./EditorTags";
-import * as R from "../shared/urls";
 import { History } from "history";
-import { config } from "../config";
 import {
   ValidatedState,
   createValidated,
@@ -18,7 +15,6 @@ import {
   ValidatedEditorProps,
   Validated,
 } from "./ErrorMessage";
-import * as Post from "../shared/post";
 
 const minLengths = {
   title: 15,
@@ -44,7 +40,7 @@ interface EditTagInfoProps {
 export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: EditTagInfoProps) => {
   type T = Post.EditTagInfo;
 
-  const { min: minLength, max: maxLength } = I.tagSummaryLength;
+  const { min: minLength, max: maxLength } = Data.tagSummaryLength;
 
   function initialState(initialData: EditTagInfoProps): ValidatedState<T> {
     const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
@@ -92,10 +88,10 @@ export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: Ed
       return;
     }
     // post edited profile to the server
-    IO.editTagInfo(props.tag, state.posted)
-      .then((tag: I.Key) => {
+    Api.editTagInfo(props.tag, state.posted)
+      .then((tag: Data.Key) => {
         // construct the URL of the newly-edited user
-        const url = R.getTagInfoUrl(tag);
+        const url = Url.getTagInfoUrl(tag);
         // use history.push() to navigate programmatically
         // https://reacttraining.com/react-router/web/api/history
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
@@ -194,10 +190,10 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
       return;
     }
     // post edited profile to the server
-    IO.editUserProfile(props.userId, state.posted)
-      .then((idName: I.IdName) => {
+    Api.editUserProfile(props.userId, state.posted)
+      .then((idName: Data.IdName) => {
         // construct the URL of the newly-edited user
-        const url = R.getUserUrl(idName);
+        const url = Url.getUserUrl(idName);
         // use history.push() to navigate programmatically
         // https://reacttraining.com/react-router/web/api/history
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
@@ -267,8 +263,8 @@ export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = 
       // error messages are already displayed
       return;
     }
-    IO.newMessage(discussionId, state.posted)
-      .then((__message: I.Message) => {
+    Api.newMessage(discussionId, state.posted)
+      .then((__message: Data.Message) => {
         // could push the received message into the display
         // but instead let's force a reload e.g. to see whether any other user has posted too
         reload();
@@ -339,10 +335,10 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
       // error messages are already displayed
       return;
     }
-    IO.newDiscussion({ ...state.posted, tags: outputTags.tags })
-      .then((idName: I.IdName) => {
+    Api.newDiscussion({ ...state.posted, tags: outputTags.tags })
+      .then((idName: Data.IdName) => {
         // construct the URL of the newly-created discussion
-        const url = R.getDiscussionUrl(idName);
+        const url = Url.getDiscussionUrl(idName);
         history.push(url);
       })
       .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
@@ -366,12 +362,12 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
         <EditorTags
           inputTags={emptyTags}
           result={setOutputTags}
-          getAllTags={IO.getAllTags}
+          getAllTags={Api.getAllTags}
           minimum={minimum}
           maximum={maximum}
           canNewTag={canNewTag}
           showValidationError={state.onSubmit}
-          hrefAllTags={R.route.tags}
+          hrefAllTags={Url.route.tags}
         />
       </div>
       <div className="element">{button}</div>

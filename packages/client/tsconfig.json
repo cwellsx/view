@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.shared",
+  "compilerOptions": {
+    "lib": ["esnext", "dom"],
+    "outDir": "lib"
+  },
+  "include": ["src"]
+}

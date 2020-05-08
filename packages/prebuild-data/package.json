@@ -1,0 +1,24 @@
+{
+  "name": "prebuild-data",
+  "version": "0.1.0",
+  "description": "Prebuild the data in server-data",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "private": true,
+  "dependencies": {
+    "shared-lib": "0.1.0",
+    "server-types": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "~3.7.2",
+    "ts-node": "^8.1.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build-data": "ts-node --project tsconfig.json src/index.ts",
+    "clean": "rimraf node_modules",
+    "unbuild": "rimraf lib"
+  }
+}

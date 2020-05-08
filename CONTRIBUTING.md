@@ -2,17 +2,17 @@
 
 This software is copyright, and is not licensed for modification -- see the [LICENSE](./LICENSE.md).
 
-Please  contact me if you'd like to develop it further --
+Please contact me if you'd like to develop it further --
 cwellsx@gmail.com
 
 ## Development environment setup
 
 ### Prettier
 
-I have "Prettier" as a VS Code plug-in, configured to run when a file is saved -- please do the same:
+I have "Prettier" as a VS Code plug-in -- please do the same.
 
-- In VS Code, install the "Prettier" VS Code plug-in
-- Go to "File > Preferences > Settings" and change the "Prettier Print Width" value to `120` (the default value is `80`).
+The workspace option configured to run when a file is saved:
+[`.vscode/settings.json`](.vscode/settings.json).
 
 Or install Prettier on the command-line and run it before a commit:
 
@@ -40,9 +40,9 @@ for more details see [Creating the repo](MONOREPO.md#creating-the-repo).
 
 After you get it from GitHub, run `yarn install` and `yarn build` before you try to run it.
 
-## Temporary bug and its work-Around
+## Temporary bug and its work-around
 
-The `yarn watch` command doesn't work on my machine -- 
+The `yarn watch` command doesn't work on my machine --
 it works correctly in the `monorepo-demo` project, but on my machine it hangs after displaying this message:
 
 ```
@@ -58,6 +58,23 @@ I think that's caused by this bug -- https://github.com/facebook/create-react-ap
 I could revert to an earlier version while waiting for the fix, but won't -- will instead update `create-react-apps` when a fix is released.
 
 The temporary work-around, instead of running `yarn watch`, is to run `yarn watch-lib` and `yarn watch-ui` in two different command windows.
+
+## Watch during development
+
+When the watch is running:
+
+- The compiled UI is visible in a browser window
+- Editing source in the UI package will cause the browser to reload
+- Ditto editing source in a required package
+- If there's a compiler error then it's displayed (instead of the UI) in the browser window
+
+Whether or not the watch is running:
+
+- Compiler errors are highlighted in the IDE -- but only for source files which are open in the IDE editor
+- This is normal behaviour of VS Code and TypeScript -- see for example
+  [How to get VSCode to show TypeScript errors for files _not_ open in the editor?](https://stackoverflow.com/q/55201424/49942).
+- If you don't like that there may be a work-around in some of the comments to
+  [Feature Request: Show all errors and warnings in project for all files, not just opened ones](https://github.com/microsoft/vscode/issues/13953).
 
 ---
 

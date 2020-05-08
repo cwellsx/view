@@ -2,10 +2,9 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Topbar.css";
 import * as Icon from "../icons";
-import { route } from "../shared/urls";
+import { Route, config } from "client";
 import { useMe } from "./AppContext";
 import { getUserSummary } from "./Components";
-import { config } from "../config";
 
 export const Topbar: React.FunctionComponent = () => {
   const me = useMe();
@@ -23,19 +22,19 @@ export const Topbar: React.FunctionComponent = () => {
             </NavLink>
           </li>
           <li className="icon">
-            <NavLink to={route.tags} title={config.strTags}>
+            <NavLink to={Route.tags} title={config.strTags}>
               <Icon.Search width="24" height="24" />
             </NavLink>
           </li>
           {me ? (
             <React.Fragment>
               <li className="icon">
-                <NavLink to={route.discussions} title={config.strQuestions}>
+                <NavLink to={Route.discussions} title={config.strQuestions}>
                   <Icon.Message width="24" height="24" />
                 </NavLink>
               </li>
               <li className="icon">
-                <NavLink to={route.users} title="Users">
+                <NavLink to={Route.users} title="Users">
                   <Icon.UserProfile width="24" height="24" />
                 </NavLink>
               </li>
@@ -48,7 +47,7 @@ export const Topbar: React.FunctionComponent = () => {
             </React.Fragment>
           ) : (
             <li className="text">
-              <NavLink to={route.login} className="login">
+              <NavLink to={Route.login} className="login">
                 Join this community
               </NavLink>
             </li>

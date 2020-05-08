@@ -13,14 +13,15 @@
     "packages/*"
   ],
   "scripts": {
+    "postinstall": "yarn run build-data",
+    "build-data": "lerna run build-data",
     "install": "lerna bootstrap",
-    "clean": "lerna run clean && rimraf node_modules",
+    "clean": "yarn run unbuild && lerna run clean && rimraf node_modules",
     "test": "lerna run test",
     "build": "lerna run build",
     "unbuild": "lerna run unbuild",
     "watch-lib": "lerna run --parallel --ignore ui* watch",
     "watch-ui": "lerna run --scope ui-react watch",
-    "start": "lerna run build --ignore ui* && lerna run --parallel watch",
     "watch": "lerna run --parallel watch"
   }
 }

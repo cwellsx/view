@@ -4,17 +4,12 @@ import { useLayout, Layout, loadingContents, loadingError } from "./PageLayout";
 import { Topbar } from "./Topbar";
 import { Login } from "./Login";
 import "./App.css";
-import * as I from "../data";
-import * as IO from "../io";
+import { Api, Route, Url, Data, SearchInput, config, loginUser } from "client";
 import * as Page from "./Pages";
-import * as R from "../shared/urls";
 import { AppContext, useMe } from "./AppContext";
-import { config } from "../config";
-import { loginUser } from "../io/mock";
 import { ErrorMessage } from "./ErrorMessage";
 import { NewDiscussion as NewDiscussionElement } from "./Editor";
 import { History } from "history";
-import { SearchInput } from "../shared/post";
 
 /*
   This defines the App's routes
@@ -25,7 +20,7 @@ const App: React.FunctionComponent = () => {
   // https://fettblog.eu/typescript-react/context/ and
   // https://reactjs.org/docs/context.html#updating-context-from-a-nested-component
   const autologin = config.autologin ? loginUser() : undefined;
-  const [me, setMe] = React.useState<I.UserSummary | undefined>(autologin);
+  const [me, setMe] = React.useState<Data.UserSummary | undefined>(autologin);
 
   document.title = `${config.appname}`;
 
@@ -48,17 +43,17 @@ const AppRoutes: React.FunctionComponent = () => {
         <ReactRouter.Route exact path="/index" component={SiteMap} />
         <ReactRouter.Route exact path="/" component={Home} />
         <ReactRouter.Route exact path="/home" component={Home} />
-        <ReactRouter.Route exact path={R.route.login} component={Login} />
-        <ReactRouter.Route exact path={R.route.siteMap} component={SiteMap} />
-        <ReactRouter.Route exact path={R.route.discussions} component={Discussions} />
-        <ReactRouter.Route exact path={R.route.newDiscussion} component={NewDiscussion} />
-        <ReactRouter.Route exact path={R.route.users} component={Users} />
-        <ReactRouter.Route exact path={R.route.tags} component={Tags} />
-        <ReactRouter.Route path={R.route.discussionsTagged} component={Discussions} />
-        <ReactRouter.Route path={R.route.users} component={User} />
-        <ReactRouter.Route path={R.route.images} component={Image} />
-        <ReactRouter.Route path={R.route.discussions} component={Discussion} />
-        <ReactRouter.Route path={R.route.tags} component={Tag} />
+        <ReactRouter.Route exact path={Route.login} component={Login} />
+        <ReactRouter.Route exact path={Route.siteMap} component={SiteMap} />
+        <ReactRouter.Route exact path={Route.discussions} component={Discussions} />
+        <ReactRouter.Route exact path={Route.newDiscussion} component={NewDiscussion} />
+        <ReactRouter.Route exact path={Route.users} component={Users} />
+        <ReactRouter.Route exact path={Route.tags} component={Tags} />
+        <ReactRouter.Route path={Route.discussionsTagged} component={Discussions} />
+        <ReactRouter.Route path={Route.users} component={User} />
+        <ReactRouter.Route path={Route.images} component={Image} />
+        <ReactRouter.Route path={Route.discussions} component={Discussion} />
+        <ReactRouter.Route path={Route.tags} component={Tag} />
         <ReactRouter.Route component={NoMatch} />
       </ReactRouter.Switch>
     </React.Fragment>
@@ -248,7 +243,7 @@ function useGetLayout3<TData, TParam, TExtra extends {}, TParam2>(
 */
 
 const SiteMap: React.FunctionComponent = () => {
-  return useGetLayout0<I.SiteMap>(IO.getSiteMap, Page.SiteMap);
+  return useGetLayout0<Data.SiteMap>(Api.getSiteMap, Page.SiteMap);
 };
 
 // these are used as TExtra types
@@ -258,7 +253,7 @@ const Home: React.FunctionComponent = () => {
   const isHtml = false;
   const filename = isHtml ? "home.html" : "home.md";
 
-  return useGetLayout2<string, string, FetchedIsHtml>(IO.getPublic, Page.Fetched, filename, { isHtml });
+  return useGetLayout2<string, string, FetchedIsHtml>(Api.getPublic, Page.Fetched, filename, { isHtml });
 };
 
 /*
@@ -266,8 +261,8 @@ const Home: React.FunctionComponent = () => {
 */
 
 const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const parsed = R.isImage(props.location);
-  if (R.isParserError(parsed)) {
+  const parsed = Url.isImage(props.location);
+  if (Url.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
 
@@ -287,11 +282,11 @@ const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => 
   // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
 
   const { id, name } = props;
-  const idName = React.useMemo<I.IdName>(() => {
+  const idName = React.useMemo<Data.IdName>(() => {
     return { id, name };
   }, [id, name]);
 
-  return useGetLayout<I.Image, I.IdName>(IO.getImage, Page.Image, idName);
+  return useGetLayout<Data.Image, Data.IdName>(Api.getImage, Page.Image, idName);
 };
 
 /*
@@ -299,7 +294,7 @@ const ImageId: React.FunctionComponent<ImageIdProps> = (props: ImageIdProps) => 
 */
 
 const Users: React.FunctionComponent = () => {
-  return useGetLayout0<I.UserSummaryEx[]>(IO.getUsers, Page.Users);
+  return useGetLayout0<Data.UserSummaryEx[]>(Api.getUsers, Page.Users);
 };
 
 /*
@@ -307,9 +302,9 @@ const Users: React.FunctionComponent = () => {
 */
 
 const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const parsed = R.isUserOptions(props.location);
+  const parsed = Url.isUserOptions(props.location);
   const me = useMe();
-  if (R.isParserError(parsed)) {
+  if (Url.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
   const { userTabType, user } = parsed;
@@ -324,8 +319,8 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
       }
       return <UserEditSettings {...props} id={user.id} name={user.name} canEdit={canEdit} />;
     case "Activity":
-      const options = R.isUserActivityOptions(props.location);
-      if (R.isParserError(options)) {
+      const options = Url.isUserActivityOptions(props.location);
+      if (Url.isParserError(options)) {
         return noMatch(props, options.error);
       }
       return <UserActivity {...props} options={options} canEdit={canEdit} />;
@@ -338,38 +333,40 @@ const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponen
 type UserCanEdit = { canEdit: boolean };
 type UserCanEditAndHistory = UserCanEdit & { history: History };
 
-type UserProps = RouteComponentProps & I.IdName & UserCanEdit;
+type UserProps = RouteComponentProps & Data.IdName & UserCanEdit;
 const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps) => {
   const { id, name } = props;
-  const idName = React.useMemo<I.IdName>(() => {
+  const idName = React.useMemo<Data.IdName>(() => {
     return { id, name };
   }, [id, name]);
-  return useGetLayout2<I.User, I.IdName, UserCanEdit>(IO.getUser, Page.UserProfile, idName, { canEdit: props.canEdit });
+  return useGetLayout2<Data.User, Data.IdName, UserCanEdit>(Api.getUser, Page.UserProfile, idName, {
+    canEdit: props.canEdit,
+  });
 };
 
 const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) => {
   const { id, name } = props;
-  const idName = React.useMemo<I.IdName>(() => {
+  const idName = React.useMemo<Data.IdName>(() => {
     return { id, name };
   }, [id, name]);
-  return useGetLayout2<I.User, I.IdName, UserCanEditAndHistory>(IO.getUser, Page.UserSettings, idName, {
+  return useGetLayout2<Data.User, Data.IdName, UserCanEditAndHistory>(Api.getUser, Page.UserSettings, idName, {
     canEdit: props.canEdit,
     history: props.history,
   });
 };
 
 type UserActivityProps = RouteComponentProps & {
-  options: R.UserActivityOptions;
+  options: Url.UserActivityOptions;
 } & UserCanEdit;
 const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
   // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
   const { user, userTabType, sort, page } = props.options;
   const { id, name } = user;
-  const options = React.useMemo<R.UserActivityOptions>(() => {
+  const options = React.useMemo<Url.UserActivityOptions>(() => {
     return { user: { id, name }, userTabType, sort, page };
   }, [id, name, userTabType, sort, page]);
-  return useGetLayout2<I.UserActivity, R.UserActivityOptions, UserCanEdit>(
-    IO.getUserActivity,
+  return useGetLayout2<Data.UserActivity, Url.UserActivityOptions, UserCanEdit>(
+    Api.getUserActivity,
     Page.UserActivity,
     options,
     { canEdit: props.canEdit }
@@ -382,8 +379,8 @@ const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserAct
 
 const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options
-  const options = R.isDiscussionsOptions(props.location);
-  if (R.isParserError(options)) {
+  const options = Url.isDiscussionsOptions(props.location);
+  if (Url.isParserError(options)) {
     return noMatch(props, options.error);
   }
   // split options into its components instead of passing whole options
@@ -391,13 +388,13 @@ const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteC
   return <DiscussionsList sort={options.sort} pagesize={options.pagesize} page={options.page} tag={options.tag} />;
 };
 
-const DiscussionsList: React.FunctionComponent<R.DiscussionsOptions> = (props: R.DiscussionsOptions) => {
+const DiscussionsList: React.FunctionComponent<Url.DiscussionsOptions> = (props: Url.DiscussionsOptions) => {
   const { sort, pagesize, page, tag } = props;
-  const options: R.DiscussionsOptions = React.useMemo(() => {
+  const options: Url.DiscussionsOptions = React.useMemo(() => {
     return { sort, pagesize, page, tag };
   }, [sort, pagesize, page, tag]);
 
-  return useGetLayout<I.Discussions, R.DiscussionsOptions>(IO.getDiscussions, Page.Discussions, options);
+  return useGetLayout<Data.Discussions, Url.DiscussionsOptions>(Api.getDiscussions, Page.Discussions, options);
 };
 
 /*
@@ -405,17 +402,17 @@ const DiscussionsList: React.FunctionComponent<R.DiscussionsOptions> = (props: R
 */
 
 const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const parsed = R.isDiscussionOptions(props.location);
-  if (R.isParserError(parsed)) {
+  const parsed = Url.isDiscussionOptions(props.location);
+  if (Url.isParserError(parsed)) {
     return noMatch(props, parsed.error);
   }
 
   return <DiscussionId discussion={parsed.discussion} sort={parsed.sort} page={parsed.page} />;
 };
 
-const DiscussionId: React.FunctionComponent<R.DiscussionOptions> = (props: R.DiscussionOptions) => {
+const DiscussionId: React.FunctionComponent<Url.DiscussionOptions> = (props: Url.DiscussionOptions) => {
   const { sort, discussion, page } = props;
-  const options: R.DiscussionOptions = React.useMemo(() => {
+  const options: Url.DiscussionOptions = React.useMemo(() => {
     return {
       sort,
       page,
@@ -423,7 +420,7 @@ const DiscussionId: React.FunctionComponent<R.DiscussionOptions> = (props: R.Dis
     };
   }, [sort, discussion.id, discussion.name, page]);
 
-  return useGetLayout<I.Discussion, R.DiscussionOptions>(IO.getDiscussion, Page.Discussion, options);
+  return useGetLayout<Data.Discussion, Url.DiscussionOptions>(Api.getDiscussion, Page.Discussion, options);
 };
 
 /*
@@ -447,20 +444,20 @@ const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: Rout
 
 const Tags: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options
-  const options = R.isTagsOptions(props.location);
-  if (R.isParserError(options)) {
+  const options = Url.isTagsOptions(props.location);
+  if (Url.isParserError(options)) {
     return noMatch(props, options.error);
   }
   return <TagsList sort={options.sort} pagesize={options.pagesize} page={options.page} />;
 };
 
-const TagsList: React.FunctionComponent<R.TagsOptions> = (props: R.TagsOptions) => {
+const TagsList: React.FunctionComponent<Url.TagsOptions> = (props: Url.TagsOptions) => {
   const { sort, pagesize, page } = props;
-  const options: R.TagsOptions = React.useMemo(() => {
+  const options: Url.TagsOptions = React.useMemo(() => {
     return { sort, pagesize, page };
   }, [sort, pagesize, page]);
 
-  return useGetLayout3<I.Tags, R.TagsOptions, {}, SearchInput>(IO.getTags, Page.Tags, options, {});
+  return useGetLayout3<Data.Tags, Url.TagsOptions, {}, SearchInput>(Api.getTags, Page.Tags, options, {});
 };
 
 /*
@@ -468,28 +465,28 @@ const TagsList: React.FunctionComponent<R.TagsOptions> = (props: R.TagsOptions) 
 */
 
 const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const info = R.isTagInfo(props.location);
-  if (!R.isParserError(info)) {
+  const info = Url.isTagInfo(props.location);
+  if (!Url.isParserError(info)) {
     return <TagId tag={info.key} word="info" history={props.history} />;
   }
-  const edit = R.isTagEdit(props.location);
-  if (!R.isParserError(edit)) {
+  const edit = Url.isTagEdit(props.location);
+  if (!Url.isParserError(edit)) {
     return <TagId tag={edit.key} word="edit" history={props.history} />;
   }
   return noMatch(props);
 };
 
-type TagIdProps = R.InfoOrEdit & { history: History; tag: string };
+type TagIdProps = Url.InfoOrEdit & { history: History; tag: string };
 const TagId: React.FunctionComponent<TagIdProps> = (props: TagIdProps) => {
   const { tag, word, history } = props;
 
   // include word as a dependency because we want to re-render if word changes,
   // even though { word } isn't required in the TParam parameter passed to useGetLayout2
-  const key: I.Key & R.InfoOrEdit = React.useMemo(() => {
+  const key: Data.Key & Url.InfoOrEdit = React.useMemo(() => {
     return { key: tag, word };
   }, [tag, word]);
 
-  return useGetLayout2<I.TagInfo, I.Key, Page.TagExtra>(IO.getTag, Page.Tag, key, { word, history });
+  return useGetLayout2<Data.TagInfo, Data.Key, Page.TagExtra>(Api.getTag, Page.Tag, key, { word, history });
 };
 
 /*

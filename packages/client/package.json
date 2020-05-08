@@ -1,0 +1,24 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "description": "The client-side API imported by the UI",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "private": true,
+  "dependencies": {
+    "shared-lib": "0.1.0",
+    "server-mock": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "~3.7.2"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "clean": "rimraf node_modules",
+    "unbuild": "rimraf lib"
+  }
+}
