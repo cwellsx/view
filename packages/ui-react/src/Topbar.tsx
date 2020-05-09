@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import "./Topbar.css";
+import "ui-assets/css/Topbar.css";
 import * as Icon from "./icons";
 import { Route, config } from "client";
 import { useMe } from "./AppContext";

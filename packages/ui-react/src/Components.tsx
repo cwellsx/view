@@ -2,7 +2,7 @@ import React, { ReactElement } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { Url, Data, toHtml } from "client";
 import { KeyedItem } from "./PageLayout";
-import "./Components.css";
+import "ui-assets/css/Components.css";
 
 /*
   This module defines components which exist within larger content.

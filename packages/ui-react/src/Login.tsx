@@ -3,7 +3,7 @@ import { useLayout, Layout } from "./PageLayout";
 import { Data, Api, Post } from "client";
 import { AppContext, AppContextProps } from "./AppContext";
 import { ValidatedState, createValidated, Input, createInitialState, useReducer0 } from "./ErrorMessage";
-import "./Login.css";
+import "ui-assets/css/Login.css";
 
 export const Login: React.FunctionComponent = () => {
   type T = Post.Login;

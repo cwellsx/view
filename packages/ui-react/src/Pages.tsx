@@ -2,7 +2,7 @@ import React from "react";
 import { Data, Url } from "client";
 import { KeyedItem, Layout, Tab, Tabs, SubTabs, MainContent } from "./PageLayout";
 import * as Summaries from "./Components";
-import "./Pages.css";
+import "ui-assets/css/Pages.css";
 import * as Icon from "./icons";
 import { config, SearchInput, toHtml } from "client";
 import { NavLink, Link } from "react-router-dom";

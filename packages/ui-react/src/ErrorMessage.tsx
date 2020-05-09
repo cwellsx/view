@@ -1,5 +1,5 @@
 import React from "react";
-import "./ErrorMessage.css";
+import "ui-assets/css/ErrorMessage.css";
 import * as Icon from "./icons";
 
 /*

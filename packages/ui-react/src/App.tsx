@@ -3,7 +3,7 @@ import * as ReactRouter from "react-router-dom";
 import { useLayout, Layout, loadingContents, loadingError } from "./PageLayout";
 import { Topbar } from "./Topbar";
 import { Login } from "./Login";
-import "./App.css";
+import "ui-assets/css/App.css";
 import { Api, Route, Url, Data, SearchInput, config, loginUser } from "client";
 import * as Page from "./Pages";
 import { AppContext, useMe } from "./AppContext";

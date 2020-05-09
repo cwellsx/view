@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import "pagedown-editor/sample-bundle";
 import "pagedown-editor/pagedown.css";
-import "./Editor.css";
+import "ui-assets/css/Editor.css";
 import { Api, Data, Url, Post, config } from "client";
 import { EditorTags, OutputTags } from "./EditorTags";
 import { History } from "history";
