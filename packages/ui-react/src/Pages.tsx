@@ -3,7 +3,7 @@ import { Data, Url } from "client";
 import { KeyedItem, Layout, Tab, Tabs, SubTabs, MainContent } from "./PageLayout";
 import * as Summaries from "./Components";
 import "./Pages.css";
-import * as Icon from "../icons";
+import * as Icon from "./icons";
 import { config, SearchInput, toHtml } from "client";
 import { NavLink, Link } from "react-router-dom";
 import { AnswerDiscussion, EditUserSettings, EditTagInfo } from "./Editor";

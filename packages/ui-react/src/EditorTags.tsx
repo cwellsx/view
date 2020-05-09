@@ -2,7 +2,7 @@ import React from "react";
 import "./EditorTags.css";
 // this is to display a little 'x' SVG -- a Close icon which is displayed on each tag -- clicking it will delete the tag
 // also to display a little '(!)' SVG -- an Error icon which is displayed in the element, if there's a validation error
-import * as Icon from "../icons";
+import * as Icon from "./icons";
 // this simply displays red text if non-empty text is passed to its errorMessage property
 import { ErrorMessage } from "./ErrorMessage";
 

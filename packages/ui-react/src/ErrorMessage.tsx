@@ -1,6 +1,6 @@
 import React from "react";
 import "./ErrorMessage.css";
-import * as Icon from "../icons";
+import * as Icon from "./icons";
 
 /*
   Simple component to show an error message (or not if there isn't one)

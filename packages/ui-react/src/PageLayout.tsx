@@ -1,7 +1,7 @@
 import React from "react";
 import "./PageLayout.css";
 import { config } from "client";
-import * as Icon from "../icons";
+import * as Icon from "./icons";
 import { NavLink } from "react-router-dom";
 
 /*
