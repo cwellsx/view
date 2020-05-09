@@ -27,7 +27,7 @@ const App: React.FunctionComponent = () => {
   // plus https://reacttraining.com/react-router/web/api/BrowserRouter
   return (
     <AppContext.Provider value={{ me, setMe }}>
-      <ReactRouter.BrowserRouter>
+      <ReactRouter.BrowserRouter basename={process.env.PUBLIC_URL}>
         <AppRoutes />
       </ReactRouter.BrowserRouter>
     </AppContext.Provider>

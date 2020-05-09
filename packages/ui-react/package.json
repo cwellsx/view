@@ -2,6 +2,7 @@
   "name": "ui-react",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://cwellsx.github.io/views",
   "engines": {
     "node": "10.15.3"
   },
@@ -26,7 +27,11 @@
     "react-scripts": "3.4.1",
     "typescript": "~3.7.2"
   },
+  "devDependencies": {
+    "copyfiles": "^2.2.0"
+  },
   "scripts": {
+    "build-docs": "rimraf \"../../docs/\" && copyfiles --up 1 \"build/**/*\" \"../../docs/\"",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

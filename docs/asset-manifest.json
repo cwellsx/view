@@ -1,0 +1,34 @@
+{
+  "files": {
+    "main.css": "/views/static/css/main.e7633725.chunk.css",
+    "main.js": "/views/static/js/main.984fb820.chunk.js",
+    "main.js.map": "/views/static/js/main.984fb820.chunk.js.map",
+    "runtime-main.js": "/views/static/js/runtime-main.f17fffb2.js",
+    "runtime-main.js.map": "/views/static/js/runtime-main.f17fffb2.js.map",
+    "static/css/2.fe59fc3f.chunk.css": "/views/static/css/2.fe59fc3f.chunk.css",
+    "static/js/2.90a8aaaa.chunk.js": "/views/static/js/2.90a8aaaa.chunk.js",
+    "static/js/2.90a8aaaa.chunk.js.map": "/views/static/js/2.90a8aaaa.chunk.js.map",
+    "index.html": "/views/index.html",
+    "precache-manifest.bb041470625aac2432bfa1406c28b18b.js": "/views/precache-manifest.bb041470625aac2432bfa1406c28b18b.js",
+    "service-worker.js": "/views/service-worker.js",
+    "static/css/2.fe59fc3f.chunk.css.map": "/views/static/css/2.fe59fc3f.chunk.css.map",
+    "static/css/main.e7633725.chunk.css.map": "/views/static/css/main.e7633725.chunk.css.map",
+    "static/js/2.90a8aaaa.chunk.js.LICENSE.txt": "/views/static/js/2.90a8aaaa.chunk.js.LICENSE.txt",
+    "static/media/outline-account_box-24px.dc60d700.svg": "/views/static/media/outline-account_box-24px.dc60d700.svg",
+    "static/media/outline-chat-24px.c6c43fee.svg": "/views/static/media/outline-chat-24px.c6c43fee.svg",
+    "static/media/outline-close-24px.62e7709e.svg": "/views/static/media/outline-close-24px.62e7709e.svg",
+    "static/media/outline-email-24px.8f9caefb.svg": "/views/static/media/outline-email-24px.8f9caefb.svg",
+    "static/media/outline-error-24px.fccb5b63.svg": "/views/static/media/outline-error-24px.fccb5b63.svg",
+    "static/media/outline-home-24px.5a70e98d.svg": "/views/static/media/outline-home-24px.5a70e98d.svg",
+    "static/media/outline-info-24px.59d1a698.svg": "/views/static/media/outline-info-24px.59d1a698.svg",
+    "static/media/outline-location_on-24px.b6c7e994.svg": "/views/static/media/outline-location_on-24px.b6c7e994.svg",
+    "static/media/outline-search-24px.63de706a.svg": "/views/static/media/outline-search-24px.63de706a.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.f17fffb2.js",
+    "static/css/2.fe59fc3f.chunk.css",
+    "static/js/2.90a8aaaa.chunk.js",
+    "static/css/main.e7633725.chunk.css",
+    "static/js/main.984fb820.chunk.js"
+  ]
+}

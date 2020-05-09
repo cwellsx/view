@@ -85,7 +85,7 @@ const image${i}: Data.Image = {
     names.push(json.name);
   }
 
-  appendLine(`export function loadImages(): I.Image[] {
+  appendLine(`export function loadImages(): Data.Image[] {
   return [${images.join(", ")}];
 }`);
 
