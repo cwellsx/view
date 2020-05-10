@@ -1,0 +1,1 @@
+export { getDiscussionsSubtitle } from "./getDiscussionsSubtitle";

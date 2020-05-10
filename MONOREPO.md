@@ -48,14 +48,14 @@ I used the following commands to create the initial repo.
   I'm using `~3.7.2` because that's the version specified by create-react-app
   instead of `^3.8.3` which is the latest version.
 
-  Some example projects to imitate:
+Some example projects to imitate:
 
-  - [React + TypeScript Monorepo Demo](https://juliangaramendy.dev/monorepo-demo/)
-  - [TypeScript monorepo for React project](https://dev.to/stereobooster/typescript-monorepo-for-react-project-3cpa) and https://github.com/stereobooster/typescript-monorepo
-  - https://github.com/biernacki/cra-monorepo
-  - [Monorepos: Lerna, TypeScript, CRA and Storybook combined](https://dev.to/shnydercom/monorepos-lerna-typescript-cra-and-storybook-combined-4hli) and https://github.com/shnydercom/lerna-typescript-cra-uilib-starter/tree/master/packages
+- [React + TypeScript Monorepo Demo](https://juliangaramendy.dev/monorepo-demo/)
+- [TypeScript monorepo for React project](https://dev.to/stereobooster/typescript-monorepo-for-react-project-3cpa) and https://github.com/stereobooster/typescript-monorepo
+- https://github.com/biernacki/cra-monorepo
+- [Monorepos: Lerna, TypeScript, CRA and Storybook combined](https://dev.to/shnydercom/monorepos-lerna-typescript-cra-and-storybook-combined-4hli) and https://github.com/shnydercom/lerna-typescript-cra-uilib-starter/tree/master/packages
 
-  The configuration of this repo is based on the first of these i.e. `monorepo-demo`.
+The configuration of this repo is based on the first of these i.e. `monorepo-demo`.
 
 ## Package names
 

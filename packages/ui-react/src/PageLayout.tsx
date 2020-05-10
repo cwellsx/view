@@ -304,3 +304,8 @@ export function useLayout(layout: Layout): React.ReactElement {
   const contents = switchLayout(layout);
   return <div className="all-columns">{contents}</div>;
 }
+
+export function renderLayout(layout: Layout): React.ReactElement {
+  const contents = switchLayout(layout);
+  return <div className="all-columns">{contents}</div>;
+}

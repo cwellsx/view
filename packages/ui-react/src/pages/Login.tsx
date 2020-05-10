@@ -1,8 +1,8 @@
 import React from "react";
-import { useLayout, Layout } from "./PageLayout";
+import { useLayout, Layout } from "../PageLayout";
 import { Data, Api, Post } from "client";
-import { AppContext, AppContextProps } from "./AppContext";
-import { ValidatedState, createValidated, Input, createInitialState, useReducer0 } from "./ErrorMessage";
+import { useSetMe } from "../hooks";
+import { ValidatedState, createValidated, Input, createInitialState, useReducer0 } from "../ErrorMessage";
 import "ui-assets/css/Login.css";
 
 export const Login: React.FunctionComponent = () => {
@@ -35,8 +35,7 @@ export const Login: React.FunctionComponent = () => {
   }
 
   const [state, dispatch] = useReducer0<T>(() => initialState());
-
-  const appContext: AppContextProps = React.useContext(AppContext);
+  const setMe = useSetMe();
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -45,7 +44,7 @@ export const Login: React.FunctionComponent = () => {
       return;
     }
     Api.login(state.posted)
-      .then((userSummary: Data.UserSummary) => appContext.setMe(userSummary))
+      .then((userSummary: Data.UserSummary) => setMe(userSummary))
       .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
   }
 

@@ -1,0 +1,89 @@
+import React from "react";
+import { RouteComponentProps, NavLink, Link } from "react-router-dom";
+import { Api, Url, Data, toHtml, config } from "client";
+import { useFetchApi2, FetchingT, useMe } from "../hooks";
+import { getPage, FetchedT, ShowDataT } from "../layouts";
+import { Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../PageLayout";
+import { notFound } from "./NotFound";
+import { History } from "history";
+import { AnswerDiscussion } from "../Editor";
+import * as Summaries from "../Components";
+import * as Icon from "../icons";
+
+export const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+  const parsed = Url.isDiscussionOptions(props.location);
+  if (Url.isParserError(parsed)) {
+    return notFound(props, parsed.error);
+  }
+
+  return <DiscussionId discussion={parsed.discussion} sort={parsed.sort} page={parsed.page} />;
+};
+
+const DiscussionId: React.FunctionComponent<Url.DiscussionOptions> = (props: Url.DiscussionOptions) => {
+  const { sort, discussion, page } = props;
+  const options: Url.DiscussionOptions = React.useMemo(() => {
+    return {
+      sort,
+      page,
+      discussion: { id: discussion.id, name: discussion.name },
+    };
+  }, [sort, discussion.id, discussion.name, page]);
+
+  return getPage(useFetchApi2(Api.getDiscussion, options), showDiscussion);
+};
+
+export function showDiscussion(fetched: FetchedT<Data.Discussion, void>): Layout {
+  const { data, reload } = fetched;
+  const { id, name, tags, first, range, messages } = data;
+  const { nTotal } = range;
+
+  const subTabs: SubTabs | undefined = !nTotal
+    ? undefined
+    : {
+        text: nTotal === 1 ? "1 Answer" : `${nTotal} Answers`,
+        selected: data.range.sort === "Newest" ? 0 : 1,
+        tabs: [
+          {
+            text: "newest",
+            href: Url.getDiscussionOptionsUrl({
+              discussion: data,
+              sort: "Newest",
+            }),
+          },
+          {
+            text: "oldest",
+            href: Url.getDiscussionOptionsUrl({
+              discussion: data,
+              sort: "Oldest",
+            }),
+          },
+        ],
+      };
+
+  const content: KeyedItem[] = [];
+  content.push(Summaries.getFirstMessage(first, tags));
+  messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
+
+  const footer =
+    range.nTotal > range.pageSize ? (
+      <div className="footer">
+        <div className="index">
+          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
+            Url.getDiscussionOptionsUrl({
+              discussion: data,
+              page,
+              sort: range.sort,
+            })
+          )}
+        </div>
+      </div>
+    ) : undefined;
+
+  const yourAnswer = <AnswerDiscussion discussionId={id} reload={reload} />;
+  content.push({ element: yourAnswer, key: "editor" });
+
+  return {
+    main: { content, title: name, subTabs, footer },
+    width: "Open",
+  };
+}
