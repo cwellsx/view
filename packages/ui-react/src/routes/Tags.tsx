@@ -1,14 +1,12 @@
 import React from "react";
 import { RouteComponentProps, NavLink, Link } from "react-router-dom";
 import { Api, Url, Data, SearchInput, config } from "client";
-import { useFetchApi2, FetchingT, useMe } from "../hooks";
-import { getPage, FetchedT, ShowDataT, Layout } from "../layouts";
+import { useFetchApi2 } from "../hooks";
+import { getPage, FetchedT, Layout } from "../layouts";
 import { notFound } from "./NotFound";
-import { History } from "history";
-import { NewDiscussion as NewDiscussionElement } from "../Editor";
 import { getPageNavLinks, getTagLink } from "../components";
 import * as Icon from "../icons";
-import { ThrottledInput } from "../ThrottledInput";
+import { ThrottledInput } from "../components";
 
 export const Tags: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options

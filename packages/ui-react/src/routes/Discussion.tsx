@@ -1,14 +1,11 @@
 import React from "react";
-import { RouteComponentProps, NavLink, Link } from "react-router-dom";
-import { Api, Url, Data, toHtml, config } from "client";
-import { useFetchApi2, FetchingT, useMe } from "../hooks";
-import { getPage, FetchedT, ShowDataT } from "../layouts";
-import { Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../layouts";
+import { RouteComponentProps } from "react-router-dom";
+import { Api, Url, Data } from "client";
+import { useFetchApi2 } from "../hooks";
+import { getPage, FetchedT, Layout, KeyedItem, SubTabs } from "../layouts";
 import { notFound } from "./NotFound";
-import { History } from "history";
 import { AnswerDiscussion } from "../Editor";
 import { getFirstMessage, getNextMessage, getPageNavLinks } from "../components";
-import * as Icon from "../icons";
 
 export const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const parsed = Url.isDiscussionOptions(props.location);

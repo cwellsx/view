@@ -3,7 +3,7 @@ import * as ReactRouter from "react-router-dom";
 import { Topbar } from "./components";
 import "ui-assets/css/App.css";
 import { Route, config } from "client";
-import * as Page from "./pages";
+import * as Page from "./routes";
 import { AppContext, useCreateMe } from "./hooks";
 
 /*

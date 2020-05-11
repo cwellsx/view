@@ -1,13 +1,9 @@
 import React from "react";
-import { RouteComponentProps, NavLink, Link } from "react-router-dom";
-import { Api, Url, Data, toHtml, config } from "client";
-import { useFetchApi2, FetchingT, useMe } from "../hooks";
-import { getPage, FetchedT, ShowDataT } from "../layouts";
-import { Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../layouts";
+import { RouteComponentProps } from "react-router-dom";
+import { Api, Url, Data, config } from "client";
+import { useFetchApi2 } from "../hooks";
+import { getPage, FetchedT, Layout } from "../layouts";
 import { notFound } from "./NotFound";
-import { History } from "history";
-import { EditUserSettings } from "../Editor";
-import * as Icon from "../icons";
 import { getDiscussionsSubtitle, getPageNavLinks, getNavLinks, getDiscussionSummary } from "../components";
 
 export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {

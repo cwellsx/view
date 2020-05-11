@@ -19,4 +19,5 @@ export { getUserSummary } from "./getUserSummary";
 export type { GravatarSize } from "./getUserSummary";
 export { getWhen } from "./getWhen";
 export { htmlToReact } from "./htmlToReact";
+export { ThrottledInput } from "./ThrottledInput";
 export { Topbar } from "./Topbar";
