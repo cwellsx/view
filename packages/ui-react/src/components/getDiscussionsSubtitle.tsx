@@ -1,6 +1,6 @@
 import React from "react";
-import { RouteComponentProps, NavLink, Link } from "react-router-dom";
-import { Api, Url, Data, SearchInput, config, toHtml } from "client";
+import { NavLink, Link } from "react-router-dom";
+import { Url, Data, config } from "client";
 
 export function getDiscussionsSubtitle(
   title: string,

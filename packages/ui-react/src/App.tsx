@@ -1,7 +1,7 @@
 import React from "react";
 import * as ReactRouter from "react-router-dom";
 import { useLayout, Layout, loadingContents, loadingError } from "./PageLayout";
-import { Topbar } from "./components2/Topbar";
+import { Topbar } from "./components";
 import { Login } from "./pages/Login";
 import "ui-assets/css/App.css";
 import { Api, Route, Url, Data, SearchInput, config, loginUser } from "client";

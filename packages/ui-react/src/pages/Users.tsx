@@ -2,7 +2,7 @@ import React from "react";
 import { Api, Data } from "client";
 import { useFetchApi } from "../hooks";
 import { getPage, FetchedT } from "../layouts";
-import * as Summaries from "../Components";
+import { getUserInfo } from "../components";
 import { Layout, KeyedItem } from "../PageLayout";
 
 export const Users: React.FunctionComponent = () => {
@@ -14,7 +14,7 @@ function showUsers(fetched: FetchedT<Data.UserSummaryEx[], void>): Layout {
   const users: React.ReactElement = (
     <div className="all-users">
       {data.map((user) => {
-        return Summaries.getUserInfo(user, "big");
+        return getUserInfo(user, "big");
       })}
     </div>
   );

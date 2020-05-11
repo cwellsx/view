@@ -7,7 +7,7 @@ import { Layout, renderLayout } from "../PageLayout";
 import { notFound } from "./NotFound";
 import { History } from "history";
 import { NewDiscussion as NewDiscussionElement } from "../Editor";
-import * as Summaries from "../Components";
+import { getPageNavLinks, getTagLink } from "../components";
 import * as Icon from "../icons";
 import { ThrottledInput } from "../ThrottledInput";
 
@@ -73,7 +73,7 @@ function showTags(fetched: FetchedT<Data.Tags, SearchInput>): Layout {
       <div className="minigrid footer">
         <div className="page"></div>
         <div className="page">
-          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
+          {getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
             Url.getTagsOptionsUrl({ page, sort: range.sort })
           )}
         </div>
@@ -84,7 +84,7 @@ function showTags(fetched: FetchedT<Data.Tags, SearchInput>): Layout {
   function getTagInfo(tagCount: Data.TagCount) {
     // similar to the ShowHint function in EditorTags.tsx
     const key = tagCount.key;
-    const tag = Summaries.getTagLink(tagCount);
+    const tag = getTagLink(tagCount);
     const count = tagCount.count ? <span className="multiplier">×&nbsp;{tagCount.count}</span> : undefined;
     const summary = tagCount.summary ? <div className="exerpt">{tagCount.summary}</div> : undefined;
     const edit = (

@@ -3,7 +3,7 @@ import { Api } from "client";
 import { useFetchApi2, FetchingT } from "../hooks";
 import { getPage, FetchedT, ShowDataT } from "../layouts";
 import { Layout } from "../PageLayout";
-import { toReact } from "../htmlToReact";
+import { htmlToReact } from "../components";
 import { toHtml } from "client";
 
 type FetchedIsHtml = { isHtml: boolean };
@@ -33,7 +33,7 @@ function showHome(fetched: FetchedT<string, void>, extra: { isHtml: boolean }): 
   }
   const { title, sliced } = parse();
   const html = isHtml ? sliced : toHtml(sliced).__html;
-  // toReact(html) replaces `<a>` with `<Link>` -- instead of using `<div dangerouslySetInnerHTML={{ __html: html }} />`
-  const content = toReact(html);
+  // htmlToReact(html) replaces `<a>` with `<Link>` instead of using `<div dangerouslySetInnerHTML={{ __html: html }} />`
+  const content = htmlToReact(html);
   return { main: { title, content }, width: "Open" };
 }

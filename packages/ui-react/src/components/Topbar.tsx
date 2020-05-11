@@ -4,7 +4,7 @@ import "ui-assets/css/Topbar.css";
 import * as Icon from "../icons";
 import { Route, config } from "client";
 import { useMe } from "../hooks";
-import { getUserSummary } from "../Components";
+import { getUserSummary } from "../components";
 
 export const Topbar: React.FunctionComponent = () => {
   const me = useMe();

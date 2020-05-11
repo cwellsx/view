@@ -29,7 +29,7 @@ function trimHtml(html: string): string {
   return html;
 }
 
-export function toReact(html: string): React.ReactElement {
+export function htmlToReact(html: string): React.ReactElement {
   html = trimHtml(html);
   // console.log(html);
 

@@ -2,7 +2,7 @@ import React from "react";
 import { Api, Data } from "client";
 import { useFetchApi } from "../hooks";
 import { getPage, FetchedT } from "../layouts";
-import * as Summaries from "../Components";
+import { getImageSummary, getTagSummary } from "../components";
 import { Layout, KeyedItem } from "../PageLayout";
 
 export const SiteMap: React.FunctionComponent = () => {
@@ -27,14 +27,14 @@ function showSiteMap(fetched: FetchedT<Data.SiteMap, void>): Layout {
   */
 
   // render the images
-  data.images.forEach((x) => content.push(Summaries.getImageSummary(x)));
+  data.images.forEach((x) => content.push(getImageSummary(x)));
 
   const features = (
     <React.Fragment>
       <h2>Features</h2>
       <div className="features">
         {data.tags.map((tag) => {
-          const content = Summaries.getTagSummary(tag);
+          const content = getTagSummary(tag);
           /*
             either we need to add whitespace between elements ...
             - https://github.com/facebook/react/issues/1643

@@ -7,7 +7,6 @@ import { Layout, renderLayout } from "../PageLayout";
 import { notFound } from "./NotFound";
 import { History } from "history";
 import { NewDiscussion as NewDiscussionElement } from "../Editor";
-import * as Summaries from "../Components";
 import * as Icon from "../icons";
 
 export const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {

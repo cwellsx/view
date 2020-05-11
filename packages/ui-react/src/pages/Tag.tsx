@@ -7,10 +7,9 @@ import { Layout, renderLayout } from "../PageLayout";
 import { notFound } from "./NotFound";
 import { History } from "history";
 import { EditTagInfo } from "../Editor";
-import * as Summaries from "../Components";
 import * as Icon from "../icons";
 import { ThrottledInput } from "../ThrottledInput";
-import { getDiscussionsSubtitle } from "../components2";
+import { getDiscussionsSubtitle } from "../components";
 
 export const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const info = Url.isTagInfo(props.location);

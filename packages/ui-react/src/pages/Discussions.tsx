@@ -7,9 +7,8 @@ import { Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../PageLayou
 import { notFound } from "./NotFound";
 import { History } from "history";
 import { EditUserSettings } from "../Editor";
-import * as Summaries from "../Components";
 import * as Icon from "../icons";
-import { getDiscussionsSubtitle } from "../components2";
+import { getDiscussionsSubtitle, getPageNavLinks, getNavLinks, getDiscussionSummary } from "../components";
 
 export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options
@@ -45,12 +44,10 @@ function showDiscussions(fetched: FetchedT<Data.Discussions, void>): Layout {
     <React.Fragment>
       <div className="minigrid footer">
         <div className="page">
-          {Summaries.getPageNavLinks(pageNumber, nTotal, pageSize, (page) =>
-            Url.getDiscussionsOptionsUrl({ page, sort, tag })
-          )}
+          {getPageNavLinks(pageNumber, nTotal, pageSize, (page) => Url.getDiscussionsOptionsUrl({ page, sort, tag }))}
         </div>
         <div className="page">
-          {Summaries.getNavLinks(
+          {getNavLinks(
             [15, 30, 50].map((n) => {
               return { text: "" + n, n };
             }),
@@ -65,7 +62,7 @@ function showDiscussions(fetched: FetchedT<Data.Discussions, void>): Layout {
     </React.Fragment>
   );
 
-  const content = summaries.map((summary) => Summaries.getDiscussionSummary(summary));
+  const content = summaries.map((summary) => getDiscussionSummary(summary));
 
   return {
     main: { content, title, subtitle, footer },

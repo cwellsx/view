@@ -7,7 +7,7 @@ import { Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../PageLayou
 import { notFound } from "./NotFound";
 import { History } from "history";
 import { EditUserSettings } from "../Editor";
-import * as Summaries from "../Components";
+import { getUserSummary, getTagCount, getDiscussionSummary } from "../components";
 import * as Icon from "../icons";
 
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
@@ -94,7 +94,7 @@ const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserAct
 
 export function showUserProfile(fetched: FetchedT<Data.User, void>, extra: { canEdit: boolean }): Layout {
   const { data: user } = fetched;
-  const gravatar = Summaries.getUserSummary(user, {
+  const gravatar = getUserSummary(user, {
     title: false,
     size: "huge",
   }).gravatar;
@@ -125,7 +125,7 @@ export function showUserSettings(
   extra: { canEdit: boolean; history: History }
 ): Layout {
   const { data: user } = fetched;
-  const gravatar = Summaries.getUserSummary(user, {
+  const gravatar = getUserSummary(user, {
     title: false,
     size: "huge",
   }).gravatar;
@@ -157,11 +157,11 @@ export function showUserActivity(fetched: FetchedT<Data.UserActivity, void>, ext
     const tags = (
       <React.Fragment>
         <h2>{`${activity.tagCounts.length} ${config.strTags}`}</h2>
-        <div className="tags">{tagCounts.map(Summaries.getTagCount)}</div>
+        <div className="tags">{tagCounts.map(getTagCount)}</div>
       </React.Fragment>
     );
     const first: KeyedItem = { element: tags, key: "tags" };
-    const next: KeyedItem[] = activity.summaries.map((summary) => Summaries.getDiscussionSummary(summary, true));
+    const next: KeyedItem[] = activity.summaries.map((summary) => getDiscussionSummary(summary, true));
     return [first].concat(next);
   }
   const content = getActivityContent();
@@ -189,7 +189,7 @@ function showCommonUserLayout(
   canEdit: boolean,
   subTabs?: SubTabs
 ): Layout {
-  const gravatarSmall = Summaries.getUserSummary(summary, {
+  const gravatarSmall = getUserSummary(summary, {
     title: false,
     size: "small",
   }).gravatar;

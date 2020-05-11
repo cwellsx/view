@@ -7,7 +7,7 @@ import { Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../PageLayou
 import { notFound } from "./NotFound";
 import { History } from "history";
 import { AnswerDiscussion } from "../Editor";
-import * as Summaries from "../Components";
+import { getFirstMessage, getNextMessage, getPageNavLinks } from "../components";
 import * as Icon from "../icons";
 
 export const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
@@ -61,14 +61,14 @@ export function showDiscussion(fetched: FetchedT<Data.Discussion, void>): Layout
       };
 
   const content: KeyedItem[] = [];
-  content.push(Summaries.getFirstMessage(first, tags));
-  messages.forEach((message, index) => content.push(Summaries.getNextMessage(message, index)));
+  content.push(getFirstMessage(first, tags));
+  messages.forEach((message, index) => content.push(getNextMessage(message, index)));
 
   const footer =
     range.nTotal > range.pageSize ? (
       <div className="footer">
         <div className="index">
-          {Summaries.getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
+          {getPageNavLinks(range.pageNumber, range.nTotal, range.pageSize, (page) =>
             Url.getDiscussionOptionsUrl({
               discussion: data,
               page,
