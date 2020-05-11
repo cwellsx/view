@@ -1,16 +1,10 @@
 import React from "react";
 import * as ReactRouter from "react-router-dom";
-import { useLayout, Layout, loadingContents, loadingError } from "./PageLayout";
 import { Topbar } from "./components";
-import { Login } from "./pages/Login";
 import "ui-assets/css/App.css";
-import { Api, Route, Url, Data, SearchInput, config, loginUser } from "client";
+import { Route, config } from "client";
 import * as Page from "./pages";
-import { AppContext, useMe } from "./hooks";
-import { ErrorMessage } from "./ErrorMessage";
-import { NewDiscussion as NewDiscussionElement } from "./Editor";
-import { History } from "history";
-//import { Home, SiteMap } from "./pages2";
+import { AppContext, useCreateMe } from "./hooks";
 
 /*
   This defines the App's routes
@@ -18,10 +12,8 @@ import { History } from "history";
 */
 
 const App: React.FunctionComponent = () => {
-  // https://fettblog.eu/typescript-react/context/ and
-  // https://reactjs.org/docs/context.html#updating-context-from-a-nested-component
-  const autologin = config.autologin ? loginUser() : undefined;
-  const [me, setMe] = React.useState<Data.UserSummary | undefined>(autologin);
+  // pass the identity of the logged-in user to subcomponents via AppContext, instead of explicitly as parameter
+  const [me, setMe] = useCreateMe();
 
   document.title = `${config.appname}`;
 

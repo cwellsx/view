@@ -1,8 +1,7 @@
 import React from "react";
 import { Api } from "client";
 import { useFetchApi2, FetchingT } from "../hooks";
-import { getPage, FetchedT, ShowDataT } from "../layouts";
-import { Layout } from "../PageLayout";
+import { getPage, FetchedT, ShowDataT, Layout } from "../layouts";
 import { htmlToReact } from "../components";
 import { toHtml } from "client";
 

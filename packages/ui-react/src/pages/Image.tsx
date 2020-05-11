@@ -2,8 +2,7 @@ import React from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { Api, Url, Data } from "client";
 import { useFetchApi2, FetchingT } from "../hooks";
-import { getPage, FetchedT, ShowDataT } from "../layouts";
-import { Layout } from "../PageLayout";
+import { getPage, FetchedT, ShowDataT, Layout } from "../layouts";
 import { notFound } from "./NotFound";
 
 export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {

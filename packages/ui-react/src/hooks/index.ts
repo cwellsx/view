@@ -1,6 +1,6 @@
 export { useFetchApi, useFetchApi2 } from "./useFetchApi";
-//export type { FetchingT } from "./useFetchApi";
-export { AppContext, useMe, useSetMe } from "./useContext";
+export { AppContext, useMe, useSetMe, useCreateMe } from "./useContext";
+
 export interface FetchingT<TData, TParam2> {
   // type of data returned by the client API
   data: TData | undefined;

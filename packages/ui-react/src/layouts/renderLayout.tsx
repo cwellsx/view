@@ -1,99 +1,15 @@
 import React from "react";
 import "ui-assets/css/PageLayout.css";
 import { config } from "client";
-import * as Icon from "./icons";
+import * as Icon from "../icons";
 import { NavLink } from "react-router-dom";
 
-/*
-  This module renders content into a page layout (e.g. into one or more columns of various widths).
-  The Layout interface defines/contains the content to be layed out (and identifies which layout to use).
-  Functions in the App and Pages module create instances of Layout, and pass them to the renderLayout method.
-*/
-
-export interface KeyedItem {
-  element: React.ReactElement;
-  key: string;
-}
-
-// shown in the main column of the page, either a single element, or an array of elements shown as a list
-export type MainContent = ReadonlyArray<KeyedItem> | React.ReactElement | string;
-
-// optional content shown in a column to the right of the page; if present the right column can be shown or hidden
-interface RightContent {
-  element: React.ReactElement;
-  width: string;
-  showButtonLabel: string; // label on the button which is used to show or hide the column
-  visible: boolean;
-}
-
-// used e.g. for the user profile page, which has "Profile", "Edit", and "Activity" tabs
-export interface Tab {
-  navlink: { href: string; text: string }; // becomes a Navlink instance
-  content: MainContent;
-  subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
-  slug?: React.ReactElement;
-}
-export interface Tabs {
-  title: string; // sets document.title only ... the <h1> is in the tabbed content
-  selected: number; // index into tabbed
-  tabbed: Tab[];
-}
-
-// used e.g. for a discussion page, where you can sort the answers in either direction
-// the "subtabs" are displays as tabs, below the first element (e.g. below the question which stared the discussion)
-// or a "subtitle" is inserted into the heading above the first element, e.g. to display buttons on the discussions list
-export interface SubTabs {
-  text: string;
-  selected: number; // index into tabbed
-  tabs: { href: string; text: string }[]; // becomes a Navlink instance
-}
-
-// specifies the width of the main column
-type Width =
-  | "Full" // wide screen, no title, e.g. for images
-  | "Grid" // semi-wide grid e.g. for the lists of tags and user names, which are displayed as a grid
-  | "Closed" // semi-narrow text where horizontal rule touches vertical, e.g. for lists and site map
-  | "Open" // like "Closed" except horizontal rule doesn't touch vertical, e.g. for messages in a discussion
-  | "None"; // like "Closed" except no horizontal rule, e.g. for new discussion
-
-function isTabs(main: Tabs | any): main is Tabs {
-  return (main as Tabs).tabbed !== undefined;
-}
-
-export interface Layout {
-  main:
-    | Tabs
-    | {
-        title: string;
-        subtitle?: React.ReactElement;
-        footer?: React.ReactElement;
-        content: MainContent;
-        subTabs?: SubTabs; // feasible when MainContent is ReadonlyArray<KeyedItem>
-      };
-  width: Width;
-  right?: RightContent;
-}
+import { Layout, Tabs, SubTabs, RightContent } from "./Layout";
+import type { MainContent, Width } from "./Layout";
 
 /*
   Implementation details
 */
-
-export const loadingContents: Layout = {
-  main: { title: "Loading...", content: "..." },
-  width: "Closed",
-};
-
-export function loadingError(error: Error): Layout {
-  const url = (error as any).url;
-  const what = url ? <p>URL: "{url}"</p> : { undefined };
-  const content = (
-    <React.Fragment>
-      {what}
-      <p>Error: {error.message}</p>
-    </React.Fragment>
-  );
-  return { main: { title: "Error", content }, width: "Open" };
-}
 
 function setTitle(title: string): void {
   document.title = `${title} - ${config.appname}`;
@@ -242,6 +158,10 @@ function renderRightColumn(right?: RightContent) {
   );
 
   return { rightColumn, rightButton };
+}
+
+function isTabs(main: Tabs | any): main is Tabs {
+  return (main as Tabs).tabbed !== undefined;
 }
 
 function switchLayout(layout: Layout) {

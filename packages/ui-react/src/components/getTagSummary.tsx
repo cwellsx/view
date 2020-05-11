@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Url, Data } from "client";
-import { KeyedItem } from "../PageLayout";
+import type { KeyedItem } from "../layouts";
 
 const nbsp = "\u00A0";
 

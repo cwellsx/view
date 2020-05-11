@@ -1,5 +1,10 @@
+import React from "react";
 import { FetchingT } from "../hooks";
-import { renderLayout, Layout, loadingContents, loadingError } from "../PageLayout";
+import { renderLayout } from "./renderLayout";
+import { Layout } from "./Layout";
+
+export { renderLayout } from "./renderLayout";
+export type { Layout, Tab, Tabs, SubTabs, RightContent, MainContent, Width, KeyedItem } from "./Layout";
 
 export interface FetchedT<TData, TParam2> {
   data: TData;
@@ -22,4 +27,21 @@ export function getPage<TData, TParam2>(
     : loadingContents; // else no data yet to render
 
   return renderLayout(layout);
+}
+
+const loadingContents: Layout = {
+  main: { title: "Loading...", content: "..." },
+  width: "Closed",
+};
+
+function loadingError(error: Error): Layout {
+  const url = (error as any).url;
+  const what = url ? <p>URL: "{url}"</p> : { undefined };
+  const content = (
+    <React.Fragment>
+      {what}
+      <p>Error: {error.message}</p>
+    </React.Fragment>
+  );
+  return { main: { title: "Error", content }, width: "Open" };
 }

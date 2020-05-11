@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Url, Data, toHtml } from "client";
-import { KeyedItem } from "../PageLayout";
+import type { KeyedItem } from "../layouts";
 
 export function getImageSummary(summary: Data.ImageSummary): KeyedItem {
   const href = Url.getImageUrl(summary);

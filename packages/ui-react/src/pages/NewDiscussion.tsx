@@ -3,7 +3,7 @@ import { RouteComponentProps, NavLink, Link } from "react-router-dom";
 import { Api, Url, Data, toHtml, config } from "client";
 import { useFetchApi2, FetchingT, useMe } from "../hooks";
 import { getPage, FetchedT, ShowDataT } from "../layouts";
-import { Layout, renderLayout } from "../PageLayout";
+import { Layout, renderLayout } from "../layouts";
 import { notFound } from "./NotFound";
 import { History } from "history";
 import { NewDiscussion as NewDiscussionElement } from "../Editor";

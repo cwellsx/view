@@ -1,5 +1,5 @@
 import React from "react";
-import { useLayout, Layout } from "../PageLayout";
+import { renderLayout, Layout } from "../layouts";
 import { Data, Api, Post } from "client";
 import { useSetMe } from "../hooks";
 import { ValidatedState, createValidated, Input, createInitialState, useReducer0 } from "../ErrorMessage";
@@ -72,5 +72,5 @@ export const Login: React.FunctionComponent = () => {
     </React.Fragment>
   );
   const layout: Layout = { main: { content, title: "Login" }, width: "Open" };
-  return useLayout(layout);
+  return renderLayout(layout);
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { Data, toHtml } from "client";
-import { KeyedItem } from "../PageLayout";
+import type { KeyedItem } from "../layouts";
 
 import { getTags } from "./getTags";
 import { toLocaleString } from "./toLocaleString";

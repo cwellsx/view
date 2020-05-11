@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Url, Data } from "client";
-import { KeyedItem } from "../PageLayout";
+import type { KeyedItem } from "../layouts";
 
 import { toLocaleString } from "./toLocaleString";
 import { getWhen } from "./getWhen";
