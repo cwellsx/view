@@ -1,6 +1,6 @@
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
-import { ErrorMessage } from "../ErrorMessage";
+import { ErrorMessage } from "../components";
 
 export const NotFound: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   return notFound(props);

@@ -1,21 +1,11 @@
-import React, { useEffect } from "react";
-import "pagedown-editor/sample-bundle";
-import "pagedown-editor/pagedown.css";
-import "ui-assets/css/Editor.css";
-import { Api, Data, Url, Post, config } from "client";
-import { EditorTags, OutputTags } from "../EditorTags";
+import { Api, Data, Post, Url } from "client";
 import { History } from "history";
+import "pagedown-editor/pagedown.css";
+import "pagedown-editor/sample-bundle";
+import React from "react";
+import "ui-assets/css/Editor.css";
+import { Input, useValidatedInput } from "../hooks";
 import { Editor } from "./Editor";
-import {
-  ValidatedState,
-  createValidated,
-  Input,
-  createInitialState,
-  useReducer,
-  useReducer0,
-  ValidatedEditorProps,
-  Validated,
-} from "../ErrorMessage";
 
 // this is a separate function component instead of just being incide the getSettingsContent function
 // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
@@ -31,62 +21,63 @@ interface EditUserSettingsProps {
 export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = (props: EditUserSettingsProps) => {
   type T = Post.EditUserProfile;
 
-  function initialState(initialData: EditUserSettingsProps): ValidatedState<T> {
-    const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
-      [
-        "name",
-        {
-          label: "Display name",
-          options: {},
-          create: { type: "input", placeholder: "required", attributes: {} },
-        },
-      ],
-      [
-        "location",
-        {
-          label: "Location (optional)",
-          options: { optional: true },
-          create: { type: "input", placeholder: "optional", attributes: {} },
-        },
-      ],
-      [
-        "email",
-        {
-          label: "Email",
-          options: {},
-          create: { type: "input", placeholder: "required", attributes: {} },
-        },
-      ],
-      [
-        "aboutMe",
-        {
-          label: "About me",
-          options: { optional: true },
-          create: { type: "editor", editor: Editor },
-        },
-      ],
-    ]);
-    // reuse the default values for the initial state
-    const { name, location, email, aboutMe } = initialData;
-    const state: T = {
-      name,
-      location: location ? location : "",
-      email,
-      aboutMe: aboutMe ? aboutMe : "",
-    };
-    return createInitialState(inputs, state);
-  }
-
-  const [state, dispatch] = useReducer<T, EditUserSettingsProps>(props, (x: EditUserSettingsProps) => initialState(x));
+  const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
+    [
+      "name",
+      {
+        label: "Display name",
+        options: {},
+        create: { type: "input", placeholder: "required", attributes: {} },
+      },
+    ],
+    [
+      "location",
+      {
+        label: "Location (optional)",
+        options: { optional: true },
+        create: { type: "input", placeholder: "optional", attributes: {} },
+      },
+    ],
+    [
+      "email",
+      {
+        label: "Email",
+        options: {},
+        create: { type: "input", placeholder: "required", attributes: {} },
+      },
+    ],
+    [
+      "aboutMe",
+      {
+        label: "About me",
+        options: { optional: true },
+        create: { type: "editor", editor: Editor },
+      },
+    ],
+  ]);
+  // reuse the default values for the initial state
+  const { name, location, email, aboutMe } = props;
+  const initialState: T = {
+    name,
+    location: location ? location : "",
+    email,
+    aboutMe: aboutMe ? aboutMe : "",
+  };
+  const buttonText = { label: "Save Changes", noun: "changed settings" };
+  const { currentState, isError, button, mapInputs, onSubmitError } = useValidatedInput<T>(
+    inputs,
+    initialState,
+    buttonText
+  );
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (state.errorMessages.size) {
+    if (isError) {
       // error messages are already displayed
       return;
     }
     // post edited profile to the server
-    Api.editUserProfile(props.userId, state.posted)
+    Api.editUserProfile(props.userId, currentState)
       .then((idName: Data.IdName) => {
         // construct the URL of the newly-edited user
         const url = Url.getUserUrl(idName);
@@ -95,12 +86,8 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
         props.history.push(url);
       })
-      .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
+      .catch(onSubmitError);
   }
-
-  // created the validated elements and the submit button
-  const buttonText = { label: "Save Changes", noun: "changed settings" };
-  const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
 
   return (
     <form className="editor settings" onSubmit={handleSubmit}>

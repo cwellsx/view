@@ -1,6 +1,7 @@
 export { useFetchApi, useFetchApi2 } from "./useFetchApi";
 export { AppContext, useMe, useSetMe, useCreateMe } from "./useContext";
-
+export { useValidatedInput } from "./useValidatedInput";
+export type { Input } from "./useValidatedInput";
 export interface FetchingT<TData, TParam2> {
   // type of data returned by the client API
   data: TData | undefined;

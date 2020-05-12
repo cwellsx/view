@@ -4,7 +4,7 @@ import "ui-assets/css/EditorTags.css";
 // also to display a little '(!)' SVG -- an Error icon which is displayed in the element, if there's a validation error
 import * as Icon from "./icons";
 // this simply displays red text if non-empty text is passed to its errorMessage property
-import { ErrorMessage } from "./ErrorMessage";
+import { ErrorMessage } from "./components";
 
 // these are the properties of an existing tag, used or displayed by the TagDictionary
 interface TagCount {

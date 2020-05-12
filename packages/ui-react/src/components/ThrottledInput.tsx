@@ -1,5 +1,5 @@
 import React from "react";
-import { ErrorMessage } from "../ErrorMessage";
+import { ErrorMessage } from "./ErrorMessage";
 import { SearchInput } from "client";
 
 /*

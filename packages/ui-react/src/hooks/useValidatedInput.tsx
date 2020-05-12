@@ -1,78 +1,12 @@
 import React from "react";
 import "ui-assets/css/ErrorMessage.css";
-import * as Icon from "./icons";
-
-/*
-  Simple component to show an error message (or not if there isn't one)
-*/
-
-interface ErrorMessageProps {
-  errorMessage?: string;
-  bold?: boolean;
-}
-
-export const ErrorMessage: React.FunctionComponent<ErrorMessageProps> = (props: ErrorMessageProps) => {
-  const className: string = (props.errorMessage ? "error" : "hidden") + (props.bold ? " bold" : "");
-  return <p className={className}>{props.errorMessage}</p>;
-};
+import { ErrorMessage, Label, createLabel } from "../components";
+import { Validated } from "../components";
+import { ValidatedEditorProps } from "../forms/Editor";
 
 /*
   Component to display an <input> or <taxarea> element with a validation error message
 */
-
-type ValidatedProps = ErrorMessageProps & {
-  // https://fettblog.eu/typescript-react/children/
-  // https://github.com/donaldpipowitch/typed-react-children-with-typescript
-  children: React.ReactElement;
-};
-
-export const Validated = (props: ValidatedProps) => {
-  const { errorMessage } = props;
-
-  // https://stackoverflow.com/questions/36750387/react-adding-props-to-an-existing-component
-  const className = !props.children.props.className ? "invalid" : "invalid " + props.children.props.className;
-  const child = !errorMessage ? props.children : React.cloneElement(props.children, { className });
-  const icon = !errorMessage ? undefined : <Icon.Error className="error" fill="#dc3d4c" />;
-  return (
-    <React.Fragment>
-      <div className="validated">
-        {child}
-        {icon}
-      </div>
-      <ErrorMessage errorMessage={errorMessage} />
-    </React.Fragment>
-  );
-};
-
-/*
-  State to contain the data for validated elements
-
-  Assume that input is collected to be posted to the server in an object of type T.
-*/
-
-export interface Label {
-  element?: React.ReactElement;
-  name?: string;
-}
-
-function createLabel(label: string, hideLabel?: boolean): Label {
-  if (hideLabel) {
-    return { name: undefined, element: undefined };
-  }
-  const name = label
-    .replace(/[^A-Za-z0-9 ]/, "")
-    .replace(/ /g, "-")
-    .toLocaleLowerCase();
-  const element = <label htmlFor={name}>{label}</label>;
-  return { name, element };
-}
-
-export interface ValidatedEditorProps {
-  label: Label;
-  defaultValue?: string;
-  errorMessage?: string;
-  handleChange: (newValue: string) => void;
-}
 
 type CreateInput = {
   type: "input";
@@ -90,6 +24,11 @@ type CreateEditor = {
 };
 type CreateAny = CreateInput | CreateTextArea | CreateEditor;
 
+interface ValidationOptions {
+  optional?: boolean;
+  minLength?: number;
+}
+
 export interface Input {
   label: string;
   hideLabel?: boolean;
@@ -97,7 +36,43 @@ export interface Input {
   create: CreateAny;
 }
 
-export interface ValidatedState<T extends object> {
+export function useValidatedInput<T extends object>(
+  inputs: Map<keyof T, Input>,
+  initialState: T,
+  buttonText: { label: string; noun: string }
+): {
+  currentState: T;
+  isError: boolean;
+  isAfterSubmit: boolean;
+  button: React.ReactElement;
+  mapInputs: Map<keyof T, React.ReactElement>;
+  onSubmitError: (error: Error) => void;
+} {
+  // ideally TypeScript could deduce the type arguments of React.useReducer from the parameters passed to it
+  // but it gets confused if we don't specify those arguments, perhaps because the parameters are themselves generic,
+  const [state, dispatch] = React.useReducer<React.Reducer<ValidatedState<T>, Action<T>>>(
+    reducer,
+    createInitialState(inputs, initialState)
+  );
+  const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
+  const onSubmitError = (error: Error) => dispatch({ key: "onSubmitError", newValue: error.message });
+  return {
+    currentState: state.posted,
+    isError: state.errorMessages.size != 0,
+    isAfterSubmit: state.isAfterSubmit,
+    button,
+    mapInputs,
+    onSubmitError,
+  };
+}
+
+/*
+  State to contain the data for validated elements
+
+  Assume that input/initial data values of type T will to be posted to the server in an object of type T.
+*/
+
+interface ValidatedState<T extends object> {
   // initial state defines the initial defaultValue for each input element
   defaultValues: T;
   // edited state to be posted
@@ -107,12 +82,12 @@ export interface ValidatedState<T extends object> {
   // could define input elsewhere, but it's convenient to define it here in state where it's accessible to dispatcher
   inputs: Map<keyof T, Input>;
   // don't display validation errors until after first submit attempt
-  onSubmit: boolean;
+  isAfterSubmit: boolean;
   // summary of other validation errors, displayed next to the submit button
   onSubmitError: string | undefined;
 }
 
-export function createInitialState<T extends object>(inputs: Map<keyof T, Input>, state: T): ValidatedState<T> {
+function createInitialState<T extends object>(inputs: Map<keyof T, Input>, state: T): ValidatedState<T> {
   const errorMessages = new Map<keyof T, string>();
   // test the initial validity of each value (which will be recalculated onChange)
   inputs.forEach((input, key) => {
@@ -131,7 +106,7 @@ export function createInitialState<T extends object>(inputs: Map<keyof T, Input>
     defaultValues: state,
     errorMessages,
     inputs,
-    onSubmit: false,
+    isAfterSubmit: false,
     onSubmitError: undefined,
   };
 }
@@ -140,26 +115,14 @@ export function createInitialState<T extends object>(inputs: Map<keyof T, Input>
   A reducer for the above state
 */
 
-export function useReducer<T extends object, TData>(initData: TData, initializer: (arg: TData) => ValidatedState<T>) {
-  // ideally TypeScript could deduce the type arguments of React.useReducer from the parameters passed to it
-  // but it gets confused if we don't specify those arguments, perhaps because the parameters are themselves generic
-  return React.useReducer<React.Reducer<ValidatedState<T>, Action<T>>, TData>(reducer, initData, initializer);
-}
-
-export function useReducer0<T extends object>(initializer: () => ValidatedState<T>) {
-  // ideally TypeScript could deduce the type arguments of React.useReducer from the parameters passed to it
-  // but it gets confused if we don't specify those arguments, perhaps because the parameters are themselves generic
-  return React.useReducer<React.Reducer<ValidatedState<T>, Action<T>>, undefined>(reducer, undefined, initializer);
-}
-
-export type Action<T extends object> = {
+type Action<T extends object> = {
   key: keyof T | "onSubmit" | "onSubmitError";
   newValue: string;
 };
 
-export function reducer<T extends object>(old: ValidatedState<T>, action: Action<T>): ValidatedState<T> {
+function reducer<T extends object>(old: ValidatedState<T>, action: Action<T>): ValidatedState<T> {
   const { key, newValue } = action;
-  let { posted, errorMessages, onSubmit, onSubmitError, defaultValues } = old;
+  let { posted, errorMessages, isAfterSubmit: onSubmit, onSubmitError, defaultValues } = old;
   if (key === "onSubmit") {
     onSubmit = true;
   } else if (key === "onSubmitError") {
@@ -189,7 +152,7 @@ export function reducer<T extends object>(old: ValidatedState<T>, action: Action
     posted,
     errorMessages,
     inputs: old.inputs,
-    onSubmit,
+    isAfterSubmit: onSubmit,
     onSubmitError,
     defaultValues,
   };
@@ -199,7 +162,7 @@ export function reducer<T extends object>(old: ValidatedState<T>, action: Action
   A factory which creates Validated elements (and a Validated submit button) from the above input
 */
 
-export function createValidated<T extends object>(
+function createValidated<T extends object>(
   state: ValidatedState<T>,
   dispatch: React.Dispatch<Action<T>>,
   buttonText: { label: string; noun: string }
@@ -215,7 +178,7 @@ export function createValidated<T extends object>(
     // create the label
     const label = createLabel(input.label, input.hideLabel);
     // and other input parameters
-    const errorMessage: string | undefined = !state.onSubmit ? undefined : state.errorMessages.get(key);
+    const errorMessage: string | undefined = !state.isAfterSubmit ? undefined : state.errorMessages.get(key);
     const { create } = input;
     const defaultValue = "" + state.defaultValues[key];
     // created the Validated and its child
@@ -244,7 +207,7 @@ export function createValidated<T extends object>(
     const error = countErrors === 1 ? "error" : "errors";
     const rc: string | undefined = state.onSubmitError
       ? state.onSubmitError
-      : !state.onSubmit || !countErrors
+      : !state.isAfterSubmit || !countErrors
       ? undefined
       : `Your ${buttonText.noun} couldn't be submitted. Please see the ${error} above.`;
     return rc;
@@ -301,15 +264,10 @@ function createChild(
 }
 
 /*
-  Function to define standard validation options
+  Function to define standard validation options, called from createInitialState and from reducer
 */
 
-export interface ValidationOptions {
-  optional?: boolean;
-  minLength?: number;
-}
-
-export function validate(value: string, options: ValidationOptions, label: string): string | undefined {
+function validate(value: string, options: ValidationOptions, label: string): string | undefined {
   const isOptional = !!options.optional;
   if (!isOptional && (!value || value === "")) {
     return `${label} is missing.`;

@@ -1,20 +1,15 @@
-import React, { useEffect } from "react";
-import "pagedown-editor/sample-bundle";
 import "pagedown-editor/pagedown.css";
+import "pagedown-editor/sample-bundle";
+import React, { useEffect } from "react";
 import "ui-assets/css/Editor.css";
-import { Api, Data, Url, Post, config } from "client";
-import { EditorTags, OutputTags } from "../EditorTags";
-import { History } from "history";
-import {
-  ValidatedState,
-  createValidated,
-  Input,
-  createInitialState,
-  useReducer,
-  useReducer0,
-  ValidatedEditorProps,
-  Validated,
-} from "../ErrorMessage";
+import { Label, Validated } from "../components";
+
+export interface ValidatedEditorProps {
+  label: Label;
+  defaultValue?: string;
+  errorMessage?: string;
+  handleChange: (newValue: string) => void;
+}
 
 export const Editor = (props: ValidatedEditorProps) => {
   const { label, handleChange, defaultValue, errorMessage } = props;

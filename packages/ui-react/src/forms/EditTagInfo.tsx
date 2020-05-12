@@ -1,21 +1,11 @@
-import React, { useEffect } from "react";
-import "pagedown-editor/sample-bundle";
-import "pagedown-editor/pagedown.css";
-import "ui-assets/css/Editor.css";
-import { Api, Data, Url, Post, config } from "client";
-import { EditorTags, OutputTags } from "../EditorTags";
+import { Api, Data, Post, Url } from "client";
 import { History } from "history";
+import "pagedown-editor/pagedown.css";
+import "pagedown-editor/sample-bundle";
+import React from "react";
+import "ui-assets/css/Editor.css";
+import { Input, useValidatedInput } from "../hooks";
 import { Editor } from "./Editor";
-import {
-  ValidatedState,
-  createValidated,
-  Input,
-  createInitialState,
-  useReducer,
-  useReducer0,
-  ValidatedEditorProps,
-  Validated,
-} from "../ErrorMessage";
 
 /*
   There's no README in the https://github.com/StackExchange/pagedown repo
@@ -38,53 +28,55 @@ export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: Ed
 
   const { min: minLength, max: maxLength } = Data.tagSummaryLength;
 
-  function initialState(initialData: EditTagInfoProps): ValidatedState<T> {
-    const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
-      [
-        "summary",
-        {
-          label: "Summary",
-          options: { minLength },
-          create: {
-            type: "textarea",
-            placeholder: "",
-            attributes: { rows: 7, maxLength },
-          },
+  const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
+    [
+      "summary",
+      {
+        label: "Summary",
+        options: { minLength },
+        create: {
+          type: "textarea",
+          placeholder: "",
+          attributes: { rows: 7, maxLength },
         },
-      ],
-      [
-        "markdown",
-        {
-          label: "Description",
-          options: { optional: true },
-          create: { type: "editor", editor: Editor },
-        },
-      ],
-    ]);
-    // reuse the default values for the initial state
-    const { summary, markdown } = initialData;
-    const state: T = {
-      summary: summary ? summary : "",
-      markdown: markdown ? markdown : "",
-    };
-    return createInitialState(inputs, state);
-  }
+      },
+    ],
+    [
+      "markdown",
+      {
+        label: "Description",
+        options: { optional: true },
+        create: { type: "editor", editor: Editor },
+      },
+    ],
+  ]);
+  // reuse the default values for the initial state
+  const { summary, markdown } = props;
+  const initialState: T = {
+    summary: summary ? summary : "",
+    markdown: markdown ? markdown : "",
+  };
 
-  const [state, dispatch] = useReducer<T, EditTagInfoProps>(props, (x: EditTagInfoProps) => initialState(x));
+  const buttonText = { label: "Save Edits", noun: "post" };
+  const { currentState, isError, button, mapInputs, onSubmitError } = useValidatedInput<T>(
+    inputs,
+    initialState,
+    buttonText
+  );
 
   function getSummaryHint(): string {
-    const count: number = maxLength - state.posted.summary.length;
+    const count: number = maxLength - currentState.summary.length;
     return `${count} characters left`;
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (state.errorMessages.size) {
+    if (isError) {
       // error messages are already displayed
       return;
     }
     // post edited profile to the server
-    Api.editTagInfo(props.tag, state.posted)
+    Api.editTagInfo(props.tag, currentState)
       .then((tag: Data.Key) => {
         // construct the URL of the newly-edited user
         const url = Url.getTagInfoUrl(tag);
@@ -93,12 +85,8 @@ export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: Ed
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
         props.history.push(url);
       })
-      .catch((error: Error) => dispatch({ key: "onSubmitError", newValue: error.message }));
+      .catch(onSubmitError);
   }
-
-  // created the validated elements and the submit button
-  const buttonText = { label: "Save Edits", noun: "post" };
-  const { mapInputs, button } = createValidated<T>(state, dispatch, buttonText);
 
   return (
     <form className="editor tag-wiki" onSubmit={handleSubmit}>
