@@ -4,7 +4,7 @@ import { Api, Url, Data } from "client";
 import { useFetchApi2 } from "../hooks";
 import { getPage, FetchedT, Layout, KeyedItem, SubTabs } from "../layouts";
 import { notFound } from "./NotFound";
-import { AnswerDiscussion } from "../Editor";
+import { AnswerDiscussion } from "../forms";
 import { getFirstMessage, getNextMessage, getPageNavLinks } from "../components";
 
 export const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {

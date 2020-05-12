@@ -5,7 +5,7 @@ import { useFetchApi2 } from "../hooks";
 import { getPage, FetchedT, ShowDataT, Layout } from "../layouts";
 import { notFound } from "./NotFound";
 import { History } from "history";
-import { EditTagInfo } from "../Editor";
+import { EditTagInfo } from "../forms";
 import { getDiscussionsSubtitle } from "../components";
 
 export const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {

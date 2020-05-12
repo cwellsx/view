@@ -5,7 +5,7 @@ import { useFetchApi2, FetchingT, useMe } from "../hooks";
 import { getPage, FetchedT, ShowDataT, Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../layouts";
 import { notFound } from "./NotFound";
 import { History } from "history";
-import { EditUserSettings } from "../Editor";
+import { EditUserSettings } from "../forms";
 import { getUserSummary, getTagCount, getDiscussionSummary } from "../components";
 import * as Icon from "../icons";
 

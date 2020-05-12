@@ -17,4 +17,8 @@ export const config = {
     maximum: true,
     canNewTag: false,
   },
+  minLengths: {
+    title: 15,
+    body: 30,
+  },
 };
