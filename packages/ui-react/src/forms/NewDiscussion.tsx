@@ -1,12 +1,9 @@
 import { Api, config, Data, Post, Url } from "client";
 import { History } from "history";
-import "pagedown-editor/pagedown.css";
-import "pagedown-editor/sample-bundle";
 import React from "react";
-import "ui-assets/css/Editor.css";
-import { EditorTags, OutputTags } from "../EditorTags";
+import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
-import { Editor } from "./Editor";
+import { EditorTags, OutputTags } from "./EditorTags";
 
 type NewDiscussionProps = { history: History };
 export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props: NewDiscussionProps) => {

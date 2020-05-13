@@ -1,8 +1,9 @@
 import "pagedown-editor/pagedown.css";
 import "pagedown-editor/sample-bundle";
-import React, { useEffect } from "react";
+import React from "react";
 import "ui-assets/css/Editor.css";
 import { Label, Validated } from "../components";
+import { usePagedownEditor } from "../hooks";
 
 export interface ValidatedEditorProps {
   label: Label;
@@ -14,20 +15,13 @@ export interface ValidatedEditorProps {
 export const Editor = (props: ValidatedEditorProps) => {
   const { label, handleChange, defaultValue, errorMessage } = props;
 
-  // calling reload() will force a re-render, so useEffect will run again, but if getPagedownEditor().run() is called
+  // calling reload() will force a re-render, but if getPagedownEditor().run() is called
   // more than once then bad things happen e.g. there would be more than one editor toolbar
-  const [once, setOnce] = React.useState<boolean>(false);
 
   // the original code embedded a <script> tag to run getPagedownEditor().run()
   // but if we do that then that will run before these React elements are rendered
   // so use the effect hook to specify somethng to be run after it's rendered
-  useEffect(() => {
-    // getPagedownEditor was added to the window object by the pagedown-editor/sample-bundle.js
-    if (!once) {
-      (window as any).getPagedownEditor().run();
-      setOnce(true);
-    }
-  }, [once]);
+  usePagedownEditor();
 
   const validated = (
     <React.Fragment>

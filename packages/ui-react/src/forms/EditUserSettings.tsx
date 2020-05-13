@@ -1,11 +1,8 @@
 import { Api, Data, Post, Url } from "client";
 import { History } from "history";
-import "pagedown-editor/pagedown.css";
-import "pagedown-editor/sample-bundle";
 import React from "react";
-import "ui-assets/css/Editor.css";
+import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
-import { Editor } from "./Editor";
 
 // this is a separate function component instead of just being incide the getSettingsContent function
 // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)

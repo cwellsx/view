@@ -1,11 +1,8 @@
 import { Api, Data, Post, Url } from "client";
 import { History } from "history";
-import "pagedown-editor/pagedown.css";
-import "pagedown-editor/sample-bundle";
 import React from "react";
-import "ui-assets/css/Editor.css";
+import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
-import { Editor } from "./Editor";
 
 /*
   There's no README in the https://github.com/StackExchange/pagedown repo

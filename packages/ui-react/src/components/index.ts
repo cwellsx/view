@@ -6,6 +6,10 @@
 
 import "ui-assets/css/Components.css";
 
+export { Editor } from "./Editor";
+export type { ValidatedEditorProps } from "./Editor";
+export { ErrorMessage } from "./ErrorMessage";
+export type { ErrorMessageProps } from "./ErrorMessage";
 export { getDiscussionsSubtitle } from "./getDiscussionsSubtitle";
 export { getDiscussionSummary } from "./getDiscussionSummary";
 export { getImageSummary } from "./getImageSummary";
@@ -21,8 +25,6 @@ export { getUserSummary } from "./getUserSummary";
 export type { GravatarSize } from "./getUserSummary";
 export { getWhen } from "./getWhen";
 export { htmlToReact } from "./htmlToReact";
-export { ErrorMessage } from "./ErrorMessage";
-export type { ErrorMessageProps } from "./ErrorMessage";
 export { createLabel } from "./Label";
 export type { Label } from "./Label";
 export { ThrottledInput } from "./ThrottledInput";

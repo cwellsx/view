@@ -1,10 +1,7 @@
 import { Api, config, Data, Post } from "client";
-import "pagedown-editor/pagedown.css";
-import "pagedown-editor/sample-bundle";
 import React from "react";
-import "ui-assets/css/Editor.css";
+import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
-import { Editor } from "./Editor";
 
 interface AnswerDiscussionProps {
   discussionId: number;

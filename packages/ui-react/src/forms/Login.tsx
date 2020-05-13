@@ -1,8 +1,5 @@
 import { Api, Data, Post } from "client";
-import "pagedown-editor/pagedown.css";
-import "pagedown-editor/sample-bundle";
 import React from "react";
-import "ui-assets/css/Editor.css";
 import "ui-assets/css/Login.css";
 import { Input, useSetMe, useValidatedInput } from "../hooks";
 

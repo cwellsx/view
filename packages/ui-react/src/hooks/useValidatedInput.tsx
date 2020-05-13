@@ -1,8 +1,7 @@
 import React from "react";
 import "ui-assets/css/ErrorMessage.css";
-import { ErrorMessage, Label, createLabel } from "../components";
+import { ErrorMessage, Label, createLabel, ValidatedEditorProps } from "../components";
 import { Validated } from "../components";
-import { ValidatedEditorProps } from "../forms/Editor";
 
 /*
   Component to display an <input> or <taxarea> element with a validation error message
@@ -58,7 +57,7 @@ export function useValidatedInput<T extends object>(
   const onSubmitError = (error: Error) => dispatch({ key: "onSubmitError", newValue: error.message });
   return {
     currentState: state.posted,
-    isError: state.errorMessages.size != 0,
+    isError: state.errorMessages.size !== 0,
     isAfterSubmit: state.isAfterSubmit,
     button,
     mapInputs,
