@@ -1,7 +1,6 @@
 import { Api, Data, Post, Url } from "client";
 import { History } from "history";
 import React from "react";
-import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
 
 // this is a separate function component instead of just being incide the getSettingsContent function
@@ -48,7 +47,7 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
       {
         label: "About me",
         options: { optional: true },
-        create: { type: "editor", editor: Editor },
+        create: { type: "editor" },
       },
     ],
   ]);

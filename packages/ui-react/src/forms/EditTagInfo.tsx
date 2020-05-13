@@ -1,7 +1,6 @@
 import { Api, Data, Post, Url } from "client";
 import { History } from "history";
 import React from "react";
-import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
 
 /*
@@ -43,7 +42,7 @@ export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: Ed
       {
         label: "Description",
         options: { optional: true },
-        create: { type: "editor", editor: Editor },
+        create: { type: "editor" },
       },
     ],
   ]);

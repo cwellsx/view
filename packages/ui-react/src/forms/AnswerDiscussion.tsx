@@ -1,6 +1,5 @@
 import { Api, config, Data, Post } from "client";
 import React from "react";
-import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
 
 interface AnswerDiscussionProps {
@@ -18,7 +17,7 @@ export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = 
         label: "Body",
         hideLabel: true,
         options: { minLength: config.minLengths.body },
-        create: { type: "editor", editor: Editor },
+        create: { type: "editor" },
       },
     ],
   ]);

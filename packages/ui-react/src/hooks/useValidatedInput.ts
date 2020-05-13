@@ -1,27 +1,10 @@
 import React from "react";
 import "ui-assets/css/ErrorMessage.css";
-import { ErrorMessage, Label, createLabel, ValidatedEditorProps } from "../components";
-import { Validated } from "../components";
+import { CreateAny, createChild, createLabel, getSubmitButton } from "../components";
 
 /*
   Component to display an <input> or <taxarea> element with a validation error message
 */
-
-type CreateInput = {
-  type: "input";
-  placeholder: string;
-  attributes: React.InputHTMLAttributes<HTMLInputElement>;
-};
-type CreateTextArea = {
-  type: "textarea";
-  placeholder: string;
-  attributes: React.TextareaHTMLAttributes<HTMLTextAreaElement>;
-};
-type CreateEditor = {
-  type: "editor";
-  editor: (props: ValidatedEditorProps) => React.ReactElement;
-};
-type CreateAny = CreateInput | CreateTextArea | CreateEditor;
 
 interface ValidationOptions {
   optional?: boolean;
@@ -170,7 +153,7 @@ function createValidated<T extends object>(
   button: React.ReactElement;
 } {
   // created a Validated element for each key
-  const rc: Map<keyof T, React.ReactElement> = new Map<keyof T, React.ReactElement>();
+  const mapInputs: Map<keyof T, React.ReactElement> = new Map<keyof T, React.ReactElement>();
   state.inputs.forEach((input, key) => {
     // the child's onChange handler goes into the dispatcher with an added key
     const handleChange: (newValue: string) => void = (newValue: string) => dispatch({ key, newValue });
@@ -181,24 +164,8 @@ function createValidated<T extends object>(
     const { create } = input;
     const defaultValue = "" + state.defaultValues[key];
     // created the Validated and its child
-    if (create.type === "editor") {
-      const validated: React.ReactElement = create.editor({
-        label,
-        handleChange,
-        defaultValue,
-        errorMessage,
-      });
-      rc.set(key, validated);
-    } else {
-      const child = createChild(create, defaultValue, handleChange, label);
-      const validated = (
-        <React.Fragment>
-          {label.element}
-          <Validated errorMessage={errorMessage}>{child}</Validated>
-        </React.Fragment>
-      );
-      rc.set(key, validated);
-    }
+    const validated = createChild(create, defaultValue, handleChange, label, errorMessage);
+    mapInputs.set(key, validated);
   });
   // also create a button
   function getButtonError(state: ValidatedState<T>): string | undefined {
@@ -211,55 +178,12 @@ function createValidated<T extends object>(
       : `Your ${buttonText.noun} couldn't be submitted. Please see the ${error} above.`;
     return rc;
   }
-  function handleClick(e: React.MouseEvent): void {
-    dispatch({ key: "onSubmit", newValue: "" });
-  }
-  const buttonError = getButtonError(state);
-  const button = (
-    <div>
-      <input type="submit" value={buttonText.label} onClick={handleClick} />
-      <ErrorMessage errorMessage={buttonError} bold={true} />
-    </div>
+  const button = getSubmitButton(
+    buttonText.label,
+    () => dispatch({ key: "onSubmit", newValue: "" }),
+    getButtonError(state)
   );
-  return { mapInputs: rc, button };
-}
-
-function createChild(
-  create: CreateAny,
-  defaultValue: string | undefined,
-  handleChange: (newValue: string) => void,
-  label: Label
-): React.ReactElement {
-  switch (create.type) {
-    case "input": {
-      const attributes = create.attributes;
-      const type = attributes.type ? attributes.type : "text";
-      return (
-        <input
-          type={type}
-          {...attributes}
-          name={label.name}
-          placeholder={create.placeholder}
-          defaultValue={defaultValue}
-          onChange={(e) => handleChange(e.target.value)}
-        />
-      );
-    }
-    case "textarea": {
-      const attributes = create.attributes;
-      return (
-        <textarea
-          {...attributes}
-          name={label.name}
-          placeholder={create.placeholder}
-          defaultValue={defaultValue}
-          onChange={(e) => handleChange(e.target.value)}
-        />
-      );
-    }
-    default:
-      throw new Error("Unexpected type");
-  }
+  return { mapInputs, button };
 }
 
 /*

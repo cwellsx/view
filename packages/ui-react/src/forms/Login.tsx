@@ -29,7 +29,7 @@ export const Login: React.FunctionComponent = () => {
   // reuse the default values for the initial state
   const initialState: T = { userName: "", password: "" };
   const buttonText = { label: "Submit", noun: "login" };
-  const { currentState, isError, isAfterSubmit, button, mapInputs, onSubmitError } = useValidatedInput<T>(
+  const { currentState, isError, button, mapInputs, onSubmitError } = useValidatedInput<T>(
     inputs,
     initialState,
     buttonText

@@ -6,6 +6,8 @@
 
 import "ui-assets/css/Components.css";
 
+export { createChild } from "./createChild";
+export type { CreateAny } from "./createChild";
 export { Editor } from "./Editor";
 export type { ValidatedEditorProps } from "./Editor";
 export { ErrorMessage } from "./ErrorMessage";
@@ -16,6 +18,7 @@ export { getImageSummary } from "./getImageSummary";
 export { getFirstMessage, getNextMessage } from "./getMessage";
 export { getNavLinks } from "./getNavLinks";
 export { getPageNavLinks } from "./getPageNavLinks";
+export { getSubmitButton } from "./getSubmitButton";
 export { getTagCount } from "./getTagCount";
 export { getTagLink } from "./getTagLink";
 export { getTags } from "./getTags";

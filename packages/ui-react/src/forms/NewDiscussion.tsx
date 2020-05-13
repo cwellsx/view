@@ -1,7 +1,6 @@
 import { Api, config, Data, Post, Url } from "client";
 import { History } from "history";
 import React from "react";
-import { Editor } from "../components";
 import { Input, useValidatedInput } from "../hooks";
 import { EditorTags, OutputTags } from "./EditorTags";
 
@@ -23,7 +22,7 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
       {
         label: "Body",
         options: { minLength: config.minLengths.body },
-        create: { type: "editor", editor: Editor },
+        create: { type: "editor" },
       },
     ],
   ]);
