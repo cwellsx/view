@@ -1,27 +1,16 @@
-import React from "react";
-import "ui-assets/css/EditorTags.css";
-// this is to display a little 'x' SVG -- a Close icon which is displayed on each tag -- clicking it will delete the tag
-// also to display a little '(!)' SVG -- an Error icon which is displayed in the element, if there's a validation error
-import * as Icon from "../icons";
-// this simply displays red text if non-empty text is passed to its errorMessage property
-import { ErrorMessage } from "../components";
+import { Data } from "client";
 
-// these are the properties of an existing tag, used or displayed by the TagDictionary
-interface TagCount {
-  key: string;
-  summary?: string;
-  count: number;
-}
+type TagCount = Data.TagCount;
 
 // these are properties to configurare the validation of tags
-interface Validation {
+export interface Validation {
   // whether a minimum number of tags must be defined, e.g. 1
   minimum: boolean;
   // whether a maximum number of tags must be defined, e.g. 5
   maximum: boolean;
   // whether the user can create new tags, or whether tags must match what's already in the dictionary
   canNewTag: boolean;
-  // whether the show validation error messages -- they're hidden until the user first presses the form's submit button
+  // whether to show validation error messages -- they're hidden until the user first presses the form's submit button
   showValidationError: boolean;
   // the href used for the link to "popular tags" in the validation error message -- i.e. "/tags"
   hrefAllTags: string;
@@ -32,17 +21,7 @@ export interface OutputTags {
   tags: string[];
   isValid: boolean;
 }
-type ParentCallback = (outputTags: OutputTags) => void;
-
-// this defines the properties which you pass to the EditorTags functional component
-interface EditorTagsProps extends Validation {
-  // the input/original tags to be edited (or an empty array if there are none)
-  inputTags: string[];
-  // the results are pushed back to the parent via this callback
-  result: ParentCallback;
-  // a function to fetch all existing tags from the server (for tag dictionary lookup)
-  getAllTags: () => Promise<TagCount[]>;
-}
+export type ParentCallback = (outputTags: OutputTags) => void;
 
 /*
   This source file is long and has the following sections -- see also [EditorTags](./EDITORTAGS.md)
@@ -113,7 +92,7 @@ const isLogging = false;
   All the type definitions
 */
 
-type Assert = (assertion: boolean, message: string, extra?: () => object) => void;
+export type Assert = (assertion: boolean, message: string, extra?: () => object) => void;
 
 // this is extra data which event handlers pass (as part of the action) from the function component to the reducer
 interface Context {
@@ -135,7 +114,7 @@ interface State {
 }
 
 // this interface identifies the array of <input> and <Tag> elements to be rendered, and the word associated with each
-interface RenderedElement {
+export interface RenderedElement {
   // the string value of this word
   readonly word: string;
   // whether this word is rendered by a Tag element or by the one input element
@@ -145,7 +124,7 @@ interface RenderedElement {
 }
 
 // this interface combines the two states, and is what's stored using useReducer
-interface RenderedState {
+export interface RenderedState {
   // the buffer which contains the tag-words, and the selection within the buffer
   readonly state: State;
   // how that's rendered i.e. the <input> element plus <Tag> elements
@@ -159,7 +138,7 @@ interface RenderedState {
 }
 
 // this wraps the current state of the <input> control
-class InputElement {
+export class InputElement {
   readonly selectionStart: number;
   readonly selectionEnd: number;
   readonly isDirectionBackward: boolean;
@@ -430,7 +409,7 @@ class MutableState {
 const maxHints = 6;
 
 // this is a class to lookup hints for existing tags which match the current input value
-class TagDictionary {
+export class TagDictionary {
   // the current implementation repeatedly iterates the whole dictionary
   // if that's slow (because the dictionary is large) in future we could partition the dictionary by letter
   private readonly tags: TagCount[];
@@ -503,7 +482,13 @@ interface ActionChange {
   context: Context;
 }
 
-type Action = ActionEditorClick | ActionHintResult | ActionDeleteTag | ActionTagClick | ActionKeyDown | ActionChange;
+export type Action =
+  | ActionEditorClick
+  | ActionHintResult
+  | ActionDeleteTag
+  | ActionTagClick
+  | ActionKeyDown
+  | ActionChange;
 
 function isEditorClick(action: Action): action is ActionEditorClick {
   return action.type === "EditorClick";
@@ -524,7 +509,7 @@ function isChange(action: Action): action is ActionChange {
   return action.type === "Change";
 }
 
-function reducer(state: RenderedState, action: Action): RenderedState {
+export function reducer(state: RenderedState, action: Action): RenderedState {
   log("reducer", action);
   const inputElement = action.context.inputElement;
 
@@ -669,7 +654,7 @@ function stringSplice(text: string, start: number, deleteCount: number, insert: 
   return after;
 }
 
-function log(title: string, o: object, force?: boolean): void {
+export function log(title: string, o: object, force?: boolean): void {
   if (!isLogging && !force) {
     return;
   }
@@ -788,41 +773,6 @@ function getTextWidth(text: string) {
     return 20;
   }
   return context.measureText(text).width;
-}
-
-// see [Simulating `:focus-within`](./EDITORTAGS.md#simulating-focus-within)
-function handleFocus(e: React.FocusEvent<HTMLElement>, hasFocus: boolean) {
-  function isElement(related: EventTarget | HTMLElement): related is HTMLElement {
-    return (related as HTMLElement).tagName !== undefined;
-  }
-  // read it
-  const target = e.target;
-  const relatedTarget = e.relatedTarget;
-  // relatedTarget is of type EventTarget -- upcast from that to HTMLElement
-  const related: HTMLElement | undefined = relatedTarget && isElement(relatedTarget) ? relatedTarget : undefined;
-  // get the tagName and className of the element
-  const relatedName = !relatedTarget ? "!target" : !related ? "!element" : related.tagName;
-  const relatedClass = !related ? "" : related.className;
-  // log it
-  const activeElement = document.activeElement;
-  const targetName = target.tagName;
-  const activeElementName = activeElement ? activeElement.tagName : "!activeElement";
-  log("handleFocus", {
-    hasFocus,
-    targetName,
-    activeElementName,
-    relatedName,
-    relatedClass,
-  });
-  // calculate it
-  hasFocus = hasFocus || relatedClass === "hint";
-  // write the result
-  const div = document.getElementById("tag-both")!;
-  if (hasFocus) {
-    div.className = "focussed";
-  } else {
-    div.className = "";
-  }
 }
 
 /*
@@ -970,7 +920,7 @@ function renderState(
 }
 
 // this function calculates the initial state, calculated from props and used to initialize useState
-function initialState(assert: Assert, inputTags: string[], validation: Validation): RenderedState {
+export function initialState(assert: Assert, inputTags: string[], validation: Validation): RenderedState {
   assert(!inputTags.some((found) => found !== found.trim()), "input tags not trimmed", () => {
     return { inputTags };
   });
@@ -984,79 +934,14 @@ function initialState(assert: Assert, inputTags: string[], validation: Validatio
   return renderedState;
 }
 
-/*
-
-  EditorTags -- the functional component
-
-*/
-
-export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
-  const { inputTags, result, getAllTags } = props;
-  const validation: Validation = props;
-
-  /*
-    React hooks
-  */
-
-  // this is an optional error message
-  const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
-
-  function assert(assertion: boolean, message: string, extra?: () => object): void {
-    if (!assertion) {
-      if (extra) {
-        const o: object = extra();
-        const json = JSON.stringify(o, null, 2);
-        message = `${message} -- ${json}`;
-      }
-      // write to errorMessage state means it's displayed by the `<ErrorMessage errorMessage={errorMessage} />` element
-      setTimeout(() => {
-        // do it after a timeout because otherwise if we do this during a render then React will complain with:
-        //   "Too many re-renders. React limits the number of renders to prevent an infinite loop."
-        setErrorMessage(message);
-      }, 0);
-      console.error(message);
-    }
-  }
-
-  // see ./EDITOR.md and the definition of the RenderedState interface for a description of this state
-  // also https://fettblog.eu/typescript-react/hooks/#usereducer says that type is infered from signature of reducer
-  const [state, dispatch] = React.useReducer(reducer, inputTags, (inputTags) =>
-    initialState(assert, inputTags, validation)
-  );
-
-  // this is a dictionary of existing tags
-  const [tagDictionary, setTagDictionary] = React.useState<TagDictionary | undefined>(undefined);
-
-  logRenderedState("--RENDERING--", state);
-
-  // useEffect to fetch all the tags from the server exactly once
-  // React's elint rules demand that getAllTags be specified in the deps array, but the value of getAllTags
-  // (which we're being passed as a parameter) is utimately a function at module scope, so it won't vary
-  React.useEffect(() => {
-    // get tags from server
-    getAllTags()
-      .then((tags) => {
-        // use them to contruct a dictionary
-        const tagDictionary: TagDictionary = new TagDictionary(tags);
-        // save the dictionary in state
-        setTagDictionary(tagDictionary);
-      })
-      .catch((reason) => {
-        // alarm the user
-        setErrorMessage(`getAllTags() failed -- ${reason}`);
-      });
-  }, [getAllTags]);
-
-  /*
-    inputRef (data which is used by some of the event handlers)
-  */
-
-  const inputRef = React.createRef<HTMLInputElement>();
-
-  /*
-    Event handlers (which dispatch to the reducer)
-  */
-
+export function getOnSelectTags(
+  assert: Assert,
+  validation: Validation,
+  result: ParentCallback,
+  dispatch: (action: Action) => void,
+  state: RenderedState,
+  tagDictionary?: TagDictionary
+) {
   function getContext(inputElement: HTMLInputElement): Context {
     return {
       inputElement: new InputElement(inputElement, assert),
@@ -1067,53 +952,32 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
     };
   }
 
-  function handleEditorClick(e: React.MouseEvent) {
-    const isDiv = (e.target as HTMLElement).tagName === "DIV";
-    if (!isDiv) {
-      // this wasn't a click on the <div> itself, presumably instead a click on something inside the div
-      return;
-    }
-    dispatch({ type: "EditorClick", context: getContext(inputRef.current!) });
+  function onEditorClick(inputElement: HTMLInputElement) {
+    dispatch({ type: "EditorClick", context: getContext(inputElement) });
   }
-
-  function handleDeleteTag(index: number, e: React.MouseEvent) {
-    dispatch({
-      type: "DeleteTag",
-      context: getContext(inputRef.current!),
-      index,
-    });
-    e.preventDefault();
+  function onDeleteTag(index: number, inputElement: HTMLInputElement) {
+    dispatch({ type: "DeleteTag", context: getContext(inputElement), index });
   }
-
-  function handleTagClick(index: number, e: React.MouseEvent) {
-    dispatch({
-      type: "TagClick",
-      context: getContext(inputRef.current!),
-      index,
-    });
-    e.preventDefault();
+  function onTagClick(index: number, inputElement: HTMLInputElement) {
+    dispatch({ type: "TagClick", context: getContext(inputElement), index });
   }
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    dispatch({ type: "Change", context: getContext(e.target) });
+  function onChange(inputElement: HTMLInputElement) {
+    dispatch({ type: "Change", context: getContext(inputElement) });
   }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
+  function onKeyDown(inputElement: HTMLInputElement, key: string, shiftKey: boolean): boolean {
+    if (key === "Enter") {
       // do nothing and prevent form submission
-      e.preventDefault();
-      return;
+      return true;
     }
     // apparently dispatch calls the reducer asynchonously, i.e. after this event handler returns, which will be too
     // late to call e.preventDefault(), and so we need two-stage processing, i.e. some here and some inside the reducer:
     // - here we need to test whether the action will or should be handled within the reducer
     // - later in the reducer we need to actually perform the action
     function newinputState() {
-      const inputElement: InputElement = new InputElement(e.target as HTMLInputElement, assert);
-      return new InputState(state, inputElement, assert);
+      return new InputState(state, new InputElement(inputElement, assert), assert);
     }
     function isHandled(): boolean {
-      switch (e.key) {
+      switch (key) {
         case "Home":
         case "ArrowUp":
           // move selection to start of first tag
@@ -1138,208 +1002,21 @@ export const EditorTags: React.FunctionComponent<EditorTagsProps> = (props) => {
       return false;
     }
     if (isHandled()) {
-      e.preventDefault();
-      const context: Context = getContext(e.target as HTMLInputElement);
-      dispatch({ type: "KeyDown", context, key: e.key, shiftKey: e.shiftKey });
+      const context: Context = getContext(inputElement);
+      dispatch({ type: "KeyDown", context, key, shiftKey });
+      return true;
     }
+    return false;
   }
-
-  function handleHintResult(outputTag: string) {
+  function onHintResult(inputElement: HTMLInputElement, outputTag: string) {
     const { inputIndex } = getInputIndex(state.elements, assert);
     dispatch({
       type: "HintResult",
-      context: getContext(inputRef.current!),
+      context: getContext(inputElement),
       hint: outputTag,
       inputIndex,
     });
   }
 
-  /*
-    Tag is a FunctionComponent to render each tag
-  */
-
-  interface TagProps {
-    text: string;
-    index: number;
-    isValid: boolean;
-  }
-  const Tag: React.FunctionComponent<TagProps> = (props) => {
-    const { text, index, isValid } = props;
-    // https://reactjs.org/docs/handling-events.html#passing-arguments-to-event-handlers
-    // eslint-disable-next-line
-    const close = (
-      <a onClick={(e) => handleDeleteTag(index, e)} title="Remove tag">
-        <Icon.Close height="12" />
-      </a>
-    );
-    const className = isValid ? "tag" : "tag invalid";
-    return (
-      <span className={className} onClick={(e) => handleTagClick(index, e)}>
-        {text}
-        {close}
-      </span>
-    );
-  };
-
-  /*
-    The return statement which yields the JSX.Element from this function component
-  */
-
-  function showValidationResult() {
-    const showError = props.showValidationError && !!state.validationError.length;
-    if (!showError) {
-      return {
-        className: "tag-editor",
-        icon: undefined,
-        validationError: undefined,
-      };
-    }
-    const className = "tag-editor invalid validated";
-    const icon = <Icon.Error className="error" />;
-    const validationErrorMessage = state.validationError;
-    // use <a href={}> instead of <Link to={}> -- https://github.com/ReactTraining/react-router/issues/6344
-    const suffix =
-      validationErrorMessage[validationErrorMessage.length - 1] !== ";" ? undefined : (
-        <React.Fragment>
-          {"see a list of "}
-          <a href={props.hrefAllTags} target="_blank" rel="noopener noreferrer">
-            popular tags
-          </a>
-          {"."}
-        </React.Fragment>
-      );
-    const validationError = (
-      <p className="error">
-        {validationErrorMessage} {suffix}
-      </p>
-    );
-    return { validationError, icon, className };
-  }
-  const { validationError, icon, className } = showValidationResult();
-
-  function getElement(element: RenderedElement, index: number): React.ReactElement {
-    const isValid = !props.showValidationError || element.isValid;
-    return element.type === "tag" ? (
-      <Tag text={element.word} index={index} key={index} isValid={isValid} />
-    ) : (
-      <input
-        type="text"
-        key="input"
-        ref={inputRef}
-        className={isValid ? undefined : "invalid"}
-        width={10}
-        onKeyDown={handleKeyDown}
-        onChange={handleChange}
-        onFocus={(e) => handleFocus(e, true)}
-        onBlur={(e) => handleFocus(e, false)}
-      />
-    );
-  }
-
-  return (
-    <div id="tag-both">
-      <div className={className} onClickCapture={handleEditorClick}>
-        {state.elements.map(getElement)}
-        {icon}
-      </div>
-      <ShowHints hints={state.hints} inputValue={state.inputValue} result={handleHintResult} />
-      <ErrorMessage errorMessage={errorMessage} />
-      {validationError}
-    </div>
-  );
-};
-
-/*
-
-  ShowHints
-
-*/
-
-interface ShowHintsProps {
-  // hints (from dictionary)
-  hints: TagCount[];
-  // the current value of the tag in the editor
-  inputValue: string;
-  // callback of tag selected from list of hints if user clicks on it
-  result: (outputTag: string) => void;
+  return { onEditorClick, onDeleteTag, onTagClick, onChange, onKeyDown, onHintResult };
 }
-const ShowHints: React.FunctionComponent<ShowHintsProps> = (props) => {
-  const { hints, inputValue, result } = props;
-  if (!inputValue.length) {
-    return <div className="tag-hints hidden"></div>;
-  }
-  return (
-    <div className="tag-hints">
-      {!hints.length
-        ? "No results found."
-        : hints.map((hint) => <ShowHint hint={hint} inputValue={inputValue} result={result} key={hint.key} />)}
-    </div>
-  );
-};
-
-interface ShowHintProps {
-  // hints (from dictionary)
-  hint: TagCount;
-  // the current value of the tag in the editor
-  inputValue: string;
-  // callback of tag selected from list of hints if user clicks on it
-  result: (outputTag: string) => void;
-}
-const ShowHint: React.FunctionComponent<ShowHintProps> = (props) => {
-  const { hint, inputValue, result } = props;
-
-  function getTag(key: string) {
-    const index = key.indexOf(inputValue);
-    return (
-      <span className="tag">
-        {index === -1 ? (
-          key
-        ) : (
-          <React.Fragment>
-            {key.substring(0, index)}
-            <span className="match">{inputValue}</span>
-            {key.substring(index + inputValue.length)}
-          </React.Fragment>
-        )}
-      </span>
-    );
-  }
-  // the key with the matched letters highlighted
-  const tag = getTag(hint.key);
-  // count the number of times this tag is used elsewhere, if any
-  const count = hint.count ? <span className="multiplier">×&nbsp;{hint.count}</span> : undefined;
-  // the summary, if any
-  const summary = hint.summary ? <p>{hint.summary}</p> : undefined;
-  // a link to more info i.e. the page which defines this tag
-  function getMore(key: string) {
-    const icon = <Icon.Info width="16" height="16" />;
-    // we use <a> here instead of <Link> because this link will open a whole new tab, i.e. another instance of this SPA
-    // in future I think it would be better to reimplement this as a split screen (two-column) view
-    const anchor = (
-      <a href={`/tags/${key}/info`} target="_blank" rel="noopener noreferrer">
-        {icon}
-      </a>
-    );
-    return <p className="more-info">{anchor}</p>;
-  }
-  const more = getMore(hint.key);
-  return (
-    <div
-      className="hint"
-      tabIndex={0}
-      key={hint.key}
-      onClick={(e) => result(hint.key)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") result(hint.key);
-        e.preventDefault();
-      }}
-      onFocus={(e) => handleFocus(e, true)}
-      onBlur={(e) => handleFocus(e, false)}
-    >
-      {tag}
-      {count}
-      {summary}
-      {more}
-    </div>
-  );
-};

@@ -1,8 +1,8 @@
 import { Api, config, Data, Post, Url } from "client";
 import { History } from "history";
 import React from "react";
+import { EditorTags, OutputTags } from "../components";
 import { Input, useValidatedInput } from "../hooks";
-import { EditorTags, OutputTags } from "./EditorTags";
 
 type NewDiscussionProps = { history: History };
 export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props: NewDiscussionProps) => {

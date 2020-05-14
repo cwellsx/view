@@ -12,6 +12,12 @@ export interface ValidatedEditorProps {
   handleChange: (newValue: string) => void;
 }
 
+/*
+  There's no README in the https://github.com/StackExchange/pagedown repo
+  but there's one made for it at https://github.com/mmillican/pagedown which is
+  copied from https://code.google.com/archive/p/pagedown/wikis/PageDown.wiki
+*/
+
 export const Editor = (props: ValidatedEditorProps) => {
   const { label, handleChange, defaultValue, errorMessage } = props;
 

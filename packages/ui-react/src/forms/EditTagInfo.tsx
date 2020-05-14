@@ -4,12 +4,6 @@ import React from "react";
 import { Input, useValidatedInput } from "../hooks";
 
 /*
-  There's no README in the https://github.com/StackExchange/pagedown repo
-  but there's one made for it at https://github.com/mmillican/pagedown which is
-  copied from https://code.google.com/archive/p/pagedown/wikis/PageDown.wiki
-*/
-
-/*
   Edit Tag Info
 */
 
