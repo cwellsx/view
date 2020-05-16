@@ -1,10 +1,9 @@
-import React from "react";
 import { Data, toHtml } from "client";
+import React from "react";
 import type { KeyedItem } from "../layouts";
-
 import { getTags } from "./getTags";
-import { toLocaleString } from "./toLocaleString";
 import { getUserInfo } from "./getUserInfo";
+import { toLocaleString } from "./toLocaleString";
 
 function getMessage(message: Data.Message, index: number, tags?: Data.Key[]): KeyedItem {
   const topic = tags ? getTags(tags) : undefined; // only the first message in a discussion has associated tags

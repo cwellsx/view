@@ -1,11 +1,11 @@
+import { Api, Data, Url } from "client";
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
-import { Api, Url, Data } from "client";
-import { useFetchApi2 } from "../hooks";
-import { getPage, FetchedT, Layout, KeyedItem, SubTabs } from "../layouts";
-import { notFound } from "./NotFound";
-import { AnswerDiscussion } from "../forms";
 import { getFirstMessage, getNextMessage, getPageNavLinks } from "../components";
+import { AnswerDiscussion } from "../forms";
+import { useFetchApi2 } from "../hooks";
+import { FetchedT, getPage, KeyedItem, Layout, SubTabs } from "../layouts";
+import { notFound } from "./NotFound";
 
 export const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const parsed = Url.isDiscussionOptions(props.location);

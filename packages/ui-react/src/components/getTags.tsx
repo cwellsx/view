@@ -1,6 +1,5 @@
-import React from "react";
 import { Data } from "client";
-
+import React from "react";
 import { getTagLink } from "./getTagLink";
 
 // called from getDiscussionSummary, and getMessage (for each message within discussion)

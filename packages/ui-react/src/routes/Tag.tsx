@@ -1,12 +1,12 @@
-import React from "react";
-import { RouteComponentProps, Link } from "react-router-dom";
-import { Api, Url, Data, toHtml } from "client";
-import { useFetchApi2 } from "../hooks";
-import { getPage, FetchedT, ShowDataT, Layout } from "../layouts";
-import { notFound } from "./NotFound";
+import { Api, Data, toHtml, Url } from "client";
 import { History } from "history";
-import { EditTagInfo } from "../forms";
+import React from "react";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { getDiscussionsSubtitle } from "../components";
+import { EditTagInfo } from "../forms";
+import { useFetchApi2 } from "../hooks";
+import { FetchedT, getPage, Layout, ShowDataT } from "../layouts";
+import { notFound } from "./NotFound";
 
 export const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const info = Url.isTagInfo(props.location);

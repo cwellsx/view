@@ -2,7 +2,7 @@
 
 This software is copyright, and is not licensed for modification -- see the [LICENSE](./LICENSE.md).
 
-Please contact me if you'd like to develop it further --
+Contact me if you want to develop it further --
 cwellsx@gmail.com
 
 ## Development environment setup
@@ -90,7 +90,7 @@ Whether or not the watch is running:
 
 ## Running in a subdirectory
 
-The production build is run in a subdirectory i.e. `https://cwellsx.github.io/views`
+The production build is run in a subdirectory i.e. [`https://cwellsx.github.io/views`](https://cwellsx.github.io/views)
 
 The development build is run in a root directory i.e. `http://localhost:3000/`
 
@@ -112,8 +112,8 @@ However this breaks the development build (because `PUBLIC_URL` is set to `/view
 So -- instead of setting the `homepage` in `package.json` -- there are two environment files which are described in
 [Adding Custom Environment Variables](https://create-react-app.dev/docs/adding-custom-environment-variables/)
 
-- `.env.development` is used by `yarn watch`
-- `.env.production` is used by `yarn build`
+- [`.env.development`](./packages/ui-react/.env.development) is used by `yarn watch`
+- [`.env.production`](./packages/ui-react/.env.production) is used by `yarn build`
 
 ## Coding style
 
@@ -122,19 +122,20 @@ So -- instead of setting the `homepage` in `package.json` -- there are two envir
 This project uses the following file naming conventions:
 
 - `lower_case` for directory names, to match `node_modules`
+- `hyphenated-names` for package names
 - `PascalCase` for React scripts, because that seems to be standard for React
 - `camelCase` for other files, especially TypeScript source files
 - `UPPERCASE` for Markdown files (e.g. `README.md`)
-- 3rd-party image files in the `/src/icons` folder preserve their original filenames
+- 3rd-party image files in the `/ui-assets/icons` folder preserve their original filenames
 
-### Functions instead of classes
+### Functions and interfaces instead of classes
 
 Many of the interfaces (e.g. defined in `/src/data`) define data sent over the network in JSON format.
 They therefore only define data, and no functions (no methods).
 So the coding style tends towards interfaces which define simple data types, plus functions --
 that is, instead of TypeScript classes.
 
-The React scripts too are coded using React's new-style "Functional components" -- with "Hooks" -- instead of "Class components".
+The React scripts too are coded using React's new-style "Functional components" -- with "Hooks" -- instead of using "Class components".
 
 ---
 

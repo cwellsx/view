@@ -1,5 +1,5 @@
-import React from "react";
 import { Data } from "client";
+import React from "react";
 
 // called from getActivityContent (nested in User)
 export function getTagCount(tagCount: Data.TagCount) {

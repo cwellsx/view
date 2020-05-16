@@ -1,7 +1,6 @@
-import React, { ReactElement } from "react";
 import { Data } from "client";
-
-import { GravatarSize, getUserSummary } from "./getUserSummary";
+import React, { ReactElement } from "react";
+import { getUserSummary, GravatarSize } from "./getUserSummary";
 import { getWhen } from "./getWhen";
 
 export function getUserInfo(summary: Data.UserSummary, size: GravatarSize, when?: string): ReactElement {

@@ -1,5 +1,4 @@
-This is what is called a "monorepo".
-Several projects/packages are contained in this one repository.
+This is what is called a "monorepo" -- several projects/packages are contained in this one repository.
 
 For more information, search the web using words like "`monorepo`", "`lerna`", "`yarn workspace`".
 
@@ -8,14 +7,14 @@ For more information, search the web using words like "`monorepo`", "`lerna`", "
 I used the following commands to create the initial repo.
 
 - `git init`
-- `yarn init` (including `"private": true')
+- `yarn init` (including `"private": true`)
 - `lerna init`
 - Edit [`lerna.json`](./lerna.json) to add
   ```
   "npmClient": "yarn",
   "useWorkspaces": true`
   ```
-- Edit [`package.jso`n](./package.json) to add
+- Edit [`package.json`](./package.json) to add
   ```
   "private": true,
   "workspaces": [
@@ -44,9 +43,7 @@ I used the following commands to create the initial repo.
   - Directory structure
   - `package.json` and `tsconfig.json` options
 
-  Perhaps having identical TypeScript versions shouldn't matter at build time, but might be safer.
-  I'm using `~3.7.2` because that's the version specified by create-react-app
-  instead of `^3.8.3` which is the latest version.
+  Having identical TypeScript versions shouldn't matter at build time, but might be safer -- currently all projects use `^3.8.0` which is the latest version.
 
 Some example projects to imitate:
 
@@ -81,4 +78,4 @@ In this repository the `prebuild-data` project is built and run and Node.js and 
 so we specify the old-style modules using the TypeScript option.
 
 Alternatively this wouldn't be needed if the project depended on using a relatively new version of Node.js -- see
-[How can I use an es6 import in node?(https://stackoverflow.com/a/45854500/49942)
+[How can I use an es6 import in node?](https://stackoverflow.com/a/45854500/49942)

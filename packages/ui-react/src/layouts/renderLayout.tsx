@@ -1,10 +1,9 @@
-import React from "react";
-import "ui-assets/css/PageLayout.css";
 import { config } from "client";
-import * as Icon from "../icons";
+import React from "react";
 import { NavLink } from "react-router-dom";
-
-import { Layout, Tabs, SubTabs, RightContent } from "./Layout";
+import "ui-assets/css/PageLayout.css";
+import * as Icon from "../icons";
+import { Layout, RightContent, SubTabs, Tabs } from "./Layout";
 import type { MainContent, Width } from "./Layout";
 
 /*
@@ -218,11 +217,6 @@ function switchLayout(layout: Layout) {
       </React.Fragment>
     );
   }
-}
-
-export function useLayout(layout: Layout): React.ReactElement {
-  const contents = switchLayout(layout);
-  return <div className="all-columns">{contents}</div>;
 }
 
 export function renderLayout(layout: Layout): React.ReactElement {

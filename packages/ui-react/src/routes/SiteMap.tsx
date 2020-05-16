@@ -1,8 +1,8 @@
-import React from "react";
 import { Api, Data } from "client";
-import { useFetchApi } from "../hooks";
-import { getPage, FetchedT, Layout, KeyedItem } from "../layouts";
+import React from "react";
 import { getImageSummary, getTagSummary } from "../components";
+import { useFetchApi } from "../hooks";
+import { FetchedT, getPage, KeyedItem, Layout } from "../layouts";
 
 export const SiteMap: React.FunctionComponent = () => {
   return getPage(useFetchApi(Api.getSiteMap), showSiteMap);

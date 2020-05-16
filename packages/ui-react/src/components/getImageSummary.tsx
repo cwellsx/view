@@ -1,6 +1,6 @@
+import { Data, toHtml, Url } from "client";
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Url, Data, toHtml } from "client";
 import type { KeyedItem } from "../layouts";
 
 export function getImageSummary(summary: Data.ImageSummary): KeyedItem {

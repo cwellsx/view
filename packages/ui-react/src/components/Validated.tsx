@@ -1,7 +1,7 @@
 import React from "react";
 import "ui-assets/css/ErrorMessage.css";
-import * as Icon from "../icons";
 import { ErrorMessage, ErrorMessageProps } from "../components";
+import * as Icon from "../icons";
 
 type ValidatedProps = ErrorMessageProps & {
   // https://fettblog.eu/typescript-react/children/

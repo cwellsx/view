@@ -1,13 +1,13 @@
+import { Api, config, Data, toHtml, Url } from "client";
+import { History } from "history";
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
-import { Api, Url, Data, toHtml, config } from "client";
-import { useFetchApi2, FetchingT, useMe } from "../hooks";
-import { getPage, FetchedT, ShowDataT, Layout, KeyedItem, Tab, Tabs, SubTabs, MainContent } from "../layouts";
-import { notFound } from "./NotFound";
-import { History } from "history";
+import { getDiscussionSummary, getTagCount, getUserSummary } from "../components";
 import { EditUserSettings } from "../forms";
-import { getUserSummary, getTagCount, getDiscussionSummary } from "../components";
+import { FetchingT, useFetchApi2, useMe } from "../hooks";
 import * as Icon from "../icons";
+import { FetchedT, getPage, KeyedItem, Layout, MainContent, ShowDataT, SubTabs, Tab, Tabs } from "../layouts";
+import { notFound } from "./NotFound";
 
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const parsed = Url.isUserOptions(props.location);

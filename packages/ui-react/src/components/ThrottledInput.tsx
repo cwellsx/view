@@ -1,6 +1,6 @@
+import { SearchInput } from "client";
 import React from "react";
 import { ErrorMessage } from "./ErrorMessage";
-import { SearchInput } from "client";
 
 /*
   This defines a throttled input control e.g. for a Search control.

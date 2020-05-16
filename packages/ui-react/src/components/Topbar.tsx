@@ -1,10 +1,10 @@
+import { config, Route } from "client";
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "ui-assets/css/Topbar.css";
-import * as Icon from "../icons";
-import { Route, config } from "client";
-import { useMe } from "../hooks";
 import { getUserSummary } from "../components";
+import { useMe } from "../hooks";
+import * as Icon from "../icons";
 
 export const Topbar: React.FunctionComponent = () => {
   const me = useMe();

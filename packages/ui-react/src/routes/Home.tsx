@@ -1,9 +1,8 @@
+import { Api, toHtml } from "client";
 import React from "react";
-import { Api } from "client";
-import { useFetchApi2, FetchingT } from "../hooks";
-import { getPage, FetchedT, ShowDataT, Layout } from "../layouts";
 import { htmlToReact } from "../components";
-import { toHtml } from "client";
+import { FetchingT, useFetchApi2 } from "../hooks";
+import { FetchedT, getPage, Layout, ShowDataT } from "../layouts";
 
 type FetchedIsHtml = { isHtml: boolean };
 

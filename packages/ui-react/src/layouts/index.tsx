@@ -1,10 +1,10 @@
 import React from "react";
 import { FetchingT } from "../hooks";
-import { renderLayout } from "./renderLayout";
 import { Layout } from "./Layout";
+import { renderLayout } from "./renderLayout";
 
+export type { KeyedItem, Layout, MainContent, RightContent, SubTabs, Tab, Tabs, Width } from "./Layout";
 export { renderLayout } from "./renderLayout";
-export type { Layout, Tab, Tabs, SubTabs, RightContent, MainContent, Width, KeyedItem } from "./Layout";
 
 export interface FetchedT<TData, TParam2> {
   data: TData;

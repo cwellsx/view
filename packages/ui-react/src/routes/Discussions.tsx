@@ -1,10 +1,10 @@
+import { Api, config, Data, Url } from "client";
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
-import { Api, Url, Data, config } from "client";
+import { getDiscussionsSubtitle, getDiscussionSummary, getNavLinks, getPageNavLinks } from "../components";
 import { useFetchApi2 } from "../hooks";
-import { getPage, FetchedT, Layout } from "../layouts";
+import { FetchedT, getPage, Layout } from "../layouts";
 import { notFound } from "./NotFound";
-import { getDiscussionsSubtitle, getPageNavLinks, getNavLinks, getDiscussionSummary } from "../components";
 
 export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options

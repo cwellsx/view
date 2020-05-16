@@ -1,5 +1,12 @@
 import { Data } from "client";
 
+// you could temporarily change this to enable logging, for debugging
+const isLogging = false;
+
+/*
+  All the type definitions
+*/
+
 type TagCount = Data.TagCount;
 
 // these are properties to configurare the validation of tags
@@ -22,75 +29,6 @@ export interface OutputTags {
   isValid: boolean;
 }
 export type ParentCallback = (outputTags: OutputTags) => void;
-
-/*
-  This source file is long and has the following sections -- see also [EditorTags](./EDITORTAGS.md)
-
-  # Defined outside the React function component:
-
-  - All the type definitions
-    - Assert
-    - ParentCallback
-    - Context
-    - State
-    - RenderedElement
-    - RenderedState
-    - InputElement
-    - InputState
-    - MutableState
-    - TagDictionary
-
-  - The reducer
-    - action types
-    - reducer
-  
-  - Various helper functions
-    - stringSplice
-    - log and logRenderedState
-    - getInputIndex
-    - getElementStart and getWordStart
-    - assertElements and assertWords
-    - getTextWidth
-    - handleFocus
-  
-  - Functions which construct the RenderedState
-    - renderState
-    - initialState
-  
-  # Defined inside the React function component:
-
-  - React hooks
-    - errorMessage
-    - assert (a function which uses errorMessage and is required by initialState)
-    - state 
-
-  - inputRef (data which is used by some of the event handlers)
-
-  - Event handlers (which dispatch to the reducer)
-    - getContext
-    - handleEditorClick
-    - handleDeleteTag
-    - handleTagClick
-    - handleChange
-    - handleKeyDown
-    - handleHintResult
-
-  - Tag is a FunctionComponent to render each tag
-
-  - The return statement which yields the JSX.Element from this function component
-
-  # Other function components to display the drop-down hints
-
-  - ShowHints
-  - ShowHint
-*/
-
-// you could temporarily change this to enable logging, for debugging
-const isLogging = false;
-
-/*
-  All the type definitions
-*/
 
 export type Assert = (assertion: boolean, message: string, extra?: () => object) => void;
 

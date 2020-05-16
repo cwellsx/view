@@ -1,6 +1,6 @@
 import React from "react";
-import { renderLayout, Layout } from "../layouts";
 import { Login as LoginForm } from "../forms";
+import { Layout, renderLayout } from "../layouts";
 
 export const Login: React.FunctionComponent = () => {
   const content = <LoginForm />;

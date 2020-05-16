@@ -22,6 +22,7 @@
     "unbuild": "lerna run unbuild",
     "watch-lib": "lerna run --parallel --ignore ui* watch",
     "watch-ui": "lerna run --scope ui-react watch",
-    "watch": "lerna run --parallel watch"
+    "watch": "lerna run --parallel watch",
+    "show-dependencies": "show-dependencies.bat"
   }
 }

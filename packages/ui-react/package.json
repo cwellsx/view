@@ -6,7 +6,6 @@
     "node": "10.15.3"
   },
   "dependencies": {
-    "shared-lib": "0.1.0",
     "client": "0.1.0",
     "ui-assets": "0.1.0",
     "@types/jest": "^25.0.0",

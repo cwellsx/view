@@ -1,5 +1,4 @@
 import React from "react";
-
 import { getNavLinks } from "./getNavLinks";
 
 function getPageNumbers(current: number, max: number): Array<{ text: string; n: number } | undefined> {

@@ -1,6 +1,8 @@
 import React from "react";
 import "ui-assets/css/ErrorMessage.css";
-import { CreateAny, createChild, createLabel, getSubmitButton } from "../components";
+import { CreateAny, createChild } from "../components/createChild";
+import { getSubmitButton } from "../components/getSubmitButton";
+import { createLabel } from "../components/Label";
 
 /*
   Component to display an <input> or <taxarea> element with a validation error message

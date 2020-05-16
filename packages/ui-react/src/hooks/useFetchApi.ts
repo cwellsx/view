@@ -1,5 +1,51 @@
 import React from "react";
 
+/*
+  This is a "high-order component", a "custom hook" -- it separates "getting" the data from "presenting" the data.
+
+  - https://reactjs.org/docs/higher-order-components.html
+  - https://reactjs.org/docs/hooks-custom.html
+
+  The sequence of events is:
+
+  1. Called for the first time
+  2. Returns `undefined` as the data value
+  3. useEffect fires and:
+     - Call getData to fetch data from the server
+     - Call setData to write the fetched data into the state
+     - Returns the fetched data value
+
+  Fetching data is as described at:
+
+  - https://reactjs.org/docs/hooks-faq.html#how-can-i-do-data-fetching-with-hooks
+  - https://overreacted.io/a-complete-guide-to-useeffect/
+  - https://www.robinwieruch.de/react-hooks-fetch-data
+
+  And using a hook with TypeScript:
+
+  - https://www.carlrippon.com/typed-usestate-with-typescript/
+
+  The template supports a parameter of type TParam (which is optional and may be void/undefined).
+  If specified then the parameter is passed to the getData function.
+
+  ---
+
+  Also, as described here ...
+
+  https://stackoverflow.com/questions/56096560/avoid-old-data-when-using-useeffect-to-fetch-data
+
+  ... if the parameter value changes then there's a brief wndow before the useEffect hook is run.
+  Therefore the param value is stored in state whenever the data value is stored,
+  and the data value is discarded when it's associated param value doesn't match the current param value.
+
+  The solution described here ...
+
+  https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
+
+  ... i.e. to "wrap it into the useCallback Hook" was insufficient because it leaves a brief
+  timing hole before the useEffect fires and the data is refetched.
+*/
+
 export interface FetchingT<TData, TParam2> {
   // type of data returned by the client API
   data: TData | undefined;
@@ -78,13 +124,5 @@ export function useFetchApi2<TData, TParam, TParam2 = void>(
 
   // TODO https://www.robinwieruch.de/react-hooks-fetch-data/#react-hooks-abort-data-fetching
 
-  // const layout: Layout =
-  //   data && prev === param
-  //     ? getLayout(data, extra2) // render the data
-  //     : error
-  //     ? loadingError(error)
-  //     : loadingContents; // else no data yet to render
-
-  // return useLayout(layout);
   return { data: prev === param ? data : undefined, error, reload, newData };
 }

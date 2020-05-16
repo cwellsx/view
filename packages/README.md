@@ -1,130 +1,124 @@
-This `src` directory contains all (and only)
-the content which is rendered in the browser.
+# Packages
 
-In future there may be another directory for software which is only executed on the server.
+The architecture supports several applications, e.g. client and server.
 
-This `src` directory includes the following subdirectories.
+The following show build-time dependencies and `import` relationships,
+i.e. the `client` and `server` packages both import the `shared-lib` package.
 
-<table>
+## Client, server, and shared
 
-<thead>
-<tr>
-<th>Where</th>
-<th>What</th>
-</tr>
-</thead>
+![client, server, shared-lib](deps-shared.png)
 
-<tr>
-  <td><code>./</code></td>
-  <td><p><code>index.tsx</code> does little except render the <code>/src/react/App.tsx</code> script.
-  It also imports <code>normalize.css</code>.</p>
-  </td>
-</tr>
+There's a `client`, a `server`, and a `shared-lib` which is a library of shared types and URLs.
 
-<tr>
-  <td><code>./react</code></td>
-  <td><p>Content defined in React scripts:</p>
-    <ul>
-      <li><code>*.tsx</code> (scripts)</li>
-      <li><code>*.css</code> (stylesheets)</li>
-    </ul>
-    <p>The top-most script is <code>App.tsx</code> which defines the "routes",
-    i.e. how to render (and fetch data for) each type of URL --
-    for further details, see the [`./react/README.md`](./react)</p>
-    <p>The application uses the "React Router" module, so it behaves like a single-page application (SPA).</p>
-  </td>
-</tr>
+The `client` and `server` would typically run on separate machines.
 
-<tr>
-  <td><code>./icons</code></td>
-  <td><p>Images included in React scripts:</p>
-    <ul>
-      <li><code>*.svg</code> (graphics)</li>
-    </ul>
-  </td>
-</tr>
+### [shared-lib](./shared-lib)
 
-<tr>
-  <td><code>./io</code></td>
-  <td><p>TypeScript helper module:</p>
-    <ul>
-      <li>Abstracts the I/O between the React scripts and the server</li>
-      <li>Is a type-safe wrapper, which returns strongly-typed data</li>
-      <li>Can also act as a mock server when prototyping the UI</li>
-    </ul>
-  </td>
-</tr>
+The `shared-lib` is imported by the client and the server.
+It defines the data types and values which the two must share.
 
-<tr>
-<td colspan="2">
-<p>The directories listed above define code which only runs in the client-side browser.</p>
-<p>
-The directories listed below define code which is shared (used) by the client-side and the server-side.
-</p>
-</td>
-</tr>
+- [Data](./shared-lib/src/data) -- these are data types which are used when the rendering of the UI
+  (for example `Discussion`, `User`, and `Tag`)
+- [Messages](./shared-lib/src/messages) -- these are types used in the network protocol between the client and the
+  server (they're an implementation detail of the client API and hidden from the UI)
+- [URLs](./shared-lib/src/messages) -- these are URL formats, which correspond to "routes" in the client and "endpoints"
+  in the REST API
 
-<tr>
-  <td><code>./data</code></td>
-  <td><p>TypeScript interfaces:</p>
-    <ul>
-      <li>Data is requested and consumed by React scripts</li>
-      <li>These interfaces declare the format of that data</li>
-      <li>These interfaces are shared with (i.e. they're also imported and used by) modules in the
-      <a href="./server"><code>./server</code></a> directory</li>
-    </ul>
-  </td>
-</tr>
+### [client](./client)
 
-<tr>
-  <td><code>./shared</code></td>
-  <td><p>Other data and code is also shared and used by both the server- and the client-side, including:</p>
-    <ul>
-      <li><code>post.ts</code> -- the format of data posted (sent via HTTP 'POST') from the client to the server</li>
-      <li><code>push.ts</code> -- the format of data pushed (as asynchronous notification) from the server to the client
-      (a feature which isn't implemented)</li>
-      <li><code>urls.ts</code> -- the format of the all URLs used for GET and POST requests</li>
-      <li><code>wire.ts</code> -- the format of data on the wire between client and server (which is a slightly more
-      compact format than used by the React scripts and defined in the <code>./data</code> directory)</li>
-    </ul>
-    <p>This and the <code>./data</code> directory are the only directories shared between the client and the server.</p>
-  </td>
-</tr>
+The `client` is imported by the UI package on the client.
 
-<tr>
-<td colspan="2">
-<p>The directories listed above define everything which runs in the client-side browser.</p>
-<p>
-The directories listed below define everything which runs on the server-side.
-</p>
-<p>
-These server-side directories are subdirectories of <code>/src</code> so that they can also --
-instead of being run on the server -- be run on the client-side inside the browser.
-</p>
-<p>
-This is so that the client-side application can act as a stand-alone demo when it's run without a server.
-</p>
-</td>
-</tr>
+- [API](./client/src/api.ts) -- the HTTP GET and POST details, the construction of the URL, and some the network data
+  formats, is abstracted/hidden from the UI by a client-side API
 
-<tr>
-  <td><code>./server_data</code></td>
-  <td><p>JSON files which define the initial server-side data:</p>
-    <ul>
-      <li>Sample data is created by scripts in the <code>/prebuild_data</code> directory</li>
-      <li>Data is loaded into the server by the <code>./server/loader</code> module</li>
-    </ul>
-  </td>
-</tr>
+The `client` [reexports](./client/src/index.ts) data types from `shared-lib` which can be import by the UI -- so the
+UI doesn't depend on `shared-lib` directly, and the client controls how much of the `\shared-lib` is hidden/abstracted
+from the UI.
 
-<tr>
-  <td><code>./server</code></td>
-  <td><p>TypeScript code which implements the server-side functionality:</p>
-    <ul>
-      <li>Loads data from the <code>/prebuild_data</code> directory</li>
-      <li>Responds to GET and POST requests which it receives from the client-side <code>./io</code> module</li>
-    </ul>
-  </td>
-</tr>
+### [server](./server)
 
-</table>
+The `server` implements the end-points for the API used by the client.
+
+- [Routes](./server/src/routes.ts) -- the `routeOnGet` and `routeOnPost` methods decode
+  HTTP GET and POST requests, and handle/implement them by delegating to the corresponding database methods
+- [Database](./server/src/database.ts) --
+  - Stores the data.
+  - Maintains indexes (i.e. various sort orders, often several indexes for a given data type).
+  - Implements `get` methods to service the various HTTP GET requests
+  - Implements one `handleAction` method to service the various HTTP PUT requests
+- [Actions](./server/src/actions.ts) -- the HTTP PUT requests are encoded as types of action
+  (server state changes could be implemented by a reducer)
+- [Loader](./server/src/loader.ts) -- this loads data into the database on startup, from an external data store
+  (loading is implemented as a chronological sequence of "put" actions, which replays how the data was first created)
+
+## UI
+
+![ui-react, ui-assets](deps-ui.png)
+
+### [ui-react](./ui-react)
+
+The `ui-react` package uses React.js to implement the UI.
+
+It imports and depends on the `client` package, which defines the data types, the URLs, and the API to the server.
+
+See [this README](./ui-react#readme) for implementation details.
+
+This is the only package which contains React-specific code and depends on the React package.
+
+### [ui-assets](./ui-assets)
+
+The `ui-react` package contains the icon files and CSS files used by the UI.
+
+These are in this separate "assets" package so they can be maintained separately.
+
+It is also possible in future to replace the `ui-react` with another implementations -- for example `ui-vue` --
+which would reuse the `client` and the `ui-assets`.
+
+## Mock server
+
+![server-mock](deps-mock.png)
+
+### [server-mock](./server-mock)
+
+The `server-mock` package lets the UI run as a standalone Single Page Application,
+without a network connection to a remote server.
+
+It implements a mock of the `fetch` API -- the client can be configured to GET or POST using the mock fetch instead
+of using the browser's embedded fetch.
+
+The mock fetch is implemented by delegating to the the `routeOnGet` and `routeOnPost` methods in the server package.
+So the server implementation is imported as a dependency into the client application,
+and runs inside the user's browser.
+
+## Server data
+
+![server-types, server-data, prebuild-data](deps-server.png)
+
+### [server-data](./server-data)
+
+The `server-data` package contains data loaded into the server on startup.
+
+When the server is running in the browser as a result of `server-mock` it cannot use the file system to read data from
+disk.
+Instead the data in `server-data` is in JSON format, which the server's loader gets using `import` statements.
+
+The database storage method could be changed in future,
+e.g. to use a external database on the server and local storage in the client.
+
+### [prebuild-data](./prebuild-data)
+
+The `prebuild-data` package creates the JSON and other modules in the `server-data` package.
+
+The `prebuild-data` package is built and run automatically when you run `yarn install`.
+
+You could replace `prebuild-data` with another implementation --
+as long as it creates the expected [JSON files](./server-data/json) in `server-data`.
+
+### [server-types](./server-types)
+
+The `prebuild-data` package must create `server-data` using a data format expected by the server.
+
+The server's external data formats are therefore defined in this `server-types` package,
+so that `prebuild-data` can import them before `server-data` is created
+(therefore before the `server` package itself is buildable).

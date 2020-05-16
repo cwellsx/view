@@ -1,12 +1,13 @@
 # `EditorTags`
 
-The [`EditorTags`](./EditorTags.tsx) component lets you edit and select the tags associated with a topic.
+This component lets you edit and select the tags associated with a topic.
+
+The purpose of this README is to document some of its implementation details.
 
 - [Appearance and behaviour](#appearance-and-behaviour)
+- [Architecture](#architecture)
 - [Implementation state data](#implementation-state-data)
-- [Sequence of definitions](#sequence-of-definitions)
-  - [Problem constraints](#problem-constraints)
-  - [Solution as implemented](#solution-as-implemented)
+- [Beware of `inputRef`](#beware-of-inputref)
 - [Controlling the `<input>` element](#controlling-the-input-element)
 - [Simulating `:focus-within`](#simulating-focus-within)
 
@@ -64,6 +65,17 @@ The `<input>` element may be:
 When you use the cursor keys (including <kbd>ArrowLeft</kbd> and <kbd>ArrowRight</kbd>) to scroll beyond the edge of
 the `<input>` control, then this component detects that and changes its selection of which tag is currently editable.
 
+## Architecture
+
+The implemented of this component is split into three modules:
+
+- [`EditorTags`](./EditorTags.tsx) defines the React elements
+- [`useSelectTags`](../hooks/useSelectTags.ts) registers the reducer for the component state; it also uses an
+  effect to fetch the list of all tags from the server
+- [`SelectTagsState`](./SelectTagsState.ts) defines the state, the reducer actions,
+  the reducer itself, helper functions to initialise the state,
+  and event handlers which delegate to reducer actions.
+
 ## Implementation state data
 
 There's quite a bit of state (i.e. member data) associated with this component:
@@ -117,117 +129,13 @@ interface RenderedState {
 Because there's a lot of data, and the data elements are inter-related,
 I implement it with `useReducer` instead of `useState`.
 
-## Sequence of definitions
+## Beware of `inputRef`
 
-The sequence in which things are defined in the source file is significant --
-and it's fragile, i.e. if you don't do it right then there's a compiler error about using something before it's defined,
-or a run-time error about using something with an undefined value.
-
-### Problem constraints
-
-The definitions in the source file (the module) include:
-
-- Data -- especially `inputRef` and `state`
-- Functions
-- Classes
-
-I think the following observations are true:
-
-- `inputRef` must be defined before `input`
-- `inputRef.current` is undefined until after the `input` is defined, **and** has been rendered into the DOM --
-  it exists when an event-handler is invoked, but never when the function component is being run (i.e. before each render)
-- `state` must be defined before `input` (because the `<input value={state.inputValue} />` property depends on `state`)
-- `state` is defined using `useReducer` which will invoke the `initialState` function (to get the initial state)
+I think that inputRef.current`is undefined until after the`input` is defined, **and** has been rendered into the DOM.
+It exists when an event-handler is invoked, but never when the function component is being run, i.e. before each render.
 
 Therefore the `initialState` function -- and the `renderState` function which is called from `initialState` -- cannot
 reference the `inputRef.current` data.
-
-Furthermore:
-
-- TypeScript class definitions behave like data definitions, i.e. the class must be defined before it's instantiated.
-- The location of a function definition doesn't matter because "function statements are subject to hoisting".
-- However it's an error if a function is invoked, if the function references `const` state data -- and/or if it
-  instantiates a TypeScript class -- which hasn't yet been defined at the location where the function was called from.
-
-### Solution as implemented
-
-So, to avoid compile-time and run-time errors, I use the following strategy:
-
-- Because the `initialState` and therefore the `renderState` functions are called when the `state` is initialized and
-  before `inputRef.current` exists, this function and anything called from this function cannot reference the state data.
-- To ensure they don't reference the state data, they're defined in the `EditorTabs.tsx` module (for convenience),
-  but defined outside the `EditorTags` function component inside which the state data are defined, so that the compiler
-  would error if they were referenced from those functions.
-
-So the following are defined outside the function component:
-
-- The `initialState` and `renderState` functions
-- Any TypeScript class definitions which these functions use
-- Any other TypeScript type definitions which these functions or classes use -- so, for simplicity, every TypeScript
-  type definition.
-- Any small helper/utility functions which these functions use -- and so, for simplicity, all helper/utility functions
-- Because a reducer should be stateless or pure, it too is defined outside the function component
-- And therefore also the TypeScript type definitions of the action types, and the corresponding user-defined type guards
-
-So the following remain inside the function component:
-
-- All state data
-- All event handlers (which delegate to the reducer, and which may reference `inputRef.current`)
-- The `assert` function depends on the `setErrorMessage` function, which is state -- so the `assert` function too is
-  defined inside the function component, and is passed as a parameter to any function which needs it.
-
-Data that's stored inside the function component, and which isn't stored as state,
-is passed to the reducer in the "action".
-
-```typescript
-interface ActionEditorClick {
-  type: "EditorClick";
-  context: Context;
-}
-interface ActionHintResult {
-  type: "HintResult";
-  context: Context;
-  hint: string;
-  inputIndex: number;
-}
-interface ActionDeleteTag {
-  type: "DeleteTag";
-  context: Context;
-  index: number;
-}
-interface ActionTagClick {
-  type: "TagClick";
-  context: Context;
-  index: number;
-}
-interface ActionKeyDown {
-  type: "KeyDown";
-  context: Context;
-  key: string;
-  shiftKey: boolean;
-}
-interface ActionChange {
-  type: "Change";
-  context: Context;
-}
-```
-
-All the `Action` types include an `InputElement` (which is created by the event handler which generates the action),
-because the `MutableState` class (called from the reducer) requires an `InputElement`, in order to update the `State`
-(including the `buffer` and the `selection`) to match the contents of the `<input>` element.
-
-In fact there's other data too, which the reducer needs and is passed in the action:
-
-```typescript
-// this is extra data which event handlers pass (as part of the action) from the function component to the reducer
-interface Context {
-  inputElement: InputElement;
-  assert: Assert;
-  result: ParentCallback;
-  tagDictionary?: TagDictionary;
-  validation: Validation;
-}
-```
 
 ## Controlling the `<input>` element
 
