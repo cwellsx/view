@@ -1,5 +1,5 @@
+import { loginUser, routeOnGet, routeOnPost } from "server";
 import { config } from "shared-lib";
-import { routeOnGet, routeOnPost, loginUser } from "server";
 
 // you could temporarily change this to enable logging, for debugging
 const isLogging = false;

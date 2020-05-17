@@ -1,6 +1,5 @@
-import { Data, Message, Url, Post, SearchInput, config } from "shared-lib";
-// only used for the mock
-import { SimpleResponse, mockFetch } from "server-mock";
+import { mockFetch, SimpleResponse } from "server-mock";
+import { config, Data, Message, Post, SearchInput, Url } from "shared-lib";
 
 // you could temporarily change this to enable logging, for debugging
 const isLogging = false;

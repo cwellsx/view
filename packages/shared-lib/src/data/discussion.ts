@@ -1,6 +1,6 @@
 import { IdName, Key } from "./id";
+import { DiscussionRange, DiscussionsRange } from "./range";
 import { UserSummary } from "./user";
-import { DiscussionsRange, DiscussionRange } from "./range";
 
 export interface Message {
   userSummary: UserSummary;

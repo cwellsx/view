@@ -1,4 +1,4 @@
-import { BareTopic, BareDiscussion, BareMessage, StoredUser, TagId } from "server-types";
+import { BareDiscussion, BareMessage, BareTopic, StoredUser, TagId } from "server-types";
 import { Key, Post } from "shared-lib";
 import * as Action from "./actions";
 

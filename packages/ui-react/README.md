@@ -88,7 +88,6 @@ Almost all hooks are extracted/isolated into user-defined hooks in the [hooks](.
 - `useMemo` in the various `routes` modules
 - A simple `useState` in the `NewDiscussion` component, which is used as a callback
   to receive state change notifications from a child component
-- (and `ThrottledInput` which ought to be refactored i.e. have its hooks extracted)
 
 The hooks are extracted into explicit user-defined hooks in the `hooks` directory, because:
 

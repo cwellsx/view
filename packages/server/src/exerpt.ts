@@ -1,4 +1,4 @@
-import { config } from "./config";
+import { config } from "shared-lib";
 
 export function getExerpt(markdown: string): string {
   const words: string[] = markdown.split(" ");

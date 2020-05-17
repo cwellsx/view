@@ -17,7 +17,6 @@ export { Wire };
 import * as Url from "./urls";
 export { Url };
 export { config } from "./config";
-export { getExerpt } from "./exerpt";
 
 export { SearchInput } from "./messages/searchInput";
 

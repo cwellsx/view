@@ -1,5 +1,5 @@
 import { Key } from "../data";
-import { DiscussionsSort, DiscussionSort, ActivitySort, TagsSort } from "../urls";
+import { ActivitySort, DiscussionSort, DiscussionsSort, TagsSort } from "../urls";
 
 /*
   This is used to paginate the unlimited-length lists (e.g. of discussions) which are fetched

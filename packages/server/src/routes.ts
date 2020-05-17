@@ -1,7 +1,7 @@
+import { Post, SearchInput, Url, UserSummary } from "shared-lib";
+import * as Action from "./actions";
 import * as DB from "./database";
 import * as Session from "./session";
-import { UserSummary, Url, Post, SearchInput } from "shared-lib";
-import * as Action from "./actions";
 
 /*
   This unwraps and dispatches data received from the client.

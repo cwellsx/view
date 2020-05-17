@@ -1,7 +1,6 @@
-import { getTagText, BareUser, BareTag, BareMessage, StoredUser, BareTopic } from "server-types";
-import { IdName, Post } from "shared-lib";
-// import * as Post from "shared-lib/lib/messages/post";
 import * as crypto from "crypto";
+import { BareMessage, BareTag, BareTopic, BareUser, getTagText, StoredUser } from "server-types";
+import { IdName, Post } from "shared-lib";
 import { simulateTitle } from "./tagIds";
 
 /*

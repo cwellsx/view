@@ -1,10 +1,9 @@
+import { Discussion, DiscussionMeta, Discussions, DiscussionSummary, Message } from "../data/discussion";
 import { Key } from "../data/id";
+import { ActivityRange, DiscussionRange, DiscussionsRange } from "../data/range";
 import { TagCount } from "../data/tag";
 import { UserSummary } from "../data/user";
-import { Discussions, DiscussionSummary, DiscussionMeta } from "../data/discussion";
-import { Discussion, Message } from "../data/discussion";
 import { UserActivity } from "../data/userActivity";
-import { DiscussionsRange, DiscussionRange, ActivityRange } from "../data/range";
 
 /*
   This defines slightly more compact forms for various types of data, in which the data is sent from the server.
