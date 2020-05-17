@@ -644,7 +644,8 @@ export interface DiscussionsOptions {
 export function isDiscussionsOptions(location: Location): DiscussionsOptions | ParserError {
   const elements = new Elements(location);
   const key = elements.matchesT(routeDiscussionsTagged);
-  if (!key && !elements.matches(routeDiscussions)) {
+  const isRoot = location.pathname === "/"; // Discussions is the default page for the root path
+  if (!key && !elements.matches(routeDiscussions) && !isRoot) {
     return errorUnexpectedPath;
   }
   const sort = elements.getQuery("sort");

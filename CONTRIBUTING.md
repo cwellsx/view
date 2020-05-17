@@ -45,6 +45,24 @@ to enable debugging in VS code:
 
 There are also `React Developer Tools` available on the chrome web store to improve inspection of React within Chrome.
 
+### Cannot debug imported packages
+
+Unfortunately this doesn't successfully debug imported packages.
+You can set a breakpoint in the UI code, and step into an imported function --
+but the debugger shows the wrong location (line number) in the imported module.
+The problem is some combination of create react app (or webpack), typescript, and monorepo).
+
+This solution might probably work, but I haven't tried it:
+
+- https://github.com/minheq/monorepo-cra-source-map
+
+Other relevant links might be:
+
+- https://stackoverflow.com/questions/42708484/what-is-the-module-package-json-field-for
+- https://www.typescriptlang.org/docs/handbook/project-references.html
+- https://stackoverflow.com/questions/59867657/create-react-app-typescript-in-monorepo-code-sharing
+- https://github.com/webpack/webpack/issues/4674
+
 ## Project configuration
 
 The project configuration is based on `monorepo-demo` --

@@ -22,7 +22,7 @@ It defines the data types and values which the two must share.
   (for example `Discussion`, `User`, and `Tag`)
 - [Messages](./shared-lib/src/messages) -- these are types used in the network protocol between the client and the
   server (they're an implementation detail of the client API and hidden from the UI)
-- [URLs](./shared-lib/src/messages) -- these are URL formats, which correspond to "routes" in the client and "endpoints"
+- [URLs](./shared-lib/src/urls.ts) -- these are URL formats, which correspond to "routes" in the client and "endpoints"
   in the REST API
 
 ### [client](./client)

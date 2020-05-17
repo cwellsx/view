@@ -34,7 +34,7 @@ const AppRoutes: React.FunctionComponent = () => {
       <Topbar />
       <ReactRouter.Switch>
         <ReactRouter.Route exact path="/index" component={Page.SiteMap} />
-        <ReactRouter.Route exact path="/" component={Page.Home} />
+        <ReactRouter.Route exact path="/" component={Page.Discussions} />
         <ReactRouter.Route exact path="/home" component={Page.Home} />
         <ReactRouter.Route exact path={Route.login} component={Page.Login} />
         <ReactRouter.Route exact path={Route.siteMap} component={Page.SiteMap} />

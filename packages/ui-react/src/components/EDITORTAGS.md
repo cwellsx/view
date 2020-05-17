@@ -131,7 +131,7 @@ I implement it with `useReducer` instead of `useState`.
 
 ## Beware of `inputRef`
 
-I think that inputRef.current`is undefined until after the`input` is defined, **and** has been rendered into the DOM.
+I think that `inputRef.current` is undefined until after the `input` is defined, **and** has been rendered into the DOM.
 It exists when an event-handler is invoked, but never when the function component is being run, i.e. before each render.
 
 Therefore the `initialState` function -- and the `renderState` function which is called from `initialState` -- cannot

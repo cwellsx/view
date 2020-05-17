@@ -4,7 +4,7 @@ import { Data } from "client";
 const isLogging = false;
 
 /*
-  All the type definitions
+  Type definitions
 */
 
 type TagCount = Data.TagCount;

@@ -1,31 +1,23 @@
-This is example software written using React.js and TypeScript.
+I wrote this as an example of a application designed with React and TypeScript.
+
+## Demo
 
 A demo of the software is running at https://cwellsx.github.io/views/
 -- try that to see how it behaves, and what it looks like.
 
-## Why
+## Source code
 
-I wrote this to see how to design an application using React.
+- [packages](./packages#readme) contains all the source code, including client and server packages
+- [packages/ui-react](./packages/ui-react#readme) is the package which uses React to implement the client UI
 
-The React API documentation shows mostly only small code examples,
-each a half-a-dozen lines of code -- this larger project shows an example of how to implement:
-
-- An application
-  -- [`./packages/ui-react/src/App.tsx`](./packages/ui-react/src/App.tsx)
-- Something like a "master page template"
-  -- i.e. where different pages share similar layouts with different content
-- A very interactive component
-  -- [`./packages/ui-react/src/components/EditorTags.tsx`](./packages/ui-react/src/components/EDITORTAGS.md)
-- A Single Page Application
-  -- by including the data, and a "mock" version of the server, in the code that's run inside the browser.
+## Design spec
 
 As a requirement or design spec for this project I chose to implement Stack Overflow's user interface, because:
 
 - It's non-trivial -- i.e. it's a "real-world" and not just a "hello world" example
-- Its UI design is already completely specified, and doesn't look bad
 - It's well-known -- a reference implementation exists -- so it's easy to assess how good an imitation this is
 
-Many of the essential features are implemented:
+I implemented these core UI features:
 
 - Discussions
   - List discussions (with sorting, filtering, and paging)
@@ -49,9 +41,25 @@ Clone this Git repository to your development machine, and run `yarn install` an
 
 For further details see [CONTRIBUTING](./CONTRIBUTING.md) and [MONOREPO](./MONOREPO.md).
 
+## About the demo
+
+The current version of the demo runs the UI **and the server** inside your browser.
+
+The server uses an "in memory" database and doesn't persist to local storage.
+When you use the UI to create or edit data, the new data is saved in the 'server'
+-- and you can see the change in the UI --
+**but** the server is reloaded, and any changes you saved are lost, whenever you refresh the browser or reload the page.
+
+When you navigate between UI pages (using the links on the page or on the application's top-bar),
+the browser doesn't reload the page, nor the React scripts.
+
+Instead, links are implemented with the
+[`react-router-dom`](https://reacttraining.com/react-router/web/guides/quick-start) package, and the UI is
+[a single-page application](https://en.wikipedia.org/wiki/Single-page_application).
+
 ## Conclusion
 
-React seems like a good way to write an application:
+I like using React:
 
 - Nice tools -- including seamless integration between editing the source and browsing the result,
   and, VS Code's integration with TypeScript
@@ -59,8 +67,7 @@ React seems like a good way to write an application:
 - Minimal overhead, no "framework" to learn to fit into
 - A wealth of 3rd-party components
 
-It's also an adequate way to write some highly-interactive components.
+TypeScript also seems ideal, for example:
 
-Using it with TypeScript also seems ideal -- for example,
-using TypeScript interfaces to define the format of data shared between client and server.
-Strong typing helps when refactoring too.
+- TypeScript interfaces can define the format of data shared between client and server
+- Strong typing helps with refactoring and IntelliSence.
