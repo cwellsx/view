@@ -2,7 +2,7 @@ I wrote this as an example of a application designed with React and TypeScript.
 
 ## Demo
 
-A demo of the software is running at https://cwellsx.github.io/views/
+A demo of the software is running at https://cwellsx.github.io/view/
 -- try that to see how it behaves, and what it looks like.
 
 ## Source code
