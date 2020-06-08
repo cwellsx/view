@@ -4,6 +4,7 @@
   "description": "The client-side API imported by the UI",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "module": "./src/index.ts",
   "private": true,
   "dependencies": {
     "shared-lib": "0.1.0",

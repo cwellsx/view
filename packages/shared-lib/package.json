@@ -4,6 +4,7 @@
   "description": "Define the data types shared between the client and the server",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "module": "./src/index.ts",
   "private": true,
   "devDependencies": {
     "typescript": "^3.8.0"

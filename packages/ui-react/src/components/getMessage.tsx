@@ -1,4 +1,4 @@
-import { Data, toHtml } from "client";
+import { Data, toHtml } from "client/src";
 import React from "react";
 import type { KeyedItem } from "../layouts";
 import { getTags } from "./getTags";

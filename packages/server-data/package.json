@@ -4,6 +4,7 @@
   "description": "Mock data created by prebuild-data for the server",
   "main": "./lib/images.js",
   "types": "./lib/images.d.ts",
+  "module": "./src/images.ts",
   "private": true,
   "dependencies": {
     "shared-lib": "0.1.0"

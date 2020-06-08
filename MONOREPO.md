@@ -2,7 +2,7 @@ This is what is called a "monorepo" -- several projects/packages are contained i
 
 For more information, search the web using words like "`monorepo`", "`lerna`", "`yarn workspace`".
 
-## Creating the repo
+## How I initially created the repo
 
 I used the following commands to create the initial repo.
 
@@ -21,7 +21,13 @@ I used the following commands to create the initial repo.
     "packages/*"
   ]
   ```
-- `lerna import` to import an existing monolithic repository
+- `lerna import` to import an existing monolithic CRA repository
+
+  Other sites (see for example
+  [here](https://github.com/facebook/create-react-app/issues/1333#issuecomment-384978840))
+  warn than running `create-react-app` within a monorepo
+  would interfere with the monorepo's hoisting.
+
 - Edit [`package.json`](./package.json) to add `scripts`,
   which are implemented using `lerna run`,
   which invoke scripts either in all packages or scoped to specific packages.
@@ -54,6 +60,73 @@ Some example projects to imitate:
 
 The configuration of this repo is based on the first of these i.e. `monorepo-demo`.
 
+## Better integration with Create React App
+
+There's an outstanding CRA issue:
+[Support Lerna and/or Yarn Workspaces - Issue #1333](https://github.com/facebook/create-react-app/issues/1333)
+
+My first attempt (above) was mostly successful:
+
+- Component packages are built separately/previously
+- Component packages are then available to and included into the CRA app, just like any other dependency would be in `node_modules`
+
+Unfortunately I found that, when I debugged the CRA app, the debugger
+couldn't set breakpoints in nor properly step into the TypeScript in component packages.
+
+That might (I'm not sure) be because WebPack is transpiling
+the `node_modules` which makes their source maps out of date.
+
+So I looked for another way to do this and found it here:
+
+- https://github.com/viewstools/yarn-workspaces-cra-crna
+
+The steps are:
+
+- Define `module` fields in `package.json` to point to the uncompiled `*.ts` files
+
+  See also [What is the “module” package.json field for?](https://stackoverflow.com/questions/42708484/what-is-the-module-package-json-field-for)
+
+- Override [this line in `webpack.config.js`](https://github.com/facebook/create-react-app/blob/fa648daca1dedd97aec4fa3bae8752c4dcf37e6f/packages/react-scripts/config/webpack.config.js#L399) ...
+
+  ```
+  include: paths.appSrc,
+  ```
+
+  ... to make it, instead of one path, an array of all the paths which webpack should be willing to transpile.
+
+The are various ways to implement the change to `webpack.config.js`:
+
+- Using `craco`
+
+  https://github.com/facebook/create-react-app/issues/1333#issuecomment-587415796
+
+- Using `customize-cra`:
+
+  https://github.com/facebook/create-react-app/issues/1333#issuecomment-593667643
+
+- Using `react-app-rewired`:
+
+  https://github.com/viewstools/yarn-workspaces-cra-crna  
+  https://github.com/viewstools/yarn-workspaces-cra-crna/blob/master/react-app-rewire-yarn-workspaces/index.js
+
+- Forking the whole `create-react-app` repository:
+
+  https://github.com/bradfordlemley/create-react-app
+
+Anyway I did it using `react-app-rewired` as described in
+https://github.com/viewstools/yarn-workspaces-cra-crna
+
+I needed to do something else as well: because the TypeScript source is in a `src` subdirectory
+I had to change the `import` statements in the app to import from
+`client\src` instead of from `client`.
+Ideally I should have been able to, instead, fix this with
+`baseUrl` and `paths` in the `tsconfig.json` however these
+are not supported by CRA.
+
+Given this new method it's sufficient to run `yarn build` in the `ui-react` project --
+its build will now also build all its dependencies.
+It's no longer necessary to build or pre-build the dependencies explicitly.
+
 ## Package names
 
 In theory the packages names might be scoped, with names like `@monorepo/ui-react` or `@cwellsx/ui-react`.
@@ -63,19 +136,3 @@ so they will not be uploaded to npmjs.com -- and so it doesn't matter that the p
 may conflict with some already-published package.
 
 If this is changed in future to add a scope, beware that various configuration files and script parameters sometimes need a package name, sometimes a directory name.
-
-## Module type
-
-The `tsconfig.shared.json` specifies
-
-```
-"module": "commonjs"
-```
-
-Other projects often specify `"module": "esnext"` which works because Babel converts it to old-style modules under the hood.
-
-In this repository the `prebuild-data` project is built and run and Node.js and isn't processed by Babel,
-so we specify the old-style modules using the TypeScript option.
-
-Alternatively this wouldn't be needed if the project depended on using a relatively new version of Node.js -- see
-[How can I use an es6 import in node?](https://stackoverflow.com/a/45854500/49942)

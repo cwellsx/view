@@ -1,4 +1,4 @@
-import { Api, Data } from "client";
+import { Api, Data } from "client/src";
 import React from "react";
 import { getImageSummary, getTagSummary } from "../components";
 import { useFetchApi } from "../hooks";

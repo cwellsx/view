@@ -1,4 +1,4 @@
-import { Api, config, Data, Post, Url } from "client";
+import { Api, config, Data, Post, Url } from "client/src";
 import { History } from "history";
 import React from "react";
 import { EditorTags, OutputTags } from "../components";

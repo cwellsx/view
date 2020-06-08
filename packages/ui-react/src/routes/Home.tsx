@@ -1,4 +1,4 @@
-import { Api, toHtml } from "client";
+import { Api, toHtml } from "client/src";
 import React from "react";
 import { htmlToReact } from "../components";
 import { FetchingT, useFetchApi2 } from "../hooks";

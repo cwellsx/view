@@ -45,49 +45,15 @@ to enable debugging in VS code:
 
 There are also `React Developer Tools` available on the chrome web store to improve inspection of React within Chrome.
 
-### Cannot debug imported packages
-
-Unfortunately this doesn't successfully debug imported packages.
-You can set a breakpoint in the UI code, and step into an imported function --
-but the debugger shows the wrong location (line number) in the imported module.
-The problem is some combination of create react app (or webpack), typescript, and monorepo).
-
-This solution might probably work, but I haven't tried it:
-
-- https://github.com/minheq/monorepo-cra-source-map
-
-Other relevant links might be:
-
-- https://stackoverflow.com/questions/42708484/what-is-the-module-package-json-field-for
-- https://www.typescriptlang.org/docs/handbook/project-references.html
-- https://stackoverflow.com/questions/59867657/create-react-app-typescript-in-monorepo-code-sharing
-- https://github.com/webpack/webpack/issues/4674
-
 ## Project configuration
 
 The project configuration is based on `monorepo-demo` --
-for more details see [Creating the repo](MONOREPO.md#creating-the-repo).
+for more details see:
+
+- [How I initially created the repo](MONOREPO.md#how-i-initially-created-the-repo)
+- [Better integration with Create React App](MONOREPO.md#better-integration-with-create-react-app).
 
 After you get it from GitHub, run `yarn install` and `yarn build` before you try to run it.
-
-## Temporary bug and its work-around
-
-The `yarn watch` command doesn't work on my machine --
-it works correctly in the `monorepo-demo` project, but on my machine it hangs after displaying this message:
-
-```
-app-react: Starting the development server...
-shared-lib: 11:50:53 PM - Found 0 errors. Watching for file changes.
-```
-
-IMO the `package.json` files are the same --
-and the difference is that this project uses a newer version of `create-react-apps`, and a newer version of TypeScript, for no important reason.
-
-I think that's caused by this bug -- https://github.com/facebook/create-react-app/pull/8700 -- whose fix was merged into master two days ago and is not yet released.
-
-I could revert to an earlier version while waiting for the fix, but won't -- will instead update `create-react-apps` when a fix is released.
-
-The temporary work-around, instead of running `yarn watch`, is to run `yarn watch-lib` and `yarn watch-ui` in two different command windows.
 
 ## Watch during development
 

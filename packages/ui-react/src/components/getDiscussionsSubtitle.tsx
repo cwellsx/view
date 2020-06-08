@@ -1,4 +1,4 @@
-import { config, Data, Url } from "client";
+import { config, Data, Url } from "client/src";
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 

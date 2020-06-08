@@ -1,4 +1,4 @@
-import { config, Data, loginUser } from "client";
+import { config, Data, loginUser } from "client/src";
 import React from "react";
 
 type Me = Data.UserSummary | undefined;

@@ -1,4 +1,4 @@
-import { Api, config, Data, Post } from "client";
+import { Api, config, Data, Post } from "client/src";
 import React from "react";
 import { Input, useValidatedInput } from "../hooks";
 

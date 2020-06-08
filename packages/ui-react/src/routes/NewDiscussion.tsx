@@ -1,4 +1,4 @@
-import { config } from "client";
+import { config } from "client/src";
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { NewDiscussion as NewDiscussionElement } from "../forms";

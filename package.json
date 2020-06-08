@@ -18,11 +18,9 @@
     "install": "lerna bootstrap",
     "clean": "yarn run unbuild && lerna run clean && rimraf node_modules",
     "test": "lerna run test",
-    "build": "lerna run build",
+    "build": "lerna run --scope ui-react build",
     "unbuild": "lerna run unbuild",
-    "watch-lib": "lerna run --parallel --ignore ui* watch",
-    "watch-ui": "lerna run --scope ui-react watch",
-    "watch": "lerna run --parallel watch",
+    "watch": "lerna run --scope ui-react watch",
     "show-dependencies": "show-dependencies.bat",
     "build-docs": "lerna run build-docs"
   }

@@ -1,4 +1,4 @@
-import { Data } from "client";
+import { Data } from "client/src";
 
 // you could temporarily change this to enable logging, for debugging
 const isLogging = false;

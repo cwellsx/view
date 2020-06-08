@@ -1,4 +1,4 @@
-import { config, Route } from "client";
+import { config, Route } from "client/src";
 import React from "react";
 import * as ReactRouter from "react-router-dom";
 import "ui-assets/css/App.css";

@@ -1,4 +1,4 @@
-import { Data } from "client";
+import { Data } from "client/src";
 import React from "react";
 import "ui-assets/css/EditorTags.css";
 import { useSelectTags } from "../hooks";

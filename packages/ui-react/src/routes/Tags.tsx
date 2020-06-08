@@ -1,4 +1,4 @@
-import { Api, config, Data, SearchInput, Url } from "client";
+import { Api, config, Data, SearchInput, Url } from "client/src";
 import React from "react";
 import { Link, NavLink, RouteComponentProps } from "react-router-dom";
 import { getPageNavLinks, getTagLink, ThrottledInput } from "../components";

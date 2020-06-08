@@ -1,5 +1,5 @@
 import React from "react";
-import { Api, Data } from "client";
+import { Api, Data } from "client/src";
 import { useFetchApi } from "../hooks";
 import { getPage, FetchedT, Layout } from "../layouts";
 import { getUserInfo } from "../components";

@@ -4,6 +4,7 @@
   "description": "Implement a mock server",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "module": "./src/index.ts",
   "private": true,
   "dependencies": {
     "shared-lib": "0.1.0",

@@ -1,4 +1,4 @@
-import { config, Route } from "client";
+import { config, Route } from "client/src";
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "ui-assets/css/Topbar.css";

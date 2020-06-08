@@ -1,4 +1,4 @@
-import { config } from "client";
+import { config } from "client/src";
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "ui-assets/css/PageLayout.css";

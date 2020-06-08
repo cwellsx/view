@@ -1,4 +1,4 @@
-import { SearchInput } from "client";
+import { SearchInput } from "client/src";
 import React from "react";
 import { ErrorMessage } from "./ErrorMessage";
 import { useThrottledInput } from "../hooks";

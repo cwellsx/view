@@ -1,5 +1,5 @@
 import React from "react";
-import { SearchInput } from "client";
+import { SearchInput } from "client/src";
 
 /*
   This defines a throttled input control e.g. for a Search control.

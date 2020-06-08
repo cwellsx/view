@@ -1,4 +1,4 @@
-import { Data } from "client";
+import { Data } from "client/src";
 import React from "react";
 import {
   Action,

@@ -1,4 +1,4 @@
-import { Api, config, Data, toHtml, Url } from "client";
+import { Api, config, Data, toHtml, Url } from "client/src";
 import { History } from "history";
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";

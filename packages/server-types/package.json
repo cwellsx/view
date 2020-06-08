@@ -4,6 +4,7 @@
   "description": "Type definitions used in the server and used by prebuild-data",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "module": "./src/index.ts",
   "private": true,
   "dependencies": {
     "shared-lib": "0.1.0"

@@ -1,4 +1,4 @@
-import { Api, Data, Post } from "client";
+import { Api, Data, Post } from "client/src";
 import React from "react";
 import "ui-assets/css/Login.css";
 import { Input, useSetMe, useValidatedInput } from "../hooks";

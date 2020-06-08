@@ -1,4 +1,4 @@
-import { Api, Data, Url } from "client";
+import { Api, Data, Url } from "client/src";
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { useFetchApi2 } from "../hooks";

@@ -1,4 +1,4 @@
-import { Data } from "client";
+import { Data } from "client/src";
 import React, { ReactElement } from "react";
 import { getUserSummary, GravatarSize } from "./getUserSummary";
 import { getWhen } from "./getWhen";
