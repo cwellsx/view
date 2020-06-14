@@ -72,13 +72,12 @@ My first attempt (above) was mostly successful:
 
 Unfortunately I found that, when I debugged the CRA app, the debugger
 couldn't set breakpoints in nor properly step into the TypeScript in component packages.
-
 That might (I'm not sure) be because WebPack is transpiling
 the `node_modules` which makes their source maps out of date.
 
 So I looked for another way to do this and found it here:
 
-- https://github.com/viewstools/yarn-workspaces-cra-crna
+- https://github.com/minheq/monorepo-cra-source-map
 
 The steps are:
 
@@ -114,7 +113,7 @@ The are various ways to implement the change to `webpack.config.js`:
   https://github.com/bradfordlemley/create-react-app
 
 Anyway I did it using `react-app-rewired` as described in
-https://github.com/viewstools/yarn-workspaces-cra-crna
+https://github.com/minheq/monorepo-cra-source-map
 
 I needed to do something else as well: because the TypeScript source is in a `src` subdirectory
 I had to change the `import` statements in the app to import from
@@ -126,6 +125,8 @@ are not supported by CRA.
 Given this new method it's sufficient to run `yarn build` in the `ui-react` project --
 its build will now also build all its dependencies.
 It's no longer necessary to build or pre-build the dependencies explicitly.
+
+The commit which implements this change is https://github.com/cwellsx/view/commit/8d046d9
 
 ## Package names
 

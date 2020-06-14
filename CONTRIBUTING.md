@@ -57,6 +57,8 @@ After you get it from GitHub, run `yarn install` and `yarn build` before you try
 
 ## Watch during development
 
+With this project you get the usual CRA dev experience, i.e. as follows.
+
 When the watch is running:
 
 - The compiled UI is visible in a browser window
@@ -72,13 +74,14 @@ Whether or not the watch is running:
 - If you don't like that there may be a work-around in some of the comments to
   [Feature Request: Show all errors and warnings in project for all files, not just opened ones](https://github.com/microsoft/vscode/issues/13953).
 
-## Running in a subdirectory
+## Build environments
 
-The production build is run in a subdirectory i.e. [`https://cwellsx.github.io/views`](https://cwellsx.github.io/views)
+The software is built in at least a couple of different ways.
 
-The development build is run in a root directory i.e. `http://localhost:3000/`
+- The released build is deployed to be served from [`https://cwellsx.github.io/views`](https://cwellsx.github.io/views)
+- The test/development build is run in a root directory i.e. `http://localhost:3000/`
 
-Normally to let the production build run in a subdirectory the following configuration is required.
+The usual way to build to run from a subdirectory like `/views` would be to configure it as follows:
 
 - In `package.json`:
 
@@ -92,7 +95,10 @@ Normally to let the production build run in a subdirectory the following configu
   <ReactRouter.BrowserRouter basename={process.env.PUBLIC_URL}>
   ```
 
-However this breaks the development build (because `PUBLIC_URL` is set to `/views` in the development build).
+However doing it in this way would break the development build
+(because `PUBLIC_URL` would be set to `/views` in the development build, whereas instead it needs to be empty).
+
+So we need a way to configure different builds -- and that way is to use environment variables.
 So -- instead of setting the `homepage` in `package.json` -- there are two environment files which are described in
 [Adding Custom Environment Variables](https://create-react-app.dev/docs/adding-custom-environment-variables/)
 
