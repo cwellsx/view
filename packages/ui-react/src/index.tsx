@@ -3,8 +3,12 @@ import ReactDOM from "react-dom";
 import "normalize.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
+import { Api, getApi } from "client/src";
+import { mockFetch } from "server-mock/src";
 
-ReactDOM.render(<App />, document.getElementById("root"));
+const api: Api = getApi(mockFetch);
+
+ReactDOM.render(<App api={api} />, document.getElementById("root"));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

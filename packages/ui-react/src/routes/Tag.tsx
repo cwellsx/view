@@ -1,12 +1,13 @@
-import { Api, Data, toHtml, Url } from "client/src";
-import { History } from "history";
-import React from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
-import { getDiscussionsSubtitle } from "../components";
-import { EditTagInfo } from "../forms";
-import { useFetchApi2 } from "../hooks";
-import { FetchedT, getPage, Layout, ShowDataT } from "../layouts";
-import { notFound } from "./NotFound";
+import { Data, toHtml, Url } from 'client/src';
+import { History } from 'history';
+import React from 'react';
+import { Link, RouteComponentProps } from 'react-router-dom';
+
+import { getDiscussionsSubtitle } from '../components';
+import { EditTagInfo } from '../forms';
+import { useApi, useFetchApi2 } from '../hooks';
+import { FetchedT, getPage, Layout, ShowDataT } from '../layouts';
+import { notFound } from './NotFound';
 
 export const Tag: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const info = Url.isTagInfo(props.location);
@@ -32,7 +33,8 @@ const TagId: React.FunctionComponent<TagIdProps> = (props: TagIdProps) => {
 
   const showData: ShowDataT<Data.TagInfo, void> = (fetched: FetchedT<Data.TagInfo, void>) =>
     showTag(fetched, { word, history });
-  return getPage(useFetchApi2(Api.getTag, key), showData);
+  const api = useApi();
+  return getPage(useFetchApi2(api.getTag, key), showData);
 };
 
 type TagExtra = Url.InfoOrEdit & { history: History };

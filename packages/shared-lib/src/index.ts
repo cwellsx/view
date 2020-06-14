@@ -22,3 +22,5 @@ export { SearchInput } from "./messages/searchInput";
 
 import { route as Route } from "./urls";
 export { Route };
+
+export { SimpleResponse } from "./api";

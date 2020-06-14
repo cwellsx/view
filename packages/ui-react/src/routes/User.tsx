@@ -1,13 +1,14 @@
-import { Api, config, Data, toHtml, Url } from "client/src";
-import { History } from "history";
-import React from "react";
-import { RouteComponentProps } from "react-router-dom";
-import { getDiscussionSummary, getTagCount, getUserSummary } from "../components";
-import { EditUserSettings } from "../forms";
-import { FetchingT, useFetchApi2, useMe } from "../hooks";
-import * as Icon from "../icons";
-import { FetchedT, getPage, KeyedItem, Layout, MainContent, ShowDataT, SubTabs, Tab, Tabs } from "../layouts";
-import { notFound } from "./NotFound";
+import { config, Data, toHtml, Url } from 'client/src';
+import { History } from 'history';
+import React from 'react';
+import { RouteComponentProps } from 'react-router-dom';
+
+import { getDiscussionSummary, getTagCount, getUserSummary } from '../components';
+import { EditUserSettings } from '../forms';
+import { FetchingT, useApi, useFetchApi2, useMe } from '../hooks';
+import * as Icon from '../icons';
+import { FetchedT, getPage, KeyedItem, Layout, MainContent, ShowDataT, SubTabs, Tab, Tabs } from '../layouts';
+import { notFound } from './NotFound';
 
 export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const parsed = Url.isUserOptions(props.location);
@@ -48,7 +49,8 @@ const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps) => {
     return { id, name };
   }, [id, name]);
 
-  const fetching: FetchingT<Data.User, void> = useFetchApi2(Api.getUser, idName);
+  const api = useApi();
+  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName);
   const showData: ShowDataT<Data.User, void> = (fetched: FetchedT<Data.User, void>) =>
     showUserProfile(fetched, { canEdit });
 
@@ -61,15 +63,12 @@ const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) 
     return { id, name };
   }, [id, name]);
 
-  const fetching: FetchingT<Data.User, void> = useFetchApi2(Api.getUser, idName);
+  const api = useApi();
+  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName);
   const showData: ShowDataT<Data.User, void> = (fetched: FetchedT<Data.User, void>) =>
     showUserSettings(fetched, { canEdit, history });
 
   return getPage(fetching, showData);
-  // return useGetLayout2<Data.User, Data.IdName, UserCanEditAndHistory>(Api.getUser, Page.UserSettings, idName, {
-  //   canEdit: props.canEdit,
-  //   history: props.history,
-  // });
 };
 
 type UserActivityProps = RouteComponentProps & {
@@ -84,7 +83,8 @@ const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserAct
     return { user: { id, name }, userTabType, sort, page };
   }, [id, name, userTabType, sort, page]);
 
-  const fetching: FetchingT<Data.UserActivity, void> = useFetchApi2(Api.getUserActivity, options);
+  const api = useApi();
+  const fetching: FetchingT<Data.UserActivity, void> = useFetchApi2(api.getUserActivity, options);
   const showData: ShowDataT<Data.UserActivity, void> = (fetched: FetchedT<Data.UserActivity, void>) =>
     showUserActivity(fetched, { canEdit });
 

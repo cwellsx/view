@@ -1,7 +1,8 @@
-import { Api, Data, Post, Url } from "client/src";
-import { History } from "history";
-import React from "react";
-import { Input, useValidatedInput } from "../hooks";
+import { Data, Post, Url } from 'client/src';
+import { History } from 'history';
+import React from 'react';
+
+import { Input, useApi, useValidatedInput } from '../hooks';
 
 /*
   Edit Tag Info
@@ -15,6 +16,7 @@ interface EditTagInfoProps {
 }
 export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: EditTagInfoProps) => {
   type T = Post.EditTagInfo;
+  const api = useApi();
 
   const { min: minLength, max: maxLength } = Data.tagSummaryLength;
 
@@ -66,7 +68,8 @@ export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: Ed
       return;
     }
     // post edited profile to the server
-    Api.editTagInfo(props.tag, currentState)
+    api
+      .editTagInfo(props.tag, currentState)
       .then((tag: Data.Key) => {
         // construct the URL of the newly-edited user
         const url = Url.getTagInfoUrl(tag);

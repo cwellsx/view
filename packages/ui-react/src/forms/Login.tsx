@@ -1,10 +1,13 @@
-import { Api, Data, Post } from "client/src";
-import React from "react";
-import "ui-assets/css/Login.css";
-import { Input, useSetMe, useValidatedInput } from "../hooks";
+import 'ui-assets/css/Login.css';
+
+import { Data, Post } from 'client/src';
+import React from 'react';
+
+import { Input, useApi, useSetMe, useValidatedInput } from '../hooks';
 
 export const Login: React.FunctionComponent = () => {
   type T = Post.Login;
+  const api = useApi();
 
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
     [
@@ -43,7 +46,8 @@ export const Login: React.FunctionComponent = () => {
       // error messages are already displayed
       return;
     }
-    Api.login(currentState)
+    api
+      .login(currentState)
       .then((userSummary: Data.UserSummary) => setMe(userSummary))
       .catch(onSubmitError);
   }

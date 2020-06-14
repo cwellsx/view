@@ -1,12 +1,14 @@
-import { Api, config, Data, Post, Url } from "client/src";
-import { History } from "history";
-import React from "react";
-import { EditorTags, OutputTags } from "../components";
-import { Input, useValidatedInput } from "../hooks";
+import { config, Data, Post, Url } from 'client/src';
+import { History } from 'history';
+import React from 'react';
+
+import { EditorTags, OutputTags } from '../components';
+import { Input, useApi, useValidatedInput } from '../hooks';
 
 type NewDiscussionProps = { history: History };
 export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props: NewDiscussionProps) => {
   type T = Post.NewDiscussion;
+  const api = useApi();
 
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
     [
@@ -53,7 +55,8 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
       // error messages are already displayed
       return;
     }
-    Api.newDiscussion({ ...currentState, tags: outputTags.tags })
+    api
+      .newDiscussion({ ...currentState, tags: outputTags.tags })
       .then((idName: Data.IdName) => {
         // construct the URL of the newly-created discussion
         const url = Url.getDiscussionUrl(idName);
@@ -73,7 +76,7 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
         <EditorTags
           inputTags={emptyTags}
           result={setOutputTags}
-          getAllTags={Api.getAllTags}
+          getAllTags={api.getAllTags}
           minimum={minimum}
           maximum={maximum}
           canNewTag={canNewTag}

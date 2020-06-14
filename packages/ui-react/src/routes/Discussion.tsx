@@ -1,11 +1,12 @@
-import { Api, Data, Url } from "client/src";
-import React from "react";
-import { RouteComponentProps } from "react-router-dom";
-import { getFirstMessage, getNextMessage, getPageNavLinks } from "../components";
-import { AnswerDiscussion } from "../forms";
-import { useFetchApi2 } from "../hooks";
-import { FetchedT, getPage, KeyedItem, Layout, SubTabs } from "../layouts";
-import { notFound } from "./NotFound";
+import { Data, Url } from 'client/src';
+import React from 'react';
+import { RouteComponentProps } from 'react-router-dom';
+
+import { getFirstMessage, getNextMessage, getPageNavLinks } from '../components';
+import { AnswerDiscussion } from '../forms';
+import { useApi, useFetchApi2 } from '../hooks';
+import { FetchedT, getPage, KeyedItem, Layout, SubTabs } from '../layouts';
+import { notFound } from './NotFound';
 
 export const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const parsed = Url.isDiscussionOptions(props.location);
@@ -25,8 +26,8 @@ const DiscussionId: React.FunctionComponent<Url.DiscussionOptions> = (props: Url
       discussion: { id: discussion.id, name: discussion.name },
     };
   }, [sort, discussion.id, discussion.name, page]);
-
-  return getPage(useFetchApi2(Api.getDiscussion, options), showDiscussion);
+  const api = useApi();
+  return getPage(useFetchApi2(api.getDiscussion, options), showDiscussion);
 };
 
 export function showDiscussion(fetched: FetchedT<Data.Discussion, void>): Layout {

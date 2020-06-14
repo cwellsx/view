@@ -1,25 +1,33 @@
-import { config, Route } from "client/src";
-import React from "react";
-import * as ReactRouter from "react-router-dom";
-import "ui-assets/css/App.css";
-import { Topbar } from "./components";
-import { AppContext, useCreateMe } from "./hooks";
-import * as Page from "./routes";
+import 'ui-assets/css/App.css';
+
+import { Api, config, Route } from 'client/src';
+import React from 'react';
+import * as ReactRouter from 'react-router-dom';
+
+import { Topbar } from './components';
+import { AppContext, useCreateMe } from './hooks';
+import * as Page from './routes';
 
 /*
   This defines the App's routes
-  and the context (like global data) which is available to any chld elements which it creates.
+  and the context (like global data) which is available to any child elements which it creates.
 */
 
-const App: React.FunctionComponent = () => {
+interface AppOptions {
+  api: Api;
+}
+
+const App: React.FunctionComponent<AppOptions> = (appOptions: AppOptions) => {
   // pass the identity of the logged-in user to subcomponents via AppContext, instead of explicitly as parameter
   const [me, setMe] = useCreateMe();
+
+  const { api } = appOptions;
 
   document.title = `${config.appname}`;
 
   // plus https://reacttraining.com/react-router/web/api/BrowserRouter
   return (
-    <AppContext.Provider value={{ me, setMe }}>
+    <AppContext.Provider value={{ me, setMe, api }}>
       <ReactRouter.BrowserRouter basename={process.env.PUBLIC_URL}>
         <AppRoutes />
       </ReactRouter.BrowserRouter>

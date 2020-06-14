@@ -1,10 +1,11 @@
-import { Api, config, Data, Url } from "client/src";
-import React from "react";
-import { RouteComponentProps } from "react-router-dom";
-import { getDiscussionsSubtitle, getDiscussionSummary, getNavLinks, getPageNavLinks } from "../components";
-import { useFetchApi2 } from "../hooks";
-import { FetchedT, getPage, Layout } from "../layouts";
-import { notFound } from "./NotFound";
+import { config, Data, Url } from 'client/src';
+import React from 'react';
+import { RouteComponentProps } from 'react-router-dom';
+
+import { getDiscussionsSubtitle, getDiscussionSummary, getNavLinks, getPageNavLinks } from '../components';
+import { useApi, useFetchApi2 } from '../hooks';
+import { FetchedT, getPage, Layout } from '../layouts';
+import { notFound } from './NotFound';
 
 export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   // get the options
@@ -23,7 +24,8 @@ const DiscussionsList: React.FunctionComponent<Url.DiscussionsOptions> = (props:
     return { sort, pagesize, page, tag };
   }, [sort, pagesize, page, tag]);
 
-  return getPage(useFetchApi2(Api.getDiscussions, options), showDiscussions);
+  const api = useApi();
+  return getPage(useFetchApi2(api.getDiscussions, options), showDiscussions);
 };
 
 function showDiscussions(fetched: FetchedT<Data.Discussions, void>): Layout {

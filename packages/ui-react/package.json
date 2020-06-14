@@ -28,17 +28,18 @@
     "typescript": "^3.8.0"
   },
   "devDependencies": {
-    "copyfiles": "^2.2.0"
+    "copyfiles": "^2.2.0",
+    "env-cmd": "^10.0.0"
   },
   "scripts": {
     "build-docs": "rimraf \"../../docs/\" && copyfiles --up 1 \"build/**/*\" \"../../docs/\"",
     "start": "react-app-rewired start",
+    "build:mock": "env-cmd -f .env.mock react-app-rewired build",
     "build": "react-app-rewired build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "express": "node server.js",
-    "clean": "rimraf node_modules",
-    "watch": "react-app-rewired start"
+    "clean": "rimraf node_modules"
   },
   "eslintConfig": {
     "extends": "react-app"

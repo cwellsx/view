@@ -1,11 +1,13 @@
-import React from "react";
-import { Api, Data } from "client/src";
-import { useFetchApi } from "../hooks";
-import { getPage, FetchedT, Layout } from "../layouts";
-import { getUserInfo } from "../components";
+import { Data } from 'client/src';
+import React from 'react';
+
+import { getUserInfo } from '../components';
+import { useApi, useFetchApi } from '../hooks';
+import { FetchedT, getPage, Layout } from '../layouts';
 
 export const Users: React.FunctionComponent = () => {
-  return getPage(useFetchApi(Api.getUsers), showUsers);
+  const api = useApi();
+  return getPage(useFetchApi(api.getUsers), showUsers);
 };
 
 function showUsers(fetched: FetchedT<Data.UserSummaryEx[], void>): Layout {

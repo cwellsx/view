@@ -1,6 +1,7 @@
-import { Api, config, Data, Post } from "client/src";
-import React from "react";
-import { Input, useValidatedInput } from "../hooks";
+import { config, Data, Post } from 'client/src';
+import React from 'react';
+
+import { Input, useApi, useValidatedInput } from '../hooks';
 
 interface AnswerDiscussionProps {
   discussionId: number;
@@ -8,6 +9,7 @@ interface AnswerDiscussionProps {
 }
 export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = (props) => {
   type T = Post.NewMessage;
+  const api = useApi();
 
   // created the validated elements and the submit button
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
@@ -37,7 +39,8 @@ export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = 
       // error messages are already displayed
       return;
     }
-    Api.newMessage(discussionId, currentState)
+    api
+      .newMessage(discussionId, currentState)
       .then((__message: Data.Message) => {
         // could push the received message into the display
         // but instead let's force a reload e.g. to see whether any other user has posted too

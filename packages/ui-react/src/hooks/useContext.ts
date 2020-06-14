@@ -1,22 +1,29 @@
-import { config, Data, loginUser } from "client/src";
-import React from "react";
+import { Api, config, Data, loginUser } from 'client/src';
+import React from 'react';
 
 type Me = Data.UserSummary | undefined;
 
 type AppContextProps = {
   me?: Data.UserSummary;
   setMe(me: Me): void;
+  api?: Api;
 };
 
 // https://fettblog.eu/typescript-react/context/
 export const AppContext = React.createContext<AppContextProps>({
   me: undefined,
   setMe: (me: Me) => {},
+  api: undefined,
 });
 
 export function useMe(): Me {
   const appContext: AppContextProps = React.useContext(AppContext);
   return appContext.me;
+}
+
+export function useApi(): Api {
+  const appContext: AppContextProps = React.useContext(AppContext);
+  return appContext.api!;
 }
 
 export function useSetMe(): (me: Me) => void {

@@ -1,9 +1,10 @@
-import { Api, Data, Url } from "client/src";
-import React from "react";
-import { RouteComponentProps } from "react-router-dom";
-import { useFetchApi2 } from "../hooks";
-import { FetchedT, getPage, Layout } from "../layouts";
-import { notFound } from "./NotFound";
+import { Data, Url } from 'client/src';
+import React from 'react';
+import { RouteComponentProps } from 'react-router-dom';
+
+import { useApi, useFetchApi2 } from '../hooks';
+import { FetchedT, getPage, Layout } from '../layouts';
+import { notFound } from './NotFound';
 
 export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
   const parsed = Url.isImage(props.location);
@@ -27,7 +28,8 @@ const ImageId: React.FunctionComponent<Data.IdName> = (props: Data.IdName) => {
     return { id, name };
   }, [id, name]);
 
-  return getPage(useFetchApi2(Api.getImage, idName), showImage);
+  const api = useApi();
+  return getPage(useFetchApi2(api.getImage, idName), showImage);
 };
 
 function showImage(fetched: FetchedT<Data.Image, void>): Layout {

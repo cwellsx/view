@@ -1,17 +1,10 @@
 import { loginUser, routeOnGet, routeOnPost } from "server";
-import { config } from "shared-lib";
+import { config, SimpleResponse } from "shared-lib";
 
 // you could temporarily change this to enable logging, for debugging
 const isLogging = false;
 
-// this declares a subset of the fields we use from the DOM Response interface
-export interface SimpleResponse {
-  readonly ok: boolean;
-  readonly statusText: string;
-  json(): Promise<any>;
-}
-
-export function mockFetch(url: string, method: string, body: string): Promise<SimpleResponse> {
+export function mockFetch(url: string, body?: object): Promise<SimpleResponse> {
   return new Promise<SimpleResponse>((resolve, reject) => {
     setTimeout(() => {
       if (config.loginfails) {
@@ -34,8 +27,8 @@ export function mockFetch(url: string, method: string, body: string): Promise<Si
       // const me: I.UserSummary | undefined = React.useContext(AppContext).me;
       // const userId: number | undefined = me ? me.idName.id : undefined;
       const userId = loginUser().id;
-      const isPost: boolean = method === "POST";
-      const json = !isPost ? routeOnGet(url, userId) : routeOnPost(url, userId, JSON.parse(body));
+      const isPost: boolean = body ? true : false;
+      const json = !isPost ? routeOnGet(url, userId) : routeOnPost(url, userId, body);
       if (!json) {
         // from inside setTimeout we must reject not throw
         // https://stackoverflow.com/questions/33445415/javascript-promises-reject-vs-throw

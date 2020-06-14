@@ -19,6 +19,8 @@
     "clean": "yarn run unbuild && lerna run clean && rimraf node_modules",
     "test": "lerna run test",
     "build": "lerna run --scope ui-react build",
+    "build:mock": "lerna run --scope ui-react build:mock",
+    "express": "lerna run --scope ui-react express",
     "unbuild": "lerna run unbuild",
     "watch": "lerna run --scope ui-react watch",
     "show-dependencies": "show-dependencies.bat",
