@@ -17,13 +17,14 @@
     "build-data": "lerna run build-data",
     "install": "lerna bootstrap",
     "clean": "yarn run unbuild && lerna run clean && rimraf node_modules",
-    "test": "lerna run test",
     "build": "lerna run --scope ui-react build",
     "build:mock": "lerna run --scope ui-react build:mock",
+    "build:client": "lerna run --scope ui-react build:client",
+    "build:docs": "lerna run --scope ui-react build:docs",
+    "start:mock": "lerna run --scope ui-react start:mock",
     "express": "lerna run --scope ui-react express",
     "unbuild": "lerna run unbuild",
-    "watch": "lerna run --scope ui-react watch",
     "show-dependencies": "show-dependencies.bat",
-    "build-docs": "lerna run build-docs"
+    "test": "lerna run test"
   }
 }

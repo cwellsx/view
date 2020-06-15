@@ -119,3 +119,50 @@ yarn express
 
 I also defined a `Procfile` -- see Heroku's
 [Specifying a start script](https://devcenter.heroku.com/articles/deploying-nodejs#specifying-a-start-script).
+
+## Several build targets
+
+The client can be built in different ways, using different build scripts in the `package.json`.
+
+### `build:client`
+
+This builds the client without including the [`mock-server`](../#mock-server) module.
+
+The client uses the browser's `fetch` API to communicate with the server, and requires the separate server to be running.
+
+### `build:mock`
+
+This builds the client with the [`mock-server`](../#mock-server) module injected into its client API.
+
+The client and server therefore run as a monolithic SPA within the browser -- without a separate server process
+(except for either the WebPack development server which is used with the `start:mock` script,
+or the simple version of the express server which is used with the `express` script).
+
+This version is convenient to debug --
+because client and server are both running in the same process (i.e. in the browser),
+and because the whole thing is reloaded automatically if you edit client-side or server-side source code.
+
+### `build:docs`
+
+This is like `build:mock` except that the `PUBLIC_URL` environment variable is set to `/view`,
+and except that the build is copied into the `../../docs` directory.
+
+This is the SPA which is used to demonstrate this project as a GitHub page,
+hosted at https://cwellsx.github.io/view/
+
+### How the builds are implemented
+
+This package's build is based on Create React App (CRA), which is designed to be not very configurable.
+
+Still I'm using four mechanisms to configure it:
+
+- Using `react-app-rewired` and `config-overrides.js` to make it build several packages in a monorepo
+  -- for details see
+  [Better integration with Create React App](../../MONOREPO.md#better-integration-with-create-react-app)
+- There are two versions of `index.tsx` -- named `index-client.tsx` and `index-mock.tsx` -- one of these imports and uses
+  the `mock-server` package and the other one doesn't.
+  I tried to reference them using `paths` in the `config-overrides.js` but that was only partially
+  successful, so instead I copy one or the other to `index.tsx` which is the filename which CRA is expecting.
+- Environment variables are defined in files named `.env.client`, `.env.mock`, and `.env.docs`,
+  which are activated for a given build by the `end-cmd` tool.
+- After the build the build directory (named `build`) is renamed.

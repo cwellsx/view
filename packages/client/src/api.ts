@@ -1,4 +1,3 @@
-//import { mockFetch, SimpleResponse } from "server-mock";
 import { Data, Message, Post, SearchInput, SimpleResponse, Url } from 'shared-lib';
 
 // you could temporarily change this to enable logging, for debugging

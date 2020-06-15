@@ -11,14 +11,13 @@ Three types of data are displayed on more than ten different types of UI page li
 **Discussions**:
 
 - List of [All discussions](/discussions) --
-the list can be sorted
-("newest" means when it was created, or "active" means when its most recent message was posted);
-and, there's pagination (e.g. 30 or 50 items per page).
-
+  the list can be sorted
+  ("newest" means when it was created, or "active" means when its most recent message was posted);
+  and, there's pagination (e.g. 30 or 50 items per page).
 - Each discussion, [for example here](/discussions/1) --
-there's a text area at the end where you can post another answer.
+  there's a text area at the end where you can post another answer.
 - Start a [New discussion](/discussions/new) -- if you click the "Ask Question" button on that page,
-you'll see that the user's data entry is validated; and there's a tag editor, which displays existing tags as hints.
+  you'll see that the user's data entry is validated; and there's a tag editor, which displays existing tags as hints.
 
 **Tags**:
 
@@ -30,7 +29,6 @@ you'll see that the user's data entry is validated; and there's a tag editor, wh
 **Users**:
 
 - List of [All users](/users).
-
 - For each specific user, three tabs:
 
   - [Profile](/users/1)
@@ -52,5 +50,5 @@ When you navigate between UI pages (using the links on the page or on the applic
 the browser doesn't reload the page, nor the React scripts.
 
 Instead, links are implemented with the
-[`react-router-dom`](https://reacttraining.com/react-router/web/guides/quick-start) package, and the UI is
-[a single-page application](https://en.wikipedia.org/wiki/Single-page_application).
+`react-router-dom` package, and the UI is
+a "single-page application".

@@ -1,12 +1,14 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import "normalize.css";
-import App from "./App";
-import * as serviceWorker from "./serviceWorker";
-import { Api, getApi } from "client/src";
-import { mockFetch } from "server-mock/src";
+import 'normalize.css';
 
-const api: Api = getApi(mockFetch);
+import { Api, getApi } from 'client/src';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import App from './App';
+import * as serviceWorker from './serviceWorker';
+
+// same as index-mock.ts except without server-mock
+const api: Api = getApi();
 
 ReactDOM.render(<App api={api} />, document.getElementById("root"));
 
