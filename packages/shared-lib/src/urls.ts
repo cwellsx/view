@@ -1,4 +1,4 @@
-import { IdName, Key } from "./data";
+import { IdName, Key } from './data';
 
 /*
   This interface is able to represent any URL which exists within the system.
@@ -8,6 +8,8 @@ import { IdName, Key } from "./data";
 
   The full list of application URLs is defined by the list of Route and RouteT values defined below --
   (but) several of these also support additional search/query parameters).
+
+  This might be easier to read if rewritten using something like https://github.com/pillarjs/path-to-regexp
 */
 
 // User
@@ -266,7 +268,7 @@ export function getResourceType(location: Location): ResourceType | ParserError 
   Server-side code needs a function to split a URL into a Location
 */
 
-// subset of the Location which is exported by the "history" module
+// on the client side this is a subset of the Location which is exported by the "history" module
 // and which is passed to routes in the ReactRouter.RouteComponentProps
 export interface Location {
   pathname: string;

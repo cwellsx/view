@@ -1,16 +1,17 @@
-import "ui-assets/css/Pages.css";
-export { Home } from "./Home";
-export { Users } from "./Users";
-export { User } from "./User";
-export { Discussions } from "./Discussions";
-export { Discussion } from "./Discussion";
-export { NewDiscussion } from "./NewDiscussion";
-export { Tags } from "./Tags";
-export { Tag } from "./Tag";
+import 'ui-assets/css/Pages.css';
 
-export { Login } from "./Login";
+export { showHome } from "./Home";
+export { showUsers } from "./Users";
+export { showUserProfile, showUserSettings, showUserActivity } from "./User";
+export { showDiscussions } from "./Discussions";
+export { showDiscussion } from "./Discussion";
+export { showNewDiscussion } from "./NewDiscussion";
+export { showTags } from "./Tags";
+export { showTag } from "./Tag";
 
-export { NotFound } from "./NotFound";
+export { showLogin } from "./Login";
 
-export { SiteMap } from "./SiteMap";
-export { Image } from "./Image";
+export { notFound } from "./NotFound";
+
+export { showSiteMap } from "./SiteMap";
+export { showImage } from "./Image";

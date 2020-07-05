@@ -1,9 +1,9 @@
-import React from "react";
-import { Login as LoginForm } from "../forms";
-import { Layout, renderLayout } from "../layouts";
+import React from 'react';
 
-export const Login: React.FunctionComponent = () => {
+import { Login as LoginForm } from '../forms';
+import { Layout } from '../layouts';
+
+export function showLogin(): Layout {
   const content = <LoginForm />;
-  const layout: Layout = { main: { content, title: "Login" }, width: "Open" };
-  return renderLayout(layout);
-};
+  return { main: { content, title: "Login" }, width: "Open" };
+}

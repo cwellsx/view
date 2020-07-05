@@ -1,95 +1,10 @@
 import { config, Data, toHtml, Url } from 'client/src';
-import { History } from 'history';
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 
 import { getDiscussionSummary, getTagCount, getUserSummary } from '../components';
 import { EditUserSettings } from '../forms';
-import { FetchingT, useApi, useFetchApi2, useMe } from '../hooks';
 import * as Icon from '../icons';
-import { FetchedT, getPage, KeyedItem, Layout, MainContent, ShowDataT, SubTabs, Tab, Tabs } from '../layouts';
-import { notFound } from './NotFound';
-
-export const User: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const parsed = Url.isUserOptions(props.location);
-  const me = useMe();
-  if (Url.isParserError(parsed)) {
-    return notFound(props, parsed.error);
-  }
-  const { userTabType, user } = parsed;
-  const canEdit = !!me && user.id === me.id;
-  switch (userTabType) {
-    case "Profile":
-    case undefined:
-      return <UserProfile {...props} id={user.id} name={user.name} canEdit={canEdit} />;
-    case "EditSettings":
-      if (!canEdit) {
-        return notFound(props, "You cannot edit another user's profile");
-      }
-      return <UserEditSettings {...props} id={user.id} name={user.name} canEdit={canEdit} />;
-    case "Activity":
-      const options = Url.isUserActivityOptions(props.location);
-      if (Url.isParserError(options)) {
-        return notFound(props, options.error);
-      }
-      return <UserActivity {...props} options={options} canEdit={canEdit} />;
-    default:
-      return notFound(props, "Unexpected userTabType");
-  }
-};
-
-// these are used as TExtra types
-type UserCanEdit = { canEdit: boolean };
-type UserCanEditAndHistory = UserCanEdit & { history: History };
-
-type UserProps = RouteComponentProps & Data.IdName & UserCanEdit;
-const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps) => {
-  const { id, name, canEdit } = props;
-  const idName = React.useMemo<Data.IdName>(() => {
-    return { id, name };
-  }, [id, name]);
-
-  const api = useApi();
-  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName);
-  const showData: ShowDataT<Data.User, void> = (fetched: FetchedT<Data.User, void>) =>
-    showUserProfile(fetched, { canEdit });
-
-  return getPage(fetching, showData);
-};
-
-const UserEditSettings: React.FunctionComponent<UserProps> = (props: UserProps) => {
-  const { id, name, canEdit, history } = props;
-  const idName = React.useMemo<Data.IdName>(() => {
-    return { id, name };
-  }, [id, name]);
-
-  const api = useApi();
-  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName);
-  const showData: ShowDataT<Data.User, void> = (fetched: FetchedT<Data.User, void>) =>
-    showUserSettings(fetched, { canEdit, history });
-
-  return getPage(fetching, showData);
-};
-
-type UserActivityProps = RouteComponentProps & {
-  options: Url.UserActivityOptions;
-} & UserCanEdit;
-const UserActivity: React.FunctionComponent<UserActivityProps> = (props: UserActivityProps) => {
-  // UserActivity may have extra search options, same as for Discussions, which the profile tab doesn't have
-  const { user, userTabType, sort, page } = props.options;
-  const { canEdit } = props;
-  const { id, name } = user;
-  const options = React.useMemo<Url.UserActivityOptions>(() => {
-    return { user: { id, name }, userTabType, sort, page };
-  }, [id, name, userTabType, sort, page]);
-
-  const api = useApi();
-  const fetching: FetchingT<Data.UserActivity, void> = useFetchApi2(api.getUserActivity, options);
-  const showData: ShowDataT<Data.UserActivity, void> = (fetched: FetchedT<Data.UserActivity, void>) =>
-    showUserActivity(fetched, { canEdit });
-
-  return getPage(fetching, showData);
-};
+import { FetchedT, KeyedItem, Layout, MainContent, SubTabs, Tab, Tabs } from '../layouts';
 
 export function showUserProfile(fetched: FetchedT<Data.User, void>, extra: { canEdit: boolean }): Layout {
   const { data: user } = fetched;
@@ -119,10 +34,7 @@ export function showUserProfile(fetched: FetchedT<Data.User, void>, extra: { can
   return showCommonUserLayout(user, "Profile", content, extra.canEdit);
 }
 
-export function showUserSettings(
-  fetched: FetchedT<Data.User, void>,
-  extra: { canEdit: boolean; history: History }
-): Layout {
+export function showUserSettings(fetched: FetchedT<Data.User, void>, extra: { canEdit: boolean }): Layout {
   const { data: user } = fetched;
   const gravatar = getUserSummary(user, {
     title: false,
@@ -133,7 +45,6 @@ export function showUserSettings(
   const content = (
     <div className="user-profile settings">
       <EditUserSettings
-        history={extra.history}
         name={user.name}
         location={user.location}
         aboutMe={user.aboutMe}

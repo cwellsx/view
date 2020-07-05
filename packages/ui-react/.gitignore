@@ -3,6 +3,7 @@
 /src/react/NOTES.md
 /src/mock-data
 *.toc.md
+src/index.tsx
 
 # site-specific content not included in the default deploy for this project
 /prebuild_data/data/*.alt

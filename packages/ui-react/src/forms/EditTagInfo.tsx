@@ -1,15 +1,13 @@
 import { Data, Post, Url } from 'client/src';
-import { History } from 'history';
 import React from 'react';
 
-import { Input, useApi, useValidatedInput } from '../hooks';
+import { Input, useApi, usePushHistory, useValidatedInput } from '../hooks';
 
 /*
   Edit Tag Info
 */
 
 interface EditTagInfoProps {
-  history: History;
   tag: string;
   summary?: string;
   markdown?: string;
@@ -17,6 +15,7 @@ interface EditTagInfoProps {
 export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: EditTagInfoProps) => {
   type T = Post.EditTagInfo;
   const api = useApi();
+  const pushHistory = usePushHistory();
 
   const { min: minLength, max: maxLength } = Data.tagSummaryLength;
 
@@ -76,7 +75,7 @@ export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: Ed
         // use history.push() to navigate programmatically
         // https://reacttraining.com/react-router/web/api/history
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
-        props.history.push(url);
+        pushHistory(url);
       })
       .catch(onSubmitError);
   }

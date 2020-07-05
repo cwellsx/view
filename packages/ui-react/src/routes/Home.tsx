@@ -2,21 +2,9 @@ import { toHtml } from 'client/src';
 import React from 'react';
 
 import { htmlToReact } from '../components';
-import { FetchingT, useApi, useFetchApi2 } from '../hooks';
-import { FetchedT, getPage, Layout, ShowDataT } from '../layouts';
+import { FetchedT, Layout } from '../layouts';
 
-type FetchedIsHtml = { isHtml: boolean };
-
-export const Home: React.FunctionComponent = () => {
-  const isHtml = false;
-  const filename = isHtml ? "home.html" : "home.md";
-  const api = useApi();
-  const fetching: FetchingT<string, void> = useFetchApi2(api.getPublic, filename);
-  const showData: ShowDataT<string, void> = (fetched: FetchedT<string, void>) => showHome(fetched, { isHtml });
-  return getPage(fetching, showData);
-};
-
-function showHome(fetched: FetchedT<string, void>, extra: { isHtml: boolean }): Layout {
+export function showHome(fetched: FetchedT<string, void>, extra: { isHtml: boolean }): Layout {
   const { data } = fetched;
   const { isHtml } = extra;
   function parse() {

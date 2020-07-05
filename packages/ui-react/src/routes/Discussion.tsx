@@ -1,34 +1,9 @@
 import { Data, Url } from 'client/src';
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 
 import { getFirstMessage, getNextMessage, getPageNavLinks } from '../components';
 import { AnswerDiscussion } from '../forms';
-import { useApi, useFetchApi2 } from '../hooks';
-import { FetchedT, getPage, KeyedItem, Layout, SubTabs } from '../layouts';
-import { notFound } from './NotFound';
-
-export const Discussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const parsed = Url.isDiscussionOptions(props.location);
-  if (Url.isParserError(parsed)) {
-    return notFound(props, parsed.error);
-  }
-
-  return <DiscussionId discussion={parsed.discussion} sort={parsed.sort} page={parsed.page} />;
-};
-
-const DiscussionId: React.FunctionComponent<Url.DiscussionOptions> = (props: Url.DiscussionOptions) => {
-  const { sort, discussion, page } = props;
-  const options: Url.DiscussionOptions = React.useMemo(() => {
-    return {
-      sort,
-      page,
-      discussion: { id: discussion.id, name: discussion.name },
-    };
-  }, [sort, discussion.id, discussion.name, page]);
-  const api = useApi();
-  return getPage(useFetchApi2(api.getDiscussion, options), showDiscussion);
-};
+import { FetchedT, KeyedItem, Layout, SubTabs } from '../layouts';
 
 export function showDiscussion(fetched: FetchedT<Data.Discussion, void>): Layout {
   const { data, reload } = fetched;

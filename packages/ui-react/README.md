@@ -26,26 +26,53 @@ These files are standard boilerplate, created by CRA.
 
 ### [App.tsx](./src/App.tsx)
 
-This module uses React Router to delegate to modules in the `routes` directory.
-The "routes" i.e. the various URLs are imported from the `client` package.
+This module uses React Router to delegate to React elements in the `AppRoutes.tsx` module.
+
+It uses an `Url` method (imported from the `client` API package) to parse the `locattion` from the React Router.
+
+It also establishes the `AppContext` values, which can be read or called by subroutines deeper in the application.
+
+This is the only module which depends on React Router, i.e. which imports `react-router-dom`.
+
+### [appRoutes.tsx](./src/appRoutes.tsx)
+
+This module contains React elements which render the page for any given route (a separate element for each route).
+
+Almost every element in this module has a similar structure:
+
+1. Use `useMemo` to memoize the parameters -- so that if the page is re-rendered with the same URL parameters,
+   this will not force a re-fetch of the data from the server
+2. Use `useFetchApi` to invoke an asynchronous API method defined in the client, to fetch data for this page from the
+   server -- `useFetchApi` gets data via the `fetch` or `mockFetch` APIs.
+3. Use `getPage` to render the page.
+
+The `getPage` function wraps the following functionality that's common to ever page:
+
+1. Tests whether the requested data has been received yet:
+   - If not then display a "Loading..." message.
+   - If so then use the received data to render the content on the page
+2. Create a `Layout` structure with the rendered content elements,
+   which identifies the type of page layout and where on the page each element belongs
+3. Pass the `Layout` instance to the `renderLayout` function and return the result.
 
 ### [routes](./src/routes)
 
-These modules render the content of a page for any given route (a separate module for each route).
+These modules contain functions which render the actual content of a page.
 
-Almost every module -- for example [Discussions.tsx](./src/routes/Discussions.tsx) -- has a similar structure:
+These functions are not called until after the data has been fetched.
 
-1. Use an `Url` method (imported from the `client` API package) to parse the `RouteComponentProps` parameter from
-   the React Router
-2. Use `useMemo` to memoize the parameters -- so that if the page is re-rendered with the same URL parameters,
-   this will not force a re-fetch of the data from the server
-3. Use `useFetchApi` to invoke an asynchronous API method defined in the client, to fetch data for this page from the
-   server -- `useFetchApi` gets data via the `fetch` or `mockFetch` APIs.
-4. Test whether the requested data has been received yet, if not then display a "Loading..." message.
-5. Use the received data to render the content on the page
-6. Create a `Layout` structure with the rendered content elements,
-   which identifies the type of page layout and where on the page each element belongs
-7. Pass the `Layout` instance to the `renderLayout` function and return the result.
+These are functions, not React element -- they create React element which are the content of the page,
+but these elements are returned within an application-specific `Layout` object.
+
+These are the functions in which you can begin to see the application UI -- the modules above
+these i.e. `App.tsx` and `apppRoutes.tsx` are boilerplate for parsing the routes and fetching data.
+
+| What?                                                          | Who?                                         |
+| -------------------------------------------------------------- | -------------------------------------------- |
+| Use and parse the URL to switch to the appropriate route       | `App.tsx` using `Url`                        |
+| Fetch the data for this Url (i.e. route) and query parameters  | `appRoutes.tsx` using `useFetchApi.tsx`      |
+| Render the data                                                | `routes/*.tsx`                               |
+| Show the rendered data within one the application page layouts | `appRoutes.tsx` using `getPage` and `layout` |
 
 ### [layout](./src/layout)
 
@@ -101,6 +128,33 @@ Some hooks import components, and some components import hooks -- so there's a r
 cyclic dependencies.
 To help avoid this risk, hook implementations do not import from the `components/index.ts` barrel file --
 instead they import specific modules in the components folder.
+
+## Dependencies
+
+### `react-router-dom`
+
+I made an effort to minimise the dependency on `react-router-dom`,
+so that I might in future reimplement the application using a different framework (for example Next.js).
+
+The only source file which imports `react-router-dom` is `App.tsx` -- so in theory I could create a different
+project with a different `App.tsx`, using a different framework, which would reuse the reset of the source code.
+
+Functionality that's implemented by React Router and needed deep in the rendering or behaviour of components --
+which includes, rendering `<Link>` elements, and simulating the pushing of a new URL into Browser history --
+are made available to or pushed into the application via the `AppContext`.
+
+### `fetch` and `useState`
+
+Similarly I made an effort to minimise the dependency on the `fetch` and `useState` methods
+(which fetch data from the server and store the data as state within the client),
+so in future I might reimplement the application using a different framework (for example Apollo GraphQL).
+
+The the `fetch` and `useState` methods are wrapped in a single user-defined hook function (i.e. `useFetchApi.ts`) --
+and the React elements which use this hook (a separate element for each page or route) are all in one source file
+(i.e. `appRoutes.tsx`).
+
+So in theory I could create a different project with a different `appRoutes.tsx`, to use a different state management
+and/or data fetching framework.
 
 ## Integration with Express and Heroku
 

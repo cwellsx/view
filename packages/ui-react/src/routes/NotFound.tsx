@@ -1,13 +1,8 @@
-import React from "react";
-import { RouteComponentProps } from "react-router-dom";
-import { ErrorMessage } from "../components";
+import React from 'react';
 
-export const NotFound: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  return notFound(props);
-};
+import { ErrorMessage } from '../components';
 
-export function notFound(props: RouteComponentProps, error?: string) {
-  const pathname = props.location.pathname;
+export function notFound(pathname: string, error?: string) {
   return (
     <div>
       <h3>Not Found</h3>

@@ -1,14 +1,13 @@
 import { config, Data, Post, Url } from 'client/src';
-import { History } from 'history';
 import React from 'react';
 
 import { EditorTags, OutputTags } from '../components';
-import { Input, useApi, useValidatedInput } from '../hooks';
+import { Input, useApi, usePushHistory, useValidatedInput } from '../hooks';
 
-type NewDiscussionProps = { history: History };
-export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props: NewDiscussionProps) => {
+export const NewDiscussion: React.FunctionComponent = () => {
   type T = Post.NewDiscussion;
   const api = useApi();
+  const pushHistory = usePushHistory();
 
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
     [
@@ -47,8 +46,6 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
     isValid: false,
   });
 
-  const { history } = props;
-
   function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     if (isError || !outputTags.isValid) {
@@ -60,7 +57,7 @@ export const NewDiscussion: React.FunctionComponent<NewDiscussionProps> = (props
       .then((idName: Data.IdName) => {
         // construct the URL of the newly-created discussion
         const url = Url.getDiscussionUrl(idName);
-        history.push(url);
+        pushHistory(url);
       })
       .catch(onSubmitError);
   }

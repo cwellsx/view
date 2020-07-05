@@ -1,38 +1,9 @@
-import { Data, Url } from 'client/src';
+import { Data } from 'client/src';
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 
-import { useApi, useFetchApi2 } from '../hooks';
-import { FetchedT, getPage, Layout } from '../layouts';
-import { notFound } from './NotFound';
+import { FetchedT, Layout } from '../layouts';
 
-export const Image: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  const parsed = Url.isImage(props.location);
-  if (Url.isParserError(parsed)) {
-    return notFound(props, parsed.error);
-  }
-
-  // see https://stackoverflow.com/questions/55990985/is-this-a-safe-way-to-avoid-did-you-accidentally-call-a-react-hook
-  // I'm not sure whether or why it's necessary to instantiate it like `<ImageId />` instead
-  // of calling it as a function like `ImageId({imageId: imageId})` but I do it anyway.
-  // So far as I can tell from testing, what really matters is the array of dependencies passed to useEffects.
-  return <ImageId id={parsed.id} name={parsed.name} />;
-};
-
-const ImageId: React.FunctionComponent<Data.IdName> = (props: Data.IdName) => {
-  // ImageId is a separate function component because there's an `if` statement at the top of the Image cmpnent
-  // https://overreacted.io/a-complete-guide-to-useeffect/#but-i-cant-put-this-function-inside-an-effect
-
-  const { id, name } = props;
-  const idName = React.useMemo<Data.IdName>(() => {
-    return { id, name };
-  }, [id, name]);
-
-  const api = useApi();
-  return getPage(useFetchApi2(api.getImage, idName), showImage);
-};
-
-function showImage(fetched: FetchedT<Data.Image, void>): Layout {
+export function showImage(fetched: FetchedT<Data.Image, void>): Layout {
   const { data } = fetched;
   const images = (
     <div className="image-images">

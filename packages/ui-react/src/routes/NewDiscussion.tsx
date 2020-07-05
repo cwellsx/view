@@ -1,16 +1,15 @@
-import { config } from "client/src";
-import React from "react";
-import { RouteComponentProps } from "react-router-dom";
-import { NewDiscussion as NewDiscussionElement } from "../forms";
-import { Layout, renderLayout } from "../layouts";
+import { config } from 'client/src';
+import React from 'react';
 
-export const NewDiscussion: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
+import { NewDiscussion as NewDiscussionElement } from '../forms';
+import { Layout } from '../layouts';
+
+export function showNewDiscussion(): Layout {
   // this is unusual because we don't need to fetch data before rendering this element
-  const content = <NewDiscussionElement history={props.history} />;
+  const content = <NewDiscussionElement />;
   const title = config.strNewQuestion.title;
-  const layout: Layout = {
+  return {
     main: { content, title },
     width: "None",
   };
-  return renderLayout(layout);
-};
+}

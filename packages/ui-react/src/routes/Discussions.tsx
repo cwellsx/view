@@ -1,34 +1,10 @@
 import { config, Data, Url } from 'client/src';
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 
 import { getDiscussionsSubtitle, getDiscussionSummary, getNavLinks, getPageNavLinks } from '../components';
-import { useApi, useFetchApi2 } from '../hooks';
-import { FetchedT, getPage, Layout } from '../layouts';
-import { notFound } from './NotFound';
+import { FetchedT, Layout } from '../layouts';
 
-export const Discussions: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  // get the options
-  const options = Url.isDiscussionsOptions(props.location);
-  if (Url.isParserError(options)) {
-    return notFound(props, options.error);
-  }
-  // split options into its components instead of passing whole options
-  // otherwise the eslint "react-hooks/exhaustive-deps" rule wil complain when we use useMemo
-  return <DiscussionsList sort={options.sort} pagesize={options.pagesize} page={options.page} tag={options.tag} />;
-};
-
-const DiscussionsList: React.FunctionComponent<Url.DiscussionsOptions> = (props: Url.DiscussionsOptions) => {
-  const { sort, pagesize, page, tag } = props;
-  const options: Url.DiscussionsOptions = React.useMemo(() => {
-    return { sort, pagesize, page, tag };
-  }, [sort, pagesize, page, tag]);
-
-  const api = useApi();
-  return getPage(useFetchApi2(api.getDiscussions, options), showDiscussions);
-};
-
-function showDiscussions(fetched: FetchedT<Data.Discussions, void>): Layout {
+export function showDiscussions(fetched: FetchedT<Data.Discussions, void>): Layout {
   const { data } = fetched;
   const { range, summaries } = data;
   const { pageNumber, nTotal, pageSize, sort, tag } = range;

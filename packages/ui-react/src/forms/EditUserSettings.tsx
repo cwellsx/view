@@ -1,13 +1,11 @@
 import { Data, Post, Url } from 'client/src';
-import { History } from 'history';
 import React from 'react';
 
-import { Input, useApi, useValidatedInput } from '../hooks';
+import { Input, useApi, usePushHistory, useValidatedInput } from '../hooks';
 
 // this is a separate function component instead of just being incide the getSettingsContent function
 // [because it contains hooks](https://reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions)
 interface EditUserSettingsProps {
-  history: History;
   name: string;
   location?: string;
   aboutMe?: string;
@@ -18,6 +16,7 @@ interface EditUserSettingsProps {
 export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = (props: EditUserSettingsProps) => {
   type T = Post.EditUserProfile;
   const api = useApi();
+  const pushHistory = usePushHistory();
 
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
     [
@@ -83,7 +82,7 @@ export const EditUserSettings: React.FunctionComponent<EditUserSettingsProps> = 
         // use history.push() to navigate programmatically
         // https://reacttraining.com/react-router/web/api/history
         // https://stackoverflow.com/questions/31079081/programmatically-navigate-using-react-router
-        props.history.push(url);
+        pushHistory(url);
       })
       .catch(onSubmitError);
   }

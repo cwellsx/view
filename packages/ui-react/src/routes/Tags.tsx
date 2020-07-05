@@ -1,33 +1,12 @@
 import { config, Data, SearchInput, Url } from 'client/src';
 import React from 'react';
-import { Link, NavLink, RouteComponentProps } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 import { getPageNavLinks, getTagLink, ThrottledInput } from '../components';
-import { useApi, useFetchApi2 } from '../hooks';
 import * as Icon from '../icons';
-import { FetchedT, getPage, Layout } from '../layouts';
-import { notFound } from './NotFound';
+import { FetchedT, Layout } from '../layouts';
 
-export const Tags: React.FunctionComponent<RouteComponentProps> = (props: RouteComponentProps) => {
-  // get the options
-  const options = Url.isTagsOptions(props.location);
-  if (Url.isParserError(options)) {
-    return notFound(props, options.error);
-  }
-  return <TagsList sort={options.sort} pagesize={options.pagesize} page={options.page} />;
-};
-
-const TagsList: React.FunctionComponent<Url.TagsOptions> = (props: Url.TagsOptions) => {
-  const { sort, pagesize, page } = props;
-  const options: Url.TagsOptions = React.useMemo(() => {
-    return { sort, pagesize, page };
-  }, [sort, pagesize, page]);
-
-  const api = useApi();
-  return getPage(useFetchApi2(api.getTags, options), showTags);
-};
-
-function showTags(fetched: FetchedT<Data.Tags, SearchInput>): Layout {
+export function showTags(fetched: FetchedT<Data.Tags, SearchInput>): Layout {
   const { data, newData } = fetched;
   const { range, tagCounts } = data;
   const title = config.strTags;

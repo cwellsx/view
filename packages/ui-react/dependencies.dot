@@ -1,6 +1,7 @@
 digraph SRC {
   "index.tsx" -> "App.tsx";
-  "App.tsx" -> {"routes" "components"};
-  "routes" -> {"forms" "components" "layouts"};
+  "App.tsx" -> "appRoutes.tsx";
+  "appRoutes.tsx" -> {"routes" "layouts"};
+  "routes" -> {"forms" "components"};
   "forms" -> "components";
 }
