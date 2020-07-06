@@ -6,7 +6,30 @@ import * as ReactRouter from 'react-router-dom';
 
 import * as AppRoute from './appRoutes';
 import { Topbar } from './components';
-import { AppContext, useCreateMe } from './hooks';
+import { AppContext, GetLink, GetNavLink, useCreateMe } from './hooks';
+
+/*
+  getLink and getNavLink are defined here so the rest of the application can avoid depending directly on React Router
+  e.g. so that in future  there could be a different implementation of this project which depends on Next.js instead.
+*/
+
+const getLink: GetLink = (props) => {
+  const { to, className, children } = props;
+  return (
+    <ReactRouter.Link to={to} className={className}>
+      {children}
+    </ReactRouter.Link>
+  );
+};
+
+const getNavLink: GetNavLink = (props) => {
+  const { to, className, title, onClick, children } = props;
+  return (
+    <ReactRouter.NavLink to={to} className={className} title={title} onClick={onClick}>
+      {children}
+    </ReactRouter.NavLink>
+  );
+};
 
 /*
   This defines the App's routes
@@ -36,7 +59,7 @@ const AppRoutes: React.FunctionComponent<AppOptions> = (appOptions: AppOptions) 
   const { api } = appOptions;
 
   return (
-    <AppContext.Provider value={{ me, setMe, api, pushHistory: history.push }}>
+    <AppContext.Provider value={{ me, setMe, api, pushHistory: history.push, getLink, getNavLink }}>
       <React.Fragment>
         <Topbar />
         <ReactRouter.Switch>

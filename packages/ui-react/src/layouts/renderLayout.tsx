@@ -1,9 +1,12 @@
-import { config } from "client/src";
-import React from "react";
-import { NavLink } from "react-router-dom";
-import "ui-assets/css/PageLayout.css";
-import * as Icon from "../icons";
-import { Layout, RightContent, SubTabs, Tabs } from "./Layout";
+import 'ui-assets/css/PageLayout.css';
+
+import { config } from 'client/src';
+import React from 'react';
+
+import { NavLink } from '../components';
+import * as Icon from '../icons';
+import { Layout, RightContent, SubTabs, Tabs } from './Layout';
+
 import type { MainContent, Width } from "./Layout";
 
 /*

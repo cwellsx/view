@@ -1,5 +1,6 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React from 'react';
+
+import { NavLink } from './Link';
 
 export function getNavLinks(
   wanted: Array<{ text: string; n: number } | undefined>,

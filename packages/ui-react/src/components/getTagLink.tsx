@@ -1,6 +1,7 @@
-import { Data, Url } from "client/src";
-import React from "react";
-import { Link } from "react-router-dom";
+import { Data, Url } from 'client/src';
+import React from 'react';
+
+import { Link } from './Link';
 
 export function getTagLink(tag: Data.Key): React.ReactElement {
   const href = Url.getTagUrl(tag);

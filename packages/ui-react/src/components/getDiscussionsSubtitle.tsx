@@ -1,6 +1,7 @@
-import { config, Data, Url } from "client/src";
-import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { config, Data, Url } from 'client/src';
+import React from 'react';
+
+import { Link, NavLink } from './Link';
 
 export function getDiscussionsSubtitle(
   title: string,

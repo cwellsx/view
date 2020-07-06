@@ -1,8 +1,7 @@
 import { Data, toHtml, Url } from 'client/src';
 import React from 'react';
-import { Link } from 'react-router-dom';
 
-import { getDiscussionsSubtitle } from '../components';
+import { getDiscussionsSubtitle, Link } from '../components';
 import { EditTagInfo } from '../forms';
 import { FetchedT, Layout } from '../layouts';
 

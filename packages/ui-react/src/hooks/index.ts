@@ -1,4 +1,14 @@
-export { AppContext, useCreateMe, useApi, usePushHistory, useMe, useSetMe } from "./useContext";
+export {
+  AppContext,
+  useCreateMe,
+  useApi,
+  usePushHistory,
+  useMe,
+  useSetMe,
+  useGetLink,
+  useGetNavLink,
+} from "./useContext";
+export type { GetLink, GetNavLink } from "./useContext";
 export { useFetchApi, useFetchApi2 } from "./useFetchApi";
 export type { FetchingT } from "./useFetchApi";
 export { usePagedownEditor } from "./usePagedownEditor";

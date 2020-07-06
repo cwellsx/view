@@ -1,10 +1,10 @@
+import 'ui-assets/css/Components.css';
+
 /*
   This module defines components which exist within larger content.
   https://reactjs.org/docs/components-and-props.html#extracting-components
   They're currently defined as functions, however.
 */
-
-import "ui-assets/css/Components.css";
 
 export { createChild } from "./createChild";
 export type { CreateAny } from "./createChild";
@@ -31,6 +31,8 @@ export { getWhen } from "./getWhen";
 export { htmlToReact } from "./htmlToReact";
 export { createLabel } from "./Label";
 export type { Label } from "./Label";
+export { Link, NavLink } from "./Link";
+export type { LinkProps, NavLinkProps } from "./Link";
 export type { OutputTags } from "./SelectTagsState";
 export { ThrottledInput } from "./ThrottledInput";
 export { Topbar } from "./Topbar";

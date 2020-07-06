@@ -1,6 +1,8 @@
-import { Data, Url } from "client/src";
-import React from "react";
-import { NavLink } from "react-router-dom";
+import { Data, Url } from 'client/src';
+import React from 'react';
+
+import { NavLink } from './Link';
+
 import type { KeyedItem } from "../layouts";
 
 const nbsp = "\u00A0";

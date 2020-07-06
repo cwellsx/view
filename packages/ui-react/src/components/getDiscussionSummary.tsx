@@ -1,12 +1,13 @@
-import { Data, Url } from "client/src";
-import React from "react";
-import { NavLink } from "react-router-dom";
-import type { KeyedItem } from "../layouts";
-import { getTags } from "./getTags";
-import { getUserInfo } from "./getUserInfo";
-import { getWhen } from "./getWhen";
-import { toLocaleString } from "./toLocaleString";
+import { Data, Url } from 'client/src';
+import React from 'react';
 
+import { getTags } from './getTags';
+import { getUserInfo } from './getUserInfo';
+import { getWhen } from './getWhen';
+import { NavLink } from './Link';
+import { toLocaleString } from './toLocaleString';
+
+import type { KeyedItem } from "../layouts";
 export function getDiscussionSummary(summary: Data.DiscussionSummary, short: boolean = false): KeyedItem {
   const href = Url.getDiscussionUrl(summary);
   const when = toLocaleString(new Date(summary.messageSummary.dateTime));

@@ -1,8 +1,7 @@
 import { config, Data, SearchInput, Url } from 'client/src';
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
 
-import { getPageNavLinks, getTagLink, ThrottledInput } from '../components';
+import { getPageNavLinks, getTagLink, Link, NavLink, ThrottledInput } from '../components';
 import * as Icon from '../icons';
 import { FetchedT, Layout } from '../layouts';
 

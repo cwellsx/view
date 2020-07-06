@@ -1,5 +1,6 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React from 'react';
+
+import { Link } from './Link';
 
 // this uses the "html-to-react" package, to transform <a> in the HTML string to <Link> elements
 // if we didn't need that transformation we could just do <div dangerouslySetInnerHTML={html} />
