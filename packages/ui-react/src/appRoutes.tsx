@@ -1,9 +1,9 @@
-import { Data, Url } from 'client/src';
-import React from 'react';
+import { Data, Url } from "client/src";
+import React from "react";
 
-import { FetchingT, useApi, useFetchApi, useFetchApi2 } from './hooks';
-import { FetchedT, getPage, renderLayout, ShowDataT } from './layouts';
-import * as Page from './routes';
+import { FetchingT, useApi, useFetchApi, useFetchApi2 } from "./hooks";
+import { FetchedT, getPage, renderLayout, ShowDataT } from "./layouts";
+import * as Page from "./routes";
 
 export { notFound } from "./routes";
 
@@ -17,8 +17,8 @@ export const Login: React.FunctionComponent = () => {
 };
 
 export const SiteMap: React.FunctionComponent = () => {
-  const api = useApi();
-  return getPage(useFetchApi(api.getSiteMap), Page.showSiteMap);
+  const { api, cache } = useApi();
+  return getPage(useFetchApi(api.getSiteMap, cache.getSiteMap), Page.showSiteMap);
 };
 
 export const Discussions: React.FunctionComponent<Url.DiscussionsOptions> = (props: Url.DiscussionsOptions) => {
@@ -27,22 +27,22 @@ export const Discussions: React.FunctionComponent<Url.DiscussionsOptions> = (pro
     return { sort, pagesize, page, tag };
   }, [sort, pagesize, page, tag]);
 
-  const api = useApi();
-  return getPage(useFetchApi2(api.getDiscussions, options), Page.showDiscussions);
+  const { api, cache } = useApi();
+  return getPage(useFetchApi2(api.getDiscussions, options, cache.getDiscussions), Page.showDiscussions);
 };
 
 export const Home: React.FunctionComponent = () => {
   const isHtml = false;
   const filename = isHtml ? "home.html" : "home.md";
-  const api = useApi();
-  const fetching: FetchingT<string, void> = useFetchApi2(api.getPublic, filename);
+  const { api, cache } = useApi();
+  const fetching: FetchingT<string, void> = useFetchApi2(api.getPublic, filename, cache.getPublic);
   const showData: ShowDataT<string, void> = (fetched: FetchedT<string, void>) => Page.showHome(fetched, { isHtml });
   return getPage(fetching, showData);
 };
 
 export const Users: React.FunctionComponent = () => {
-  const api = useApi();
-  return getPage(useFetchApi(api.getUsers), Page.showUsers);
+  const { api, cache } = useApi();
+  return getPage(useFetchApi(api.getUsers, cache.getUsers), Page.showUsers);
 };
 
 export const Tags: React.FunctionComponent<Url.TagsOptions> = (props: Url.TagsOptions) => {
@@ -51,8 +51,8 @@ export const Tags: React.FunctionComponent<Url.TagsOptions> = (props: Url.TagsOp
     return { sort, pagesize, page };
   }, [sort, pagesize, page]);
 
-  const api = useApi();
-  return getPage(useFetchApi2(api.getTags, options), Page.showTags);
+  const { api, cache } = useApi();
+  return getPage(useFetchApi2(api.getTags, options, cache.getTags), Page.showTags);
 };
 
 // these are used as TExtra types
@@ -65,8 +65,8 @@ export const UserProfile: React.FunctionComponent<UserProps> = (props: UserProps
     return { id, name };
   }, [id, name]);
 
-  const api = useApi();
-  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName);
+  const { api, cache } = useApi();
+  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName, cache.getUser);
   const showData: ShowDataT<Data.User, void> = (fetched: FetchedT<Data.User, void>) =>
     Page.showUserProfile(fetched, { canEdit });
 
@@ -79,8 +79,8 @@ export const UserEditSettings: React.FunctionComponent<UserProps> = (props: User
     return { id, name };
   }, [id, name]);
 
-  const api = useApi();
-  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName);
+  const { api, cache } = useApi();
+  const fetching: FetchingT<Data.User, void> = useFetchApi2(api.getUser, idName, cache.getUser);
   const showData: ShowDataT<Data.User, void> = (fetched: FetchedT<Data.User, void>) =>
     Page.showUserSettings(fetched, { canEdit });
 
@@ -97,8 +97,12 @@ export const UserActivity: React.FunctionComponent<UserActivityProps> = (props: 
     return { user: { id, name }, userTabType, sort, page };
   }, [id, name, userTabType, sort, page]);
 
-  const api = useApi();
-  const fetching: FetchingT<Data.UserActivity, void> = useFetchApi2(api.getUserActivity, options);
+  const { api, cache } = useApi();
+  const fetching: FetchingT<Data.UserActivity, void> = useFetchApi2(
+    api.getUserActivity,
+    options,
+    cache.getUserActivity
+  );
   const showData: ShowDataT<Data.UserActivity, void> = (fetched: FetchedT<Data.UserActivity, void>) =>
     Page.showUserActivity(fetched, { canEdit });
 
@@ -114,8 +118,8 @@ export const Image: React.FunctionComponent<Data.IdName> = (props: Data.IdName) 
     return { id, name };
   }, [id, name]);
 
-  const api = useApi();
-  return getPage(useFetchApi2(api.getImage, idName), Page.showImage);
+  const { api, cache } = useApi();
+  return getPage(useFetchApi2(api.getImage, idName, cache.getImage), Page.showImage);
 };
 
 export const Discussion: React.FunctionComponent<Url.DiscussionOptions> = (props: Url.DiscussionOptions) => {
@@ -127,8 +131,8 @@ export const Discussion: React.FunctionComponent<Url.DiscussionOptions> = (props
       discussion: { id: discussion.id, name: discussion.name },
     };
   }, [sort, discussion.id, discussion.name, page]);
-  const api = useApi();
-  return getPage(useFetchApi2(api.getDiscussion, options), Page.showDiscussion);
+  const { api, cache } = useApi();
+  return getPage(useFetchApi2(api.getDiscussion, options, cache.getDiscussion), Page.showDiscussion);
 };
 
 type TagIdProps = Url.InfoOrEdit & { tag: string };
@@ -143,6 +147,6 @@ export const Tag: React.FunctionComponent<TagIdProps> = (props: TagIdProps) => {
 
   const showData: ShowDataT<Data.TagInfo, void> = (fetched: FetchedT<Data.TagInfo, void>) =>
     Page.showTag(fetched, { word });
-  const api = useApi();
-  return getPage(useFetchApi2(api.getTag, key), showData);
+  const { api, cache } = useApi();
+  return getPage(useFetchApi2(api.getTag, key, cache.getTag), showData);
 };

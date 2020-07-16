@@ -1,4 +1,4 @@
-import { Data, Message, Post, SearchInput, SimpleResponse, Url } from 'shared-lib';
+import { Data, Message, Post, SearchInput, SimpleResponse, Url } from "shared-lib";
 
 // you could temporarily change this to enable logging, for debugging
 const isLogging = false;
@@ -15,13 +15,13 @@ export interface Api {
   getAllTags(): Promise<Data.TagCount[]>;
   getTags(options: Url.TagsOptions, data?: SearchInput): Promise<Data.Tags>;
   getTag(tag: Data.Key): Promise<Data.TagInfo>;
+  getPublic(filename: string): Promise<string>;
   // methods to post data
   login(data: Post.Login): Promise<Data.UserSummary>;
   newMessage(discussionId: number, data: Post.NewMessage): Promise<Data.Message>;
   newDiscussion(data: Post.NewDiscussion): Promise<Data.IdName>;
   editUserProfile(userId: number, data: Post.EditUserProfile): Promise<Data.IdName>;
   editTagInfo(tag: string, data: Post.EditTagInfo): Promise<Data.Key>;
-  getPublic(filename: string): Promise<string>;
 }
 
 interface MockFetch {

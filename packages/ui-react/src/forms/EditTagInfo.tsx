@@ -1,7 +1,7 @@
-import { Data, Post, Url } from 'client/src';
-import React from 'react';
+import { Data, Post, Url } from "client/src";
+import React from "react";
 
-import { Input, useApi, usePushHistory, useValidatedInput } from '../hooks';
+import { Input, useApi, usePushHistory, useValidatedInput } from "../hooks";
 
 /*
   Edit Tag Info
@@ -14,7 +14,7 @@ interface EditTagInfoProps {
 }
 export const EditTagInfo: React.FunctionComponent<EditTagInfoProps> = (props: EditTagInfoProps) => {
   type T = Post.EditTagInfo;
-  const api = useApi();
+  const { api } = useApi();
   const pushHistory = usePushHistory();
 
   const { min: minLength, max: maxLength } = Data.tagSummaryLength;

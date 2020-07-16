@@ -1,13 +1,13 @@
-import 'ui-assets/css/Login.css';
+import "ui-assets/css/Login.css";
 
-import { Data, Post } from 'client/src';
-import React from 'react';
+import { Data, Post } from "client/src";
+import React from "react";
 
-import { Input, useApi, useSetMe, useValidatedInput } from '../hooks';
+import { Input, useApi, useSetMe, useValidatedInput } from "../hooks";
 
 export const Login: React.FunctionComponent = () => {
   type T = Post.Login;
-  const api = useApi();
+  const { api } = useApi();
 
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
     [
