@@ -1,4 +1,5 @@
-import { Data, Url } from "shared-lib";
+import * as Data from './data';
+import * as Url from './urls';
 
 export interface Cache {
   // methods to get data

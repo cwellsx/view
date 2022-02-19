@@ -66,7 +66,7 @@ These modules contain functions which render the actual content of a page.
 
 These functions are not called until after the data has been fetched.
 
-These are functions, not React element -- they create React element which are the content of the page,
+These are functions, not React elements -- they create React element which are the content of the page,
 but these elements are returned within an application-specific `Layout` object.
 
 These are the functions in which you can begin to see the application UI -- the modules above

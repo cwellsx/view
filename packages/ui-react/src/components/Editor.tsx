@@ -1,7 +1,9 @@
 import "pagedown-editor/pagedown.css";
 import "pagedown-editor/sample-bundle";
-import React from "react";
 import "ui-assets/css/Editor.css";
+
+import React from "react";
+
 import { Label, Validated } from "../components";
 import { usePagedownEditor } from "../hooks";
 

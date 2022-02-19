@@ -1,5 +1,5 @@
-import { BareTag, BareTagCount, getTagText, isTag, TagId } from "server-types";
-import { IdName, Image, Key, SiteTagCount, TagCount, Url } from "shared-lib";
+import { BareTag, BareTagCount, getTagText, isTag, TagId } from 'server-types';
+import { IdName, Image, Key, SiteTagCount, TagCount, Url } from 'shared-lib';
 
 // export function getTagText(title: string) {
 //   // preserve only alphanumeric and whitespace and hyphen, then convert all whitespace, then toLower
@@ -70,17 +70,42 @@ class TagIdMap<TValue> {
 }
 
 export class TagIdCounts extends TagIdMap<number> {
+  readonly top3: [string, number][] = [];
   add(tagId: TagId): void {
     // if this has a resource type then convert it to a string with an internal space (which a key can't have)
     const key = getMapKey(tagId);
-    const count = super.get(key);
-    super.set(key, count ? count + 1 : 1);
+    // increment previous count
+    const prev = super.get(key);
+    const count = prev ? prev + 1 : 1;
+    // store new count
+    super.set(key, count);
+    // reevaluate which are the top three tags
+    const found = this.top3.findIndex((it) => it[0] === key);
+    if (found !== -1) {
+      this.top3[found][1] = count;
+    } else if (this.top3.length < 3) {
+      this.top3.push([key, count]);
+    } else if (this.top3[2][1] < count) {
+      this.top3[2] = [key, count];
+    } else {
+      // cache is unchanged so don't sort it again
+      return;
+    }
+    // sort the biggest first, otherwise alphabetical order
+    this.top3.sort((x, y) => {
+      const diff = x[1] - y[1];
+      if (diff) return -diff;
+      return x[0].localeCompare(y[0]);
+    });
   }
   read(): BareTagCount[] {
     const rc: (Key & { value: number })[] = super.getKeyPairs();
     return rc.map((o) => {
       return { key: o.key, count: o.value };
     });
+  }
+  readTop3(): string[] {
+    return this.top3.map((it) => it[0]);
   }
 }
 
