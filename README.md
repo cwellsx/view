@@ -1,9 +1,9 @@
-I wrote this as an example of a application designed with React and TypeScript.
+I wrote this to learn to use React (with TypeScript).
 
 ## Demo
 
-A demo of the software is running at https://cwellsx.github.io/view/
--- try that to see how it behaves, and what it looks like.
+A demo of the build is at https://cwellsx.github.io/view/
+-- try that to see how it behaves and what it looks like.
 
 ## Source code
 
@@ -12,10 +12,11 @@ A demo of the software is running at https://cwellsx.github.io/view/
 
 ## Design spec
 
-As a requirement or design spec for this project I chose to implement Stack Overflow's user interface, because:
+For this project I chose to implement Stack Overflow's user interface, because:
 
-- It's non-trivial -- i.e. it's a "real-world" and not just a "hello world" example
-- It's well-known -- a reference implementation exists -- so it's easy to assess how good an imitation this is
+- It's non-trivial -- i.e. it's a "real-world" not just a "hello world" example
+- It's well-known, and there's a reference implementation -- so it's easy to assess how good an imitation this is
+- The exercise was to implement a specified UI, not to design one
 
 I implemented these core UI features:
 
@@ -39,7 +40,8 @@ I implemented these core UI features:
 
 Clone this Git repository to your development machine, and run `yarn install` and `yarn build`.
 
-For further details see [CONTRIBUTING](./CONTRIBUTING.md) and [MONOREPO](./MONOREPO.md).
+For further details see [CONTRIBUTING](./CONTRIBUTING.md) and [MONOREPO](./MONOREPO.md), and
+[Several build targets](./packages/ui-react/README.md#several-build-targets).
 
 ## About the demo
 
@@ -70,4 +72,4 @@ I like using React:
 TypeScript also seems ideal, for example:
 
 - TypeScript interfaces can define the format of data shared between client and server
-- Strong typing helps with refactoring and IntelliSence.
+- Strong typing helps with refactoring and IntelliSense.

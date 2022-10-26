@@ -24,3 +24,6 @@ import { route as Route } from "./urls";
 export { Route };
 
 export { SimpleResponse } from "./api";
+
+export { Cached, CachedT } from "./cache";
+export type { Cache } from "./cache";

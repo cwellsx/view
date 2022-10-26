@@ -1,12 +1,12 @@
-import 'ui-assets/css/App.css';
+import "ui-assets/css/App.css";
 
-import { Api, config, Route, Url } from 'client/src';
-import React from 'react';
-import * as ReactRouter from 'react-router-dom';
+import { Api, Cache, config, Route, Url } from "client/src";
+import React from "react";
+import * as ReactRouter from "react-router-dom";
 
-import * as AppRoute from './appRoutes';
-import { Topbar } from './components';
-import { AppContext, GetLink, GetNavLink, useCreateMe } from './hooks';
+import * as AppRoute from "./appRoutes";
+import { Topbar } from "./components";
+import { AppContext, GetLink, GetNavLink, useCreateMe } from "./hooks";
 
 /*
   getLink and getNavLink are defined here so the rest of the application can avoid depending directly on React Router
@@ -38,6 +38,7 @@ const getNavLink: GetNavLink = (props) => {
 
 interface AppOptions {
   api: Api;
+  cache?: Cache;
 }
 
 const App: React.FunctionComponent<AppOptions> = (appOptions: AppOptions) => {
@@ -46,20 +47,20 @@ const App: React.FunctionComponent<AppOptions> = (appOptions: AppOptions) => {
   // plus https://reacttraining.com/react-router/web/api/BrowserRouter
   return (
     <ReactRouter.BrowserRouter basename={process.env.PUBLIC_URL}>
-      <AppRoutes api={appOptions.api} />
+      <AppRoutes api={appOptions.api} cache={appOptions.cache} />
     </ReactRouter.BrowserRouter>
   );
 };
 
-const AppRoutes: React.FunctionComponent<AppOptions> = (appOptions: AppOptions) => {
+export const AppRoutes: React.FunctionComponent<AppOptions> = (appOptions: AppOptions) => {
   // https://reacttraining.com/react-router/web/api/Switch
   const location = ReactRouter.useLocation();
   const [me, setMe] = useCreateMe();
   const history = ReactRouter.useHistory();
-  const { api } = appOptions;
+  const { api, cache } = appOptions;
 
   return (
-    <AppContext.Provider value={{ me, setMe, api, pushHistory: history.push, getLink, getNavLink }}>
+    <AppContext.Provider value={{ me, setMe, api, cache, pushHistory: history.push, getLink, getNavLink }}>
       <React.Fragment>
         <Topbar />
         <ReactRouter.Switch>

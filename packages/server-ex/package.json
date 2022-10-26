@@ -1,0 +1,27 @@
+{
+  "name": "server-ex",
+  "version": "0.1.0",
+  "description": "Top module of the standalone server",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "private": true,
+  "dependencies": {
+    "@types/express": "^4.17.6",
+    "ui-react": "0.1.0",
+    "server": "0.1.0",
+    "client": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.8.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "clean": "rimraf node_modules",
+    "unbuild": "rimraf lib",
+    "start": "node lib/index.js"
+  }
+}

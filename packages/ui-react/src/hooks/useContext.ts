@@ -1,7 +1,7 @@
-import { Api, config, Data, loginUser } from 'client/src';
-import React from 'react';
+import { Api, Cache, config, Data, loginUser } from "client/src";
+import React from "react";
 
-import { LinkProps, NavLinkProps } from '../components';
+import { LinkProps, NavLinkProps } from "../components";
 
 type Me = Data.UserSummary | undefined;
 
@@ -12,6 +12,7 @@ type AppContextProps = {
   me?: Data.UserSummary;
   setMe(me: Me): void;
   api?: Api;
+  cache?: Cache;
   pushHistory(url: string): void;
   getLink?: React.FunctionComponent<LinkProps>;
   getNavLink?: React.FunctionComponent<NavLinkProps>;
@@ -22,6 +23,7 @@ export const AppContext = React.createContext<AppContextProps>({
   me: undefined,
   setMe: (me: Me) => {},
   api: undefined,
+  cache: undefined,
   pushHistory: (url: string) => {},
   getLink: undefined,
   getNavLink: undefined,
@@ -32,9 +34,9 @@ export function useMe(): Me {
   return appContext.me;
 }
 
-export function useApi(): Api {
+export function useApi(): { api: Api; cache: Cache } {
   const appContext: AppContextProps = React.useContext(AppContext);
-  return appContext.api!;
+  return { api: appContext.api!, cache: appContext.cache ?? {} };
 }
 
 // this makes the application's use of History independent of ReactRouter's implementation of history

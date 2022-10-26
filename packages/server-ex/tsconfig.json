@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.shared",
+  "compilerOptions": {
+    "outDir": "lib",
+    "jsx": "react",
+    // "baseUrl": "..",
+    // "paths": {
+    //   "server-mock": ["server-mock/src"],
+    //   "server": ["server/src"],
+    //   "server-data": ["server-data/src"],
+    //   "server-types": ["server-types/src"]
+    // },
+    "lib": ["esnext", "dom"]
+  },
+  "include": ["src"]
+}

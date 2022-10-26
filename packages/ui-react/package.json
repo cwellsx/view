@@ -2,17 +2,17 @@
   "name": "ui-react",
   "version": "0.1.0",
   "private": true,
+  "main": "build.ssr/index.js",
   "engines": {
     "node": "10.15.3"
   },
   "dependencies": {
-    "client": "0.1.0",
-    "ui-assets": "0.1.0",
     "@types/jest": "^25.0.0",
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "@types/react-router-dom": "^5.0.0",
+    "client": "0.1.0",
     "express": "^4.17.1",
     "express-favicon": "^2.0.1",
     "html-to-react": "^1.3.4",
@@ -21,27 +21,35 @@
     "pagedown-editor": "^0.0.10",
     "path": "^0.12.7",
     "react": "^16.8.6",
+    "react-app-rewired": "^2.1.3",
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.4.1",
-    "react-app-rewired": "^2.1.3",
-    "typescript": "^3.8.0"
+    "typescript": "^3.8.0",
+    "ui-assets": "0.1.0"
   },
   "devDependencies": {
+    "@svgr/webpack": "4.3.3",
     "copyfiles": "^2.2.0",
     "env-cmd": "^10.0.0",
-    "shx": "^0.3.2"
+    "ignore-loader": "^0.1.2",
+    "shx": "^0.3.2",
+    "ts-loader": "^8.0.2",
+    "url-loader": "^4.1.0",
+    "webpack-cli": "^3.3.12"
   },
   "scripts": {
     "build-docs": "rimraf \"../../docs/\" && copyfiles --up 1 \"build/**/*\" \"../../docs/\"",
     "start:mock": "shx cp \"src/index-mock.tsx\" \"src/index.tsx\" && env-cmd -f .env.mock react-app-rewired start",
-    "build:docs": "shx cp \"src/index-mock.tsx\" \"src/index.tsx\" && env-cmd -f .env.docs react-app-rewired build && shx rm -rf \"../../docs\" && shx mv \"build\" \"../../docs\"",
-    "build:mock": "shx cp \"src/index-mock.tsx\" \"src/index.tsx\" && env-cmd -f .env.mock react-app-rewired build && shx rm -rf \"build.mock\" && shx mv \"build\" \"build.mock\"",
-    "build:client": "shx cp \"src/index-client.tsx\" \"src/index.tsx\" && env-cmd -f .env.client react-app-rewired build && shx rm -rf \"build.client\" && shx mv \"build\" \"build.client\"",
+    "build:docs": "shx cp \"src/index-mock.tsx\" \"src/index.tsx\" && env-cmd -f .env.docs react-app-rewired build && shx rm -rf \"../../docs\" && shx mv \"build\" \"../../docs\" && shx rm \"index.tsx\"",
+    "build:mock": "shx cp \"src/index-mock.tsx\" \"src/index.tsx\" && env-cmd -f .env.mock react-app-rewired build && shx rm -rf \"build.mock\" && shx mv \"build\" \"build.mock\" && shx rm \"index.tsx\"",
+    "build:client": "shx cp \"src/index-client.tsx\" \"src/index.tsx\" && env-cmd -f .env.client react-app-rewired build && shx rm -rf \"build.client\" && shx mv \"build\" \"build.client\" && shx rm \"index.tsx\"",
     "express": "node server.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "clean": "rimraf node_modules"
+    "clean": "rimraf node_modules",
+    "build-not": "tsc -p tsconfig.build.json",
+    "build": "webpack --config webpack.ssr.config.js --mode=development"
   },
   "eslintConfig": {
     "extends": "react-app"

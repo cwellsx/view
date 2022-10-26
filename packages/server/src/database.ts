@@ -1,11 +1,13 @@
-import { BareDiscussion, BareMessage, BareTag, BareTagCount, BareUser, isTag, TagId } from "server-types";
-import { Data, Url, Wire } from "shared-lib";
-import * as Action from "./actions";
-import { configServer } from "./configServer";
-import { CurrentIds } from "./currentIds";
-import { getExerpt } from "./exerpt";
-import { KeyFromTagId, loadActions, loadImages } from "./loader";
-import { TagIdCounts, TagIdDiscussions } from "./tagIds";
+import { BareDiscussion, BareMessage, BareTag, BareTagCount, BareUser, isTag, TagId } from 'server-types';
+import { Data, Url, Wire } from 'shared-lib';
+
+import * as Action from './actions';
+import { configServer } from './configServer';
+import { CurrentIds } from './currentIds';
+import { getExerpt } from './exerpt';
+import { HttpStatus } from './httpStatus';
+import { KeyFromTagId, loadActions, loadImages } from './loader';
+import { TagIdCounts, TagIdDiscussions } from './tagIds';
 
 /*
   This is an in-RAM database
@@ -162,9 +164,21 @@ export function getImage(id: number): Data.Image | undefined {
   return allImages.find((image) => image.id === id);
 }
 
-export function getUserSummaries(): Data.UserSummary[] {
-  const rc: Data.UserSummary[] = [];
-  allUsers.forEach((data, userId) => rc.push(getUserSummaryFrom(userId, data)));
+export function getUserSummaries(): Data.UserSummaryEx[] {
+  const rc: Data.UserSummaryEx[] = [];
+  allUsers.forEach((data, userId) => {
+    const summary = getUserSummaryFrom(userId, data);
+    // read the top 3 tag strings
+    const tags = userTags
+      .get(userId)!
+      .readTop3()
+      .map((it) => {
+        return { key: it };
+      });
+
+    const summaryEx = { ...summary, tags: tags };
+    rc.push(summaryEx);
+  });
   return rc.sort((x, y) => x.name.localeCompare(y.name));
 }
 
@@ -194,7 +208,8 @@ export function getUserActivity(options: Url.UserActivityOptions): Wire.WireUser
   // same kind of processing as some combination of getDiscussions and getDiscussion
   // like getDiscussion, we don't have two pre-sorted arrays to choose from, so may have to select from a reversed copy
   const userId = options.user.id;
-  const messages: BareMessage[] = userMessages.get(userId)!;
+  const messages: BareMessage[] | undefined = userMessages.get(userId);
+  if (!messages) return undefined;
   const sort: Url.ActivitySort = options.sort ? options.sort : "Oldest";
   const sortedMessages = sort === "Oldest" ? messages : messages.slice().reverse();
   // like getDiscussions
@@ -416,14 +431,14 @@ function postNewMessage(action: Action.NewMessage): Data.Message {
   };
 }
 
-function postEditTagInfo(action: Action.EditTagInfo): Data.Key | undefined {
+function postEditTagInfo(action: Action.EditTagInfo): Data.Key | HttpStatus {
   // this logic is similar to getTag()
   const { tag, posted } = Action.extractEditTagInfo(action);
   const { summary, markdown } = posted;
   const tagId: TagId | undefined = tagDiscussions.find(tag);
   if (!tagId) {
     // should return 404 Not Found
-    return undefined;
+    return { httpStatus: 404 };
   }
   if (isTag(tagId)) {
     // ideally allags would be a map instead of an array, but in practice we don't have so many tags that it matters
@@ -434,7 +449,7 @@ function postEditTagInfo(action: Action.EditTagInfo): Data.Key | undefined {
   } else {
     if (tagId.resourceType !== "Image") {
       // should return 500 Internal Server Error
-      return undefined;
+      return { httpStatus: 500 };
     }
     const image: Data.Image = allImages.find((x) => x.id === tagId.id)!;
     image.summary = summary;
@@ -443,7 +458,7 @@ function postEditTagInfo(action: Action.EditTagInfo): Data.Key | undefined {
   return { key: tag };
 }
 
-export function handleAction(action: Action.Any) {
+export function handleAction(action: Action.Any): Data.IdName | Data.Key | Data.Message | HttpStatus {
   switch (action.type) {
     case "NewUser":
       return postNewUser(action);
@@ -458,7 +473,7 @@ export function handleAction(action: Action.Any) {
     case "EditTagInfo":
       return postEditTagInfo(action);
     default:
-      return { error: "Unexpected post type" };
+      return { httpStatus: 500 };
   }
 }
 

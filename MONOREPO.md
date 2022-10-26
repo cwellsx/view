@@ -60,6 +60,16 @@ Some example projects to imitate:
 
 The configuration of this repo is based on the first of these i.e. `monorepo-demo`.
 
+## Project references
+
+TODO -- Building might be faster if it were configured to use Project references or incremental compilation:
+
+- https://www.google.com/search?q=typescript+monorepo+project+references
+- https://medium.com/@NiGhTTraX/how-to-set-up-a-typescript-monorepo-with-lerna-c6acda7d4559
+- https://github.com/NiGhTTraX/ts-monorepo
+- https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html
+- https://www.typescriptlang.org/docs/handbook/project-references.html
+
 ## Better integration with Create React App
 
 There's an outstanding CRA issue:

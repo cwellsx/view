@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.shared",
+  "compilerOptions": {
+    "outDir": "build.ssr",
+    "jsx": "react",
+    "lib": ["esnext", "dom"]
+  },
+  "include": ["src"]
+}

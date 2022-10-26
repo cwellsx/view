@@ -22,13 +22,18 @@ As shown, the dependencies are acyclic -- higher layers depend on lower layers, 
 
 ### [index.tsx](./src/index.tsx) and [index.html](./public/index.html)
 
-These files are standard boilerplate, created by CRA.
+These files were standard boilerplate, created by CRA.
+
+Now `index.tsx` is slightly modified, and there are different versions of it
+-- for details see the description of [Several build targets](#several_build_targets) below.
 
 ### [App.tsx](./src/App.tsx)
 
 This module uses React Router to delegate to React elements in the `AppRoutes.tsx` module.
 
-It uses an `Url` method (imported from the `client` API package) to parse the `locattion` from the React Router.
+It inspects the `location` value from the React Router,
+and parses it and compares it against the various `Url` methods and values (imported from the `client` API package) --
+and delegates to the appropriate route-specific element defined in the `./appRoutes` module.
 
 It also establishes the `AppContext` values, which can be read or called by subroutines deeper in the application.
 
@@ -46,7 +51,7 @@ Almost every element in this module has a similar structure:
    server -- `useFetchApi` gets data via the `fetch` or `mockFetch` APIs.
 3. Use `getPage` to render the page.
 
-The `getPage` function wraps the following functionality that's common to ever page:
+The `getPage` function wraps the following functionality that's common to every page:
 
 1. Tests whether the requested data has been received yet:
    - If not then display a "Loading..." message.
@@ -61,7 +66,7 @@ These modules contain functions which render the actual content of a page.
 
 These functions are not called until after the data has been fetched.
 
-These are functions, not React element -- they create React element which are the content of the page,
+These are functions, not React elements -- they create React element which are the content of the page,
 but these elements are returned within an application-specific `Layout` object.
 
 These are the functions in which you can begin to see the application UI -- the modules above

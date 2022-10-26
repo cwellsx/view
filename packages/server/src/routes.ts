@@ -1,7 +1,9 @@
-import { Post, SearchInput, Url, UserSummary } from "shared-lib";
-import * as Action from "./actions";
-import * as DB from "./database";
-import * as Session from "./session";
+import { Cache, Cached, CachedT, Message, Post, SearchInput, Url, UserSummary } from 'shared-lib';
+
+import * as Action from './actions';
+import * as DB from './database';
+import { HttpStatus } from './httpStatus';
+import * as Session from './session';
 
 /*
   This unwraps and dispatches data received from the client.
@@ -15,7 +17,14 @@ import * as Session from "./session";
 // you could temporarily change this to enable logging, for debugging
 const isLogging = true;
 
-export function routeOnGet(url: string, userIdLogin: number): object | undefined {
+type Fetched = [Cache, object];
+
+/*
+  If this fails then it returns HttpStatus
+  If it succeeds then it returns the data, plus the same data wrapped in a Cache instance for server-side rendering
+*/
+
+export function routeOnGet(url: string, userIdLogin: number): Fetched | HttpStatus {
   if (isLogging) {
     console.log(`server routeOnGet ${url}`);
   }
@@ -24,52 +33,59 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
   const resourceType = Url.getResourceType(location);
   if (Url.isParserError(resourceType)) {
     // should return 400 Bad Request
-    return undefined;
+    return { httpStatus: 400 };
   }
 
   switch (resourceType) {
     case "SiteMap":
-      return DB.getSiteMap();
+      const siteMap = DB.getSiteMap();
+      return [{ getSiteMap: new Cached(siteMap) }, siteMap];
 
     // case "Login":
     //   return DB.getSiteMap();
 
     case "Image": {
-      const image = Url.isImage(location);
-      if (Url.isParserError(image)) {
+      const idName = Url.isImage(location);
+      if (Url.isParserError(idName)) {
         // should return 400 Bad Request
-        return undefined;
+        return { httpStatus: 400 };
       }
-      return DB.getImage(image.id);
+      const image = DB.getImage(idName.id);
+      return image ? [{ getImage: new CachedT(idName, image) }, image] : { httpStatus: 404 };
     }
 
     case "User": {
       if (Url.isUsers(location)) {
-        return DB.getUserSummaries();
+        const users = DB.getUserSummaries();
+        return [{ getUsers: new Cached(users) }, users];
       }
 
       const userOptions = Url.isUserOptions(location);
       if (Url.isParserError(userOptions)) {
         // should return 404 Not Found
-        return undefined;
+        return { httpStatus: 404 };
       }
-      const { user, userTabType } = userOptions;
+      const { user: idName, userTabType } = userOptions;
       switch (userTabType) {
         case "Profile":
         case "EditSettings":
         case undefined:
-          return DB.getUser(user.id, userIdLogin);
+          const user = DB.getUser(idName.id, userIdLogin);
+          return user ? [{ getUser: new CachedT(idName, user) }, user] : { httpStatus: 404 };
         case "Activity":
           // the UserActivityOptions also carries DiscussionsOptions
-          const userActivity = Url.isUserActivityOptions(location);
-          if (Url.isParserError(userActivity)) {
+          const options = Url.isUserActivityOptions(location);
+          if (Url.isParserError(options)) {
             // should return 400 Bad Request
-            return undefined;
+            return { httpStatus: 400 };
           }
-          return DB.getUserActivity(userActivity);
+          const userActivity = DB.getUserActivity(options);
+          return userActivity
+            ? [{ getUserActivity: new CachedT(options, Message.unwireUserActivity(userActivity)) }, userActivity]
+            : { httpStatus: 404 };
         default:
           // should return 500 Internal Server Error
-          return undefined;
+          return { httpStatus: 500 };
       }
     }
 
@@ -78,7 +94,8 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
         const options = Url.isDiscussionsOptions(location);
         if (!Url.isParserError(options)) {
           Session.getSetDiscussionsOptions(userIdLogin, options);
-          return DB.getDiscussions(options);
+          const discussions = DB.getDiscussions(options);
+          return [{ getDiscussions: new CachedT(options, Message.unwireDiscussions(discussions)) }, discussions];
         }
         // else maybe a specific discussion
       }
@@ -88,36 +105,38 @@ export function routeOnGet(url: string, userIdLogin: number): object | undefined
         if (!Url.isParserError(options)) {
           Session.getSetDiscussionOptions(userIdLogin, options);
           const discussion = DB.getDiscussion(options);
-          if (!discussion) {
-            // should return 404 Not Found
-            return undefined;
-          }
-          return discussion;
+          return discussion
+            ? [{ getDiscussion: new CachedT(options, Message.unwireDiscussion(discussion)) }, discussion]
+            : // should return 404 Not Found
+              { httpStatus: 404 };
         }
       }
 
       // should return 400 Bad Request
-      return undefined;
+      return { httpStatus: 400 };
     }
 
     case "Tag": {
       if (Url.isAllTags(location)) {
-        return DB.getAllTags();
+        const tags = DB.getAllTags();
+        return [{ getAllTags: new Cached(tags) }, tags];
       }
       const options = Url.isTagsOptions(location);
       if (!Url.isParserError(options)) {
-        return DB.getTags(options);
+        const tags = DB.getTags(options);
+        return [{ getTags: new CachedT(options, tags) }, tags];
       }
       const key = Url.isTagKey(location);
       if (!Url.isParserError(key)) {
-        return DB.getTag(key);
+        const tag = DB.getTag(key);
+        return tag ? [{ getTag: new CachedT(key, tag) }, tag] : { httpStatus: 404 };
       }
       // should return 400 Bad Request
-      return undefined;
+      return { httpStatus: 400 };
     }
 
     default:
-      return undefined;
+      return { httpStatus: 400 };
   }
 }
 
@@ -127,7 +146,7 @@ export function loginUser(): UserSummary {
   return { id, name, gravatarHash, location };
 }
 
-export function routeOnPost(url: string, userId: number, json: any): object | undefined {
+export function routeOnPost(url: string, userId: number, json: any): object | HttpStatus {
   if (isLogging) {
     console.log(`server routeOnPost ${url} -- ${JSON.stringify(json, undefined, 2)}`);
   }
@@ -136,7 +155,7 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
   const resourceType = Url.getResourceType(location);
   if (Url.isParserError(resourceType)) {
     // should return 400 Bad Request
-    return undefined;
+    return { httpStatus: 400 };
   }
 
   const dateTime: string = new Date().toUTCString();
@@ -220,7 +239,7 @@ export function routeOnPost(url: string, userId: number, json: any): object | un
   if (Url.isParserError(action)) {
     // should return 400 Bad Request
     console.log(action.error);
-    return undefined;
+    return { httpStatus: 400 };
   }
 
   return DB.handleAction(action);

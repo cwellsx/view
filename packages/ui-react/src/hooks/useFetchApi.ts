@@ -1,3 +1,4 @@
+import { Cached, CachedT } from "client/src";
 import React from "react";
 
 /*
@@ -58,21 +59,31 @@ export interface FetchingT<TData, TParam2> {
 type IoGetDataT<TData, TParam, TParam2 = void> = (param: TParam, param2?: TParam2) => Promise<TData>;
 
 // this value is passed as param to useGetLayout when TParam is void
-// or I could have implemented a copy-and-paste of useGetLayout without the TParam
+// or I could have implemented a copy-and-paste of useFetchApi2 without the TParam
 const isVoid: void = (() => {})();
 
-export function useFetchApi<TData>(getData: IoGetDataT<TData, void, void>): FetchingT<TData, void> {
-  return useFetchApi2(getData, isVoid);
+export function useFetchApi<TData>(
+  getData: IoGetDataT<TData, void, void>,
+  cached?: Cached<TData>
+): FetchingT<TData, void> {
+  return useFetchApi2(getData, isVoid, cached);
 }
 
 export function useFetchApi2<TData, TParam, TParam2 = void>(
   // client API function
   getData: IoGetDataT<TData, TParam, TParam2>,
   // parameter passed to the getData function
-  param: TParam
+  param: TParam,
+  cached?: CachedT<TParam, TData>
 ): FetchingT<TData, TParam2> {
+  let cachedData = cached ? cached.fetch() : undefined;
+  if (cachedData && !cached!.matches(param)) {
+    console.error("Unexpected cached parameter value");
+    cachedData = undefined;
+  }
+
   const [prev, setParam] = React.useState<TParam | undefined>(undefined);
-  const [data, setData] = React.useState<TData | undefined>(undefined);
+  const [data, setData] = React.useState<TData | undefined>(cachedData);
   const [error, setError] = React.useState<Error | undefined>(undefined);
 
   // we pass the reload function to the getLayout function so that it can force a reload e.g. after
@@ -111,6 +122,7 @@ export function useFetchApi2<TData, TParam, TParam2 = void>(
   //const extra2: TExtra & Extra<TParam2> = { ...extra, reload, newData };
 
   React.useEffect(() => {
+    if (cachedData) return;
     getData(param)
       .then((fetched) => {
         setData(fetched);

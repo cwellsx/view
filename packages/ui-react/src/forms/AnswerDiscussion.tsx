@@ -1,7 +1,7 @@
-import { config, Data, Post } from 'client/src';
-import React from 'react';
+import { config, Data, Post } from "client/src";
+import React from "react";
 
-import { Input, useApi, useValidatedInput } from '../hooks';
+import { Input, useApi, useValidatedInput } from "../hooks";
 
 interface AnswerDiscussionProps {
   discussionId: number;
@@ -9,7 +9,7 @@ interface AnswerDiscussionProps {
 }
 export const AnswerDiscussion: React.FunctionComponent<AnswerDiscussionProps> = (props) => {
   type T = Post.NewMessage;
-  const api = useApi();
+  const { api } = useApi();
 
   // created the validated elements and the submit button
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([

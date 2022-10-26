@@ -1,12 +1,12 @@
-import { config, Data, Post, Url } from 'client/src';
-import React from 'react';
+import { config, Data, Post, Url } from "client/src";
+import React from "react";
 
-import { EditorTags, OutputTags } from '../components';
-import { Input, useApi, usePushHistory, useValidatedInput } from '../hooks';
+import { EditorTags, OutputTags } from "../components";
+import { Input, useApi, usePushHistory, useValidatedInput } from "../hooks";
 
 export const NewDiscussion: React.FunctionComponent = () => {
   type T = Post.NewDiscussion;
-  const api = useApi();
+  const { api } = useApi();
   const pushHistory = usePushHistory();
 
   const inputs: Map<keyof T, Input> = new Map<keyof T, Input>([
